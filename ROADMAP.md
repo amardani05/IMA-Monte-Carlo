@@ -2,9 +2,14 @@
 
 Status as of 2026-09-02. Live at **https://ima-monte-carlo.vercel.app**
 
-The engine works and is now deployed. The gaps that matter are not in the
-plumbing — they are in whether the numbers it produces will survive a committee
-question. Phase 1 is the blocker for real use; everything after it is leverage.
+The engine is deployed and now fills itself in: type a ticker and the
+assumptions come from SEC filings, with driver ranges calibrated to what the
+company has actually delivered. What remains is mostly leverage rather than
+correctness.
+
+**Nothing in this project calls a model or inference service.** Every figure is
+a number filed with the SEC, arithmetic over those numbers, or output from the
+simulation engine, and each auto-filled field carries its source and as-of date.
 
 ---
 
@@ -17,6 +22,13 @@ question. Phase 1 is the blocker for real use; everything after it is leverage.
   tables, JSON export
 - 100k paths in ~180 ms server-side, ~350 ms round trip, ~12 KB response
 - Horizon is now a parameter instead of a hardcoded `** 2`
+- **Auto-fill from SEC EDGAR** (`GET /api/company/<ticker>`): revenue, EBITDA
+  margin, share count, cash and debt pulled from XBRL company facts, with
+  provenance on every field. Ticker→CIK resolves against a bundled 10,391-entry
+  map, so the hot path makes no call to `www.sec.gov`.
+- **Driver ranges calibrated from filed history** — see 1.2, which this largely
+  closes
+- **42 tests** covering the engine, validation and SEC parsing — see 1.4
 
 ---
 
@@ -45,7 +57,24 @@ Monte Carlo bridge are two different models that were never reconciled. Either
 Ship a reconciliation panel that shows the gap and its driver attribution
 either way. Silently presenting both numbers is the thing to avoid.
 
-### 1.2 The distributions encode directional bets as certainties
+### 1.2 The distributions encode directional bets as certainties — *largely fixed*
+
+**Auto-fill now calibrates these from filed history rather than by hand.** On
+MYRG that changes the picture completely:
+
+| | Hand-typed | SEC-calibrated |
+| --- | --- | --- |
+| P(below bear) | 0.2% | **15.7%** |
+| P5–P95 band | $246–$338 | **$186–$403** |
+| P(≥ base) | 18.0% | 33.0% |
+| EBITDA margin range | 7.1–7.7% | 3.55–6.82% (ten filed years) |
+
+The remaining work is to let the analyst set the *direction* (the mode) while
+keeping the historical *width*, so a view and its uncertainty are argued
+separately. The original diagnosis is kept below because it is what the
+calibration is answering.
+
+### 1.2a Original diagnosis
 
 Measured over 200k paths on the shipped assumptions:
 
@@ -84,16 +113,24 @@ standard error alongside each probability, and add an assumption-uncertainty
 band (re-run across a grid of plausible driver ranges) so the headline number
 carries an honest error bar. Round displayed probabilities accordingly.
 
-### 1.4 Test suite
+### 1.4 Test suite — *done*
 
-There are currently **no tests** on code whose output goes into investment
-pitches. Minimum bar:
+42 tests, no network required:
 
-- Golden-value regression on the MYRG assumptions (catches silent numeric drift)
-- Sampler property tests — triangular inverse-CDF recovers its analytic mean and
-  mode; Gaussian copula recovers the target rank correlations within tolerance
-- Validation tests for every `ValidationError` branch
-- Bridge arithmetic checked against a hand-computed single path
+- Golden-value regressions pinning the published MYRG numbers
+- Sampler properties — the triangular inverse CDF recovers its analytic mean;
+  the Gaussian copula recovers target correlations within 0.02
+- Every `ValidationError` branch
+- Bridge arithmetic against a hand-computed single path
+- SEC parsing against a synthetic company-facts fixture: tag merging, the TTM
+  roll with a reconstructed Q4, the EBITDA fallback chain, the industry guard
+
+Verified by mutation — perturbing the horizon exponent fails three of them.
+`IMA_LIVE_SEC=1` additionally exercises EDGAR.
+
+```bash
+python -m unittest discover -s tests -t .
+```
 
 ### 1.5 Model mechanics worth revisiting
 
@@ -135,17 +172,25 @@ pitches. Minimum bar:
 
 ---
 
-## Phase 3 — Stop typing financials by hand
+## Phase 3 — Stop typing financials by hand — *done, except price*
 
-Current price, shares outstanding, net debt and EV are all manual entry and go
-stale the day they are typed.
+Seventeen fields became three. Revenue, margin, share count, cash and debt come
+from EDGAR; enterprise value is derived from price × shares + net debt and
+recomputes as the price is typed. Bear, base and bull stay manual on purpose —
+they are the DCF output the simulation exists to test.
 
-- Pull quote + share count + balance-sheet items from a market data provider,
-  keyed on ticker
-- Show the as-of date on every fetched figure
-- Fall back cleanly to manual entry when a ticker is unavailable
-- Derive `current_ebitda_margin` and `current_ev` rather than asking for them,
-  with an override
+**Price is the one gap.** No keyless quote feed proved reliable: Stooq now sits
+behind a JavaScript proof-of-work wall, and Yahoo's undocumented endpoints
+rate-limit datacenter IPs. Setting `FINNHUB_API_KEY` closes it and makes the
+lookup fully hands-off; without it the analyst types one number.
+
+Remaining:
+
+- Set `FINNHUB_API_KEY` (free tier) to remove the last manual field
+- Filers using custom revenue taxonomies (Exxon) still fail — needs per-filer
+  tag overrides
+- `tools/refresh_tickers.py` should run on a schedule rather than by hand, so
+  recent listings resolve
 
 ---
 
@@ -169,8 +214,9 @@ stale the day they are typed.
 
 ## Suggested order
 
-1. **1.4 tests** — cheap, and everything else is safer once they exist
-2. **1.1 reconciliation** — the credibility blocker
-3. **1.2 distribution calibration** — the accuracy blocker
+1. ~~**1.4 tests**~~ — done
+2. ~~**1.2 distribution calibration**~~ — largely done via auto-fill
+3. **1.1 reconciliation** — now the remaining credibility blocker
 4. **2.1 save/share + 2.3 chart export** — what makes it get used
-5. **1.3 error bars**, then Phase 3 and 4 as the tool gets real users
+5. **`FINNHUB_API_KEY`** — one env var removes the last manual field
+6. **1.3 error bars**, then the rest of Phase 4 as it gets real users
