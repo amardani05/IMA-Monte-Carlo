@@ -345,6 +345,13 @@ function render(r) {
 /* ── auto-fill from SEC EDGAR ─────────────────────────────────────── */
 const DRIVER_KEYS = [...TRI, ...NORM];
 
+/* The exit multiple can only be anchored once a price exists. When auto-fill
+   runs without one the server returns a generic placeholder, so re-anchor it
+   the moment a price is typed — otherwise the run silently values the company
+   on a multiple that has nothing to do with it. Any manual edit stops that. */
+let multipleIsPlaceholder = false;
+let multipleEdited = false;
+
 function clearProvenance() {
   document.querySelectorAll(".src-badge").forEach((el) => el.remove());
   document.querySelectorAll(".calib-note").forEach((el) => el.remove());
@@ -418,6 +425,8 @@ function fillFromPrefill(data) {
   });
 
   applyProvenance(data.provenance);
+  multipleIsPlaceholder = Boolean(data.needs_price);
+  multipleEdited = false;
 
   const c = data.company;
   const bits = [
@@ -470,12 +479,25 @@ function recomputeEV() {
   if (priceLabel) priceLabel.classList.remove("needs-input");
 
   const ebitda = parseFloat(form.current_revenue.value) * parseFloat(form.current_ebitda_margin.value);
-  if (Number.isFinite(ebitda) && ebitda > 0) {
-    const mult = ev / ebitda;
-    const note = document.querySelector('fieldset[data-driver="ev_ebitda_multiple"] .calib-note');
-    if (note) note.textContent = `current multiple is ${mult.toFixed(1)}× — the range below is anchored on it, not calibrated from filings. Replace with your comps range.`;
+  if (!Number.isFinite(ebitda) || ebitda <= 0) return;
+
+  const mult = ev / ebitda;
+  if (multipleIsPlaceholder && !multipleEdited) {
+    // same anchoring the server applies when it has a price
+    form.ev_ebitda_multiple_low.value = round4(mult * 0.70);
+    form.ev_ebitda_multiple_mode.value = round4(mult);
+    form.ev_ebitda_multiple_high.value = round4(mult * 1.15);
+  }
+
+  const note = document.querySelector('fieldset[data-driver="ev_ebitda_multiple"] .calib-note');
+  if (note) {
+    note.textContent = multipleEdited
+      ? `Current multiple is ${mult.toFixed(1)}×. Range below is yours.`
+      : `Anchored on the current ${mult.toFixed(1)}× — NOT calibrated from filings; replace with your comps range.`;
   }
 }
+
+const round4 = (v) => Math.round(v * 10000) / 10000;
 
 async function autofill() {
   const ticker = form.ticker.value.trim().toUpperCase();
@@ -550,6 +572,9 @@ form.addEventListener("submit", async (e) => {
 
 $("autofillBtn").addEventListener("click", autofill);
 form.current_price.addEventListener("input", recomputeEV);
+["low", "mode", "high"].forEach((part) => {
+  form[`ev_ebitda_multiple_${part}`].addEventListener("input", () => { multipleEdited = true; });
+});
 form.ticker.addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); autofill(); }
 });
