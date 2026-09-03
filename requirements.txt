@@ -1,5 +1,6 @@
-# Runtime dependencies for the Vercel serverless function (api/simulate.py).
-# Keep this lean — matplotlib is NOT needed server-side; charts render as SVG
-# in the browser. See requirements-dev.txt for the local CLI.
+# Runtime dependencies for the deployed app (app.py).
+# Deliberately lean — matplotlib is NOT needed server-side; the browser renders
+# charts as SVG. See requirements-dev.txt for the local CLI.
+flask>=3.0
 numpy>=1.26
 scipy>=1.11
