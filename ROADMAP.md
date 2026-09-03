@@ -104,9 +104,13 @@ pitches. Minimum bar:
   today's price — it is a cumulative, undiscounted, non-annualised return.
   Label it precisely, and add annualised and PV variants.
 - **`np.maximum(price, 0)`** truncates the left tail rather than modelling
-  distress, which biases the mean upward. Fine as a simplification, worth stating.
-- **Mean vs median.** The distribution is right-skewed; the median is the better
-  central estimate. Lead with it (the UI already does) and de-emphasise the mean.
+  distress. It never binds on the current assumptions (minimum simulated price
+  is $204), so this is a latent issue that appears only once the distributions
+  are widened in 1.2 — but then it matters.
+- **Mean vs median.** The distribution is *left*-skewed (skew −0.31), so the
+  mean ($296.15) sits below the median ($298.87) and `expected_return`, which is
+  computed off the mean, slightly understates the central outcome. Lead with the
+  median — the UI already does — and label the mean-based figure as such.
 - **Correlation matrix is invented.** The "default cross-sector assumptions" are
   not estimated from anything. Estimate them, or run the output's sensitivity to
   the correlation assumption and show it.
