@@ -342,6 +342,169 @@ function render(r) {
   $("sensitivityTables").innerHTML = sensitivityTables(r);
 }
 
+/* ── auto-fill from SEC EDGAR ─────────────────────────────────────── */
+const DRIVER_KEYS = [...TRI, ...NORM];
+
+function clearProvenance() {
+  document.querySelectorAll(".src-badge").forEach((el) => el.remove());
+  document.querySelectorAll(".calib-note").forEach((el) => el.remove());
+  document.querySelectorAll(".needs-input").forEach((el) => el.classList.remove("needs-input"));
+  $("sources").hidden = true;
+  $("sourcesList").innerHTML = "";
+}
+
+function badge(label, text, tone) {
+  const b = document.createElement("span");
+  b.className = "src-badge" + (tone ? ` ${tone}` : "");
+  b.textContent = label;
+  b.title = text;
+  return b;
+}
+
+function applyProvenance(prov) {
+  document.querySelectorAll("label[data-field]").forEach((label) => {
+    const note = prov[label.dataset.field];
+    if (!note) return;
+    const fromSec = note.startsWith("SEC EDGAR");
+    const derived = note.startsWith("derived");
+    if (!fromSec && !derived) return;
+    label.prepend(badge(fromSec ? "SEC" : "derived", note, derived ? "derived" : ""));
+  });
+
+  document.querySelectorAll("fieldset[data-driver]").forEach((fs) => {
+    const note = prov[fs.dataset.driver];
+    if (!note) return;
+    const p = document.createElement("p");
+    p.className = "calib-note" + (/NOT calibrated|generic|insufficient|no usable/.test(note) ? " weak" : "");
+    p.textContent = note;
+    fs.appendChild(p);
+  });
+
+  const dl = $("sourcesList");
+  dl.innerHTML = Object.entries(prov)
+    .map(([k, v]) => `<dt>${esc(k.replace(/_/g, " "))}</dt><dd>${esc(v)}</dd>`)
+    .join("");
+  $("sources").hidden = false;
+}
+
+function showLookup(kind, html) {
+  const el = $("lookupMsg");
+  el.className = `lookup-msg ${kind}`;
+  el.innerHTML = html;
+  el.hidden = false;
+}
+
+function fillFromPrefill(data) {
+  const f = data.fields;
+  clearProvenance();
+
+  form.ticker.value = f.ticker;
+  form.company_name.value = f.company_name;
+  ["current_revenue", "current_ebitda_margin", "current_ev", "current_net_debt",
+   "shares_outstanding", "horizon_years"].forEach((k) => {
+    if (f[k] !== null && f[k] !== undefined) form[k].value = f[k];
+  });
+  if (f.current_price !== null && f.current_price !== undefined) {
+    form.current_price.value = f.current_price;
+  }
+  TRI.forEach((k) => {
+    form[`${k}_low`].value = f[k][0];
+    form[`${k}_mode`].value = f[k][1];
+    form[`${k}_high`].value = f[k][2];
+  });
+  NORM.forEach((k) => {
+    form[`${k}_mean`].value = f[k][0];
+    form[`${k}_std`].value = f[k][1];
+  });
+
+  applyProvenance(data.provenance);
+
+  const c = data.company;
+  const bits = [
+    `<strong>${esc(c.name)}</strong> · CIK ${c.cik}`,
+    `FY${c.latest_fy} EBITDA $${c.ebitda_fy_m.toLocaleString()}M (${esc(c.ebitda_basis)})`,
+  ];
+  if (c.current_ev_ebitda) bits.push(`current ${c.current_ev_ebitda}× EV/EBITDA`);
+
+  let html = `<p>${bits.join(" · ")}</p>`;
+  if (c.revenue_ttm_m) {
+    html += `<p class="fine">Form uses FY${c.latest_fy} revenue so it pairs with the FY margin.
+      ${esc(c.revenue_ttm_label)} revenue is $${c.revenue_ttm_m.toLocaleString()}M if you prefer an LTM basis —
+      set the margin to match before switching.</p>`;
+  }
+  if (data.needs_price) {
+    html += `<p class="warn">No quote provider is configured, so enter the current price
+      yourself — everything else is filled. Enterprise value updates when you do.</p>`;
+    form.current_price.value = "";
+    document.querySelector('label[data-field="current_price"]').classList.add("needs-input");
+  }
+  html += `<p class="warn">Bear, base and bull targets are yours to set — they are the
+    DCF output this model exists to test.</p>`;
+  (data.warnings || []).forEach((w) => { html += `<p class="warn">${esc(w)}</p>`; });
+  html += `<p class="fine"><a href="${esc(c.filings_url)}" target="_blank" rel="noopener">
+    Check against the filings on EDGAR →</a></p>`;
+
+  showLookup("ok", html);
+  ["bear_price", "base_price", "bull_price"].forEach((k) => {
+    form[k].value = "";
+    form[k].closest("label").classList.add("needs-input");
+  });
+}
+
+/* Enterprise value is price x shares + net debt, so keep it in step with the
+   price the moment it is typed rather than making people re-run the lookup. */
+function recomputeEV() {
+  const price = parseFloat(form.current_price.value);
+  const shares = parseFloat(form.shares_outstanding.value);
+  const netDebt = parseFloat(form.current_net_debt.value);
+  if (![price, shares, netDebt].every(Number.isFinite) || price <= 0 || shares <= 0) return;
+
+  const ev = price * shares + netDebt;
+  form.current_ev.value = Math.round(ev * 10) / 10;
+
+  const label = document.querySelector('label[data-field="current_ev"]');
+  if (label && !label.querySelector(".src-badge")) {
+    label.prepend(badge("derived", "derived: price × shares + net debt", "derived"));
+  }
+  const priceLabel = document.querySelector('label[data-field="current_price"]');
+  if (priceLabel) priceLabel.classList.remove("needs-input");
+
+  const ebitda = parseFloat(form.current_revenue.value) * parseFloat(form.current_ebitda_margin.value);
+  if (Number.isFinite(ebitda) && ebitda > 0) {
+    const mult = ev / ebitda;
+    const note = document.querySelector('fieldset[data-driver="ev_ebitda_multiple"] .calib-note');
+    if (note) note.textContent = `current multiple is ${mult.toFixed(1)}× — the range below is anchored on it, not calibrated from filings. Replace with your comps range.`;
+  }
+}
+
+async function autofill() {
+  const ticker = form.ticker.value.trim().toUpperCase();
+  if (!ticker) {
+    showLookup("err", "Enter a ticker first.");
+    return;
+  }
+  const btn = $("autofillBtn");
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+  showLookup("busy", `Reading ${esc(ticker)}'s filings from SEC EDGAR…`);
+
+  try {
+    const params = new URLSearchParams({ horizon: form.horizon_years.value || "2" });
+    const typed = parseFloat(form.current_price.value);
+    if (Number.isFinite(typed) && typed > 0) params.set("price", String(typed));
+
+    const res = await fetch(`/api/company/${encodeURIComponent(ticker)}?${params}`);
+    const data = await res.json().catch(() => ({ error: `Server returned ${res.status}` }));
+    if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
+    fillFromPrefill(data);
+  } catch (err) {
+    showLookup("err", esc(err.message));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Auto-fill from SEC";
+  }
+}
+
 /* ── wiring ───────────────────────────────────────────────────────── */
 function showError(msg) {
   const el = $("formError");
@@ -385,8 +548,16 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+$("autofillBtn").addEventListener("click", autofill);
+form.current_price.addEventListener("input", recomputeEV);
+form.ticker.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); autofill(); }
+});
+
 $("loadPreset").addEventListener("click", () => {
   fillForm(PRESET);
+  clearProvenance();
+  $("lookupMsg").hidden = true;
   $("formError").hidden = true;
 });
 
@@ -400,4 +571,7 @@ $("exportJson").addEventListener("click", () => {
   URL.revokeObjectURL(a.href);
 });
 
-fillForm(PRESET);
+form.n_simulations.value = PRESET.n_simulations;
+form.horizon_years.value = PRESET.horizon_years;
+form.random_seed.value = PRESET.random_seed;
+form.ticker.focus();

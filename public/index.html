@@ -16,7 +16,7 @@
     <span class="tag">scenario analysis</span>
   </div>
   <div class="topbar-actions">
-    <button type="button" id="loadPreset" class="btn ghost">Load MYRG preset</button>
+    <button type="button" id="loadPreset" class="btn ghost">Load MYRG example</button>
     <button type="button" id="exportJson" class="btn ghost" disabled>Export JSON</button>
   </div>
 </header>
@@ -27,15 +27,23 @@
 
       <section class="group">
         <h2>Company</h2>
-        <div class="row two">
-          <label>Ticker<input name="ticker" type="text" autocomplete="off" required></label>
-          <label>Current price ($)<input name="current_price" type="number" step="any" required></label>
+        <div class="row lookup">
+          <label>Ticker<input name="ticker" type="text" autocomplete="off" spellcheck="false" required></label>
+          <button type="button" class="btn fill" id="autofillBtn">Auto-fill from SEC</button>
         </div>
-        <label>Company name<input name="company_name" type="text" autocomplete="off"></label>
+        <p class="hint block" id="autofillHint">
+          Pulls revenue, EBITDA margin, share count and net debt from EDGAR filings,
+          and calibrates the driver ranges to what the company has actually delivered.
+        </p>
+        <div id="lookupMsg" hidden></div>
+        <div class="row two">
+          <label>Company name<input name="company_name" type="text" autocomplete="off"></label>
+          <label data-field="current_price">Current price ($)<input name="current_price" type="number" step="any" required></label>
+        </div>
       </section>
 
       <section class="group">
-        <h2>Case targets <span class="hint">from your DCF / comps</span></h2>
+        <h2>Case targets <span class="hint">your DCF / comps — not auto-filled</span></h2>
         <div class="row three">
           <label class="bear">Bear ($)<input name="bear_price" type="number" step="any" required></label>
           <label class="base">Base ($)<input name="base_price" type="number" step="any" required></label>
@@ -46,21 +54,21 @@
       <section class="group">
         <h2>Current financials <span class="hint">$M, TTM or NTM — be consistent</span></h2>
         <div class="row two">
-          <label>Revenue<input name="current_revenue" type="number" step="any" required></label>
-          <label>EBITDA margin<input name="current_ebitda_margin" type="number" step="any" required></label>
+          <label data-field="current_revenue">Revenue<input name="current_revenue" type="number" step="any" required></label>
+          <label data-field="current_ebitda_margin">EBITDA margin<input name="current_ebitda_margin" type="number" step="any" required></label>
         </div>
         <div class="row two">
-          <label>Enterprise value<input name="current_ev" type="number" step="any" required></label>
-          <label>Net debt <span class="hint">neg = net cash</span><input name="current_net_debt" type="number" step="any" required></label>
+          <label data-field="current_ev">Enterprise value<input name="current_ev" type="number" step="any" required></label>
+          <label data-field="current_net_debt">Net debt <span class="hint">neg = net cash</span><input name="current_net_debt" type="number" step="any" required></label>
         </div>
-        <label>Shares outstanding (M)<input name="shares_outstanding" type="number" step="any" required></label>
+        <label data-field="shares_outstanding">Shares outstanding (M)<input name="shares_outstanding" type="number" step="any" required></label>
       </section>
 
       <section class="group">
         <h2>Driver distributions</h2>
         <p class="hint block">Triangular drivers take low / mode / high. Normal drivers take mean / std. All as decimals (0.069 = 6.9%).</p>
 
-        <fieldset class="dist">
+        <fieldset class="dist" data-driver="rev_cagr">
           <legend>Revenue CAGR <em>triangular</em></legend>
           <div class="row three">
             <label>Low<input name="rev_cagr_low" type="number" step="any" required></label>
@@ -69,7 +77,7 @@
           </div>
         </fieldset>
 
-        <fieldset class="dist">
+        <fieldset class="dist" data-driver="ebitda_margin">
           <legend>EBITDA margin <em>triangular</em></legend>
           <div class="row three">
             <label>Low<input name="ebitda_margin_low" type="number" step="any" required></label>
@@ -78,7 +86,7 @@
           </div>
         </fieldset>
 
-        <fieldset class="dist">
+        <fieldset class="dist" data-driver="ev_ebitda_multiple">
           <legend>EV / EBITDA multiple <em>triangular</em></legend>
           <div class="row three">
             <label>Low<input name="ev_ebitda_multiple_low" type="number" step="any" required></label>
@@ -87,7 +95,7 @@
           </div>
         </fieldset>
 
-        <fieldset class="dist">
+        <fieldset class="dist" data-driver="net_debt_change_pct">
           <legend>Net debt change (% of EV) <em>normal</em></legend>
           <div class="row two">
             <label>Mean<input name="net_debt_change_pct_mean" type="number" step="any" required></label>
@@ -95,7 +103,7 @@
           </div>
         </fieldset>
 
-        <fieldset class="dist">
+        <fieldset class="dist" data-driver="share_dilution_pct">
           <legend>Share dilution (%) <em>normal, clipped −10% / +15%</em></legend>
           <div class="row two">
             <label>Mean<input name="share_dilution_pct_mean" type="number" step="any" required></label>
@@ -114,6 +122,11 @@
         <p class="hint block">Correlation between drivers uses the built-in cross-sector matrix (Gaussian copula). Editing it is on the roadmap.</p>
       </section>
 
+      <details class="sources" id="sources" hidden>
+        <summary>Where these numbers came from</summary>
+        <dl id="sourcesList"></dl>
+      </details>
+
       <button type="submit" class="btn primary" id="runBtn">Run simulation</button>
       <p class="err" id="formError" hidden></p>
     </form>
@@ -123,7 +136,7 @@
     <div class="empty" id="emptyState">
       <div class="empty-inner">
         <h2>No simulation yet</h2>
-        <p>Load the MYRG preset or enter your own assumptions, then run the model.</p>
+        <p>Type a ticker and hit auto-fill, or load the MYRG example.</p>
       </div>
     </div>
 
@@ -158,7 +171,7 @@
 </main>
 
 <footer class="foot">
-  <span>Engine: <code>montecarlo/engine.py</code> — Gaussian copula over 5 correlated drivers.</span>
+  <span>Engine: <code>montecarlo/engine.py</code> — Gaussian copula over 5 correlated drivers. Fundamentals: SEC EDGAR.</span>
   <span class="muted">Model output, not investment advice.</span>
 </footer>
 
