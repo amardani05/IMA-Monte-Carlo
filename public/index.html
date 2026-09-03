@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMA Monte Carlo — Scenario Analysis</title>
+<meta name="description" content="Monte Carlo scenario analysis for equity pitches: correlated driver simulation to case-target probabilities.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <h1>IMA Monte Carlo</h1>
+    <span class="tag">scenario analysis</span>
+  </div>
+  <div class="topbar-actions">
+    <button type="button" id="loadPreset" class="btn ghost">Load MYRG preset</button>
+    <button type="button" id="exportJson" class="btn ghost" disabled>Export JSON</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="sidebar">
+    <form id="pitchForm" novalidate>
+
+      <section class="group">
+        <h2>Company</h2>
+        <div class="row two">
+          <label>Ticker<input name="ticker" type="text" autocomplete="off" required></label>
+          <label>Current price ($)<input name="current_price" type="number" step="any" required></label>
+        </div>
+        <label>Company name<input name="company_name" type="text" autocomplete="off"></label>
+      </section>
+
+      <section class="group">
+        <h2>Case targets <span class="hint">from your DCF / comps</span></h2>
+        <div class="row three">
+          <label class="bear">Bear ($)<input name="bear_price" type="number" step="any" required></label>
+          <label class="base">Base ($)<input name="base_price" type="number" step="any" required></label>
+          <label class="bull">Bull ($)<input name="bull_price" type="number" step="any" required></label>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Current financials <span class="hint">$M, TTM or NTM — be consistent</span></h2>
+        <div class="row two">
+          <label>Revenue<input name="current_revenue" type="number" step="any" required></label>
+          <label>EBITDA margin<input name="current_ebitda_margin" type="number" step="any" required></label>
+        </div>
+        <div class="row two">
+          <label>Enterprise value<input name="current_ev" type="number" step="any" required></label>
+          <label>Net debt <span class="hint">neg = net cash</span><input name="current_net_debt" type="number" step="any" required></label>
+        </div>
+        <label>Shares outstanding (M)<input name="shares_outstanding" type="number" step="any" required></label>
+      </section>
+
+      <section class="group">
+        <h2>Driver distributions</h2>
+        <p class="hint block">Triangular drivers take low / mode / high. Normal drivers take mean / std. All as decimals (0.069 = 6.9%).</p>
+
+        <fieldset class="dist">
+          <legend>Revenue CAGR <em>triangular</em></legend>
+          <div class="row three">
+            <label>Low<input name="rev_cagr_low" type="number" step="any" required></label>
+            <label>Mode<input name="rev_cagr_mode" type="number" step="any" required></label>
+            <label>High<input name="rev_cagr_high" type="number" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="dist">
+          <legend>EBITDA margin <em>triangular</em></legend>
+          <div class="row three">
+            <label>Low<input name="ebitda_margin_low" type="number" step="any" required></label>
+            <label>Mode<input name="ebitda_margin_mode" type="number" step="any" required></label>
+            <label>High<input name="ebitda_margin_high" type="number" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="dist">
+          <legend>EV / EBITDA multiple <em>triangular</em></legend>
+          <div class="row three">
+            <label>Low<input name="ev_ebitda_multiple_low" type="number" step="any" required></label>
+            <label>Mode<input name="ev_ebitda_multiple_mode" type="number" step="any" required></label>
+            <label>High<input name="ev_ebitda_multiple_high" type="number" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="dist">
+          <legend>Net debt change (% of EV) <em>normal</em></legend>
+          <div class="row two">
+            <label>Mean<input name="net_debt_change_pct_mean" type="number" step="any" required></label>
+            <label>Std<input name="net_debt_change_pct_std" type="number" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="dist">
+          <legend>Share dilution (%) <em>normal, clipped −10% / +15%</em></legend>
+          <div class="row two">
+            <label>Mean<input name="share_dilution_pct_mean" type="number" step="any" required></label>
+            <label>Std<input name="share_dilution_pct_std" type="number" step="any" required></label>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="group">
+        <h2>Simulation</h2>
+        <div class="row three">
+          <label>Paths<input name="n_simulations" type="number" step="1000" min="1000" max="250000" required></label>
+          <label>Horizon (yrs)<input name="horizon_years" type="number" step="0.5" min="0.5" max="10" required></label>
+          <label>Seed<input name="random_seed" type="number" step="1" required></label>
+        </div>
+        <p class="hint block">Correlation between drivers uses the built-in cross-sector matrix (Gaussian copula). Editing it is on the roadmap.</p>
+      </section>
+
+      <button type="submit" class="btn primary" id="runBtn">Run simulation</button>
+      <p class="err" id="formError" hidden></p>
+    </form>
+  </aside>
+
+  <section class="results" id="results">
+    <div class="empty" id="emptyState">
+      <div class="empty-inner">
+        <h2>No simulation yet</h2>
+        <p>Load the MYRG preset or enter your own assumptions, then run the model.</p>
+      </div>
+    </div>
+
+    <div id="output" hidden>
+      <div class="results-head">
+        <div>
+          <h2 id="resultTitle"></h2>
+          <p class="sub" id="resultSub"></p>
+        </div>
+      </div>
+
+      <div class="cards" id="cards"></div>
+
+      <div class="charts">
+        <figure class="panel"><figcaption id="cap1"></figcaption><div id="chartHist"></div></figure>
+        <figure class="panel"><figcaption>Scenario probability breakdown</figcaption><div id="chartBars"></div></figure>
+        <figure class="panel"><figcaption>CDF — probability price ≤ X</figcaption><div id="chartCdf"></div></figure>
+        <figure class="panel"><figcaption>Driver sensitivity (P10 vs P90 median)</figcaption><div id="chartTornado"></div></figure>
+      </div>
+
+      <div class="panel wide">
+        <figcaption>Cumulative thresholds &amp; distribution</figcaption>
+        <div class="tables" id="summaryTables"></div>
+      </div>
+
+      <div class="panel wide">
+        <figcaption>Driver sensitivity buckets</figcaption>
+        <div id="sensitivityTables"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>Engine: <code>montecarlo/engine.py</code> — Gaussian copula over 5 correlated drivers.</span>
+  <span class="muted">Model output, not investment advice.</span>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

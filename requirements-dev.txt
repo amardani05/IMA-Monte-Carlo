@@ -1,0 +1,3 @@
+# Local development / CLI (python MonteCarlo.py)
+-r requirements.txt
+matplotlib>=3.8
