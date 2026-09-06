@@ -3,7 +3,7 @@ Deterministic market-data layer.
 
 Pulls company fundamentals straight from SEC EDGAR's XBRL company-facts API and
 derives a complete set of pitch assumptions from filed history. There is no
-model, no inference service and no third-party analytics in this path — every
+model, no inference service and no third-party analytics in this path: every
 number returned is either a figure the company filed with the SEC or plain
 arithmetic over those figures, and each one is returned with its source and
 as-of date so it can be checked against the filing.
@@ -46,7 +46,7 @@ FACTS_TTL = 6 * 3600
 
 # XBRL tags in priority order. Filers tag the same economics differently, and
 # a tag can be present but sparse, so candidates are merged rather than the
-# first hit winning outright — see _merged_series.
+# first hit winning outright. see _merged_series.
 REVENUE_TAGS = [
     "RevenueFromContractWithCustomerExcludingAssessedTax",
     "RevenueFromContractWithCustomerIncludingAssessedTax",
@@ -83,6 +83,11 @@ DEBT_COMPONENT_TAGS = [
     ["LongTermDebtNoncurrent"],
 ]
 SHARES_TAGS = ["EntityCommonStockSharesOutstanding"]
+PUBLIC_FLOAT_TAGS = ["EntityPublicFloat"]
+CFO_TAGS = ["NetCashProvidedByUsedInOperatingActivities",
+            "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"]
+CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment",
+              "PaymentsToAcquireProductiveAssets"]
 
 _CACHE: dict = {}
 
@@ -154,7 +159,7 @@ def resolve_cik(ticker: str) -> tuple[int, str]:
     Resolves against the bundled map first so the common case costs no network
     call at all. www.sec.gov rate-limits aggressively and rejects User-Agents
     without contact details, so it is only consulted for symbols the bundled
-    map has not seen — a recent listing, typically.
+    map has not seen, typically a recent listing.
     """
     ticker = ticker.strip().upper()
     if not re.fullmatch(r"[A-Z0-9.\-]{1,10}", ticker):
@@ -175,7 +180,7 @@ def resolve_cik(ticker: str) -> tuple[int, str]:
         if str(row.get("ticker", "")).upper() == ticker:
             return int(row["cik_str"]), row.get("title", ticker)
     raise DataError(
-        f"{ticker} is not an SEC registrant — foreign-listed names, ADRs and "
+        f"{ticker} is not an SEC registrant. Foreign-listed names, ADRs and "
         "private companies do not file XBRL with EDGAR"
     )
 
@@ -208,7 +213,7 @@ def _merged_series(facts: dict, tags: list, pattern, unit: str = "USD") -> dict:
     Merge candidate tags into one series keyed by period.
 
     Earlier tags win on conflict, but later tags fill periods the earlier ones
-    never covered — a filer that switched tagging mid-history (MYRG moved from
+    never covered: a filer that switched tagging mid-history (MYRG moved from
     `Revenues` to `RevenueFromContractWithCustomer...`) otherwise loses years.
     """
     merged: dict = {}
@@ -234,6 +239,46 @@ def quarterly_series(facts: dict, tags: list) -> dict:
         m = _QUARTER.match(k)
         out[(int(m.group(1)), int(m.group(2)))] = float(v)
     return out
+
+
+_INSTANT = re.compile(r"^CY(\d{4})Q(\d)I$")
+
+
+def _instant_series(facts: dict, tags: list, taxonomy: str = "us-gaap", unit: str = "USD") -> dict:
+    """{year -> value} for a balance-sheet concept, taking the latest quarter-end instant in each year."""
+    out: dict = {}
+    for tag in reversed(tags):
+        node = facts.get("facts", {}).get(taxonomy, {}).get(tag)
+        if not node:
+            continue
+        for unit_name, rows in node.get("units", {}).items():
+            if unit_name != unit:
+                continue
+            for row in rows:
+                m = _INSTANT.match(row.get("frame") or "")
+                if not m:
+                    continue
+                year, q = int(m.group(1)), int(m.group(2))
+                if year not in out or q >= out[year][0]:
+                    out[year] = (q, float(row["val"]))
+    return {y: v for y, (_, v) in out.items()}
+
+
+def _public_float_series(facts: dict) -> dict:
+    """{year -> public float USD}. Filed once a year as of the second fiscal quarter's end."""
+    node = facts.get("facts", {}).get("dei", {}).get("EntityPublicFloat")
+    if not node:
+        return {}
+    out: dict = {}
+    for rows in node.get("units", {}).values():
+        for row in rows:
+            end = row.get("end")
+            if not end:
+                continue
+            year = int(end[:4])
+            if year not in out or end > out[year][0]:
+                out[year] = (end, float(row["val"]))
+    return {y: v for y, (_, v) in out.items()}
 
 
 def _point_in_time(facts: dict, tags: list, taxonomy: str = "us-gaap", unit: str = "USD"):
@@ -289,7 +334,7 @@ def trailing_twelve_months(annual: dict, quarterly: dict) -> Optional[tuple]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Share price — the one figure EDGAR cannot provide
+# Share price. the one figure EDGAR cannot provide
 # ─────────────────────────────────────────────────────────────────────────────
 def fetch_price(ticker: str) -> Optional[dict]:
     """
@@ -387,7 +432,7 @@ def _share_change_stats(facts: dict) -> Optional[dict]:
 
 
 def company_meta(cik: int) -> dict:
-    """Registrant metadata — SIC, exchange, fiscal year end — from EDGAR submissions."""
+    """Registrant metadata. SIC, exchange, fiscal year end. from EDGAR submissions."""
     try:
         data = _get_json(SUBMISSIONS_URL.format(cik=cik), FACTS_TTL)
     except DataError:
@@ -411,12 +456,12 @@ def _check_modelable(ticker: str, meta: dict) -> list:
         raise DataError(
             f"{ticker} is classified as {desc} (SIC {sic}). Banks, brokers and "
             "insurers book interest and premiums as revenue, so EBITDA and "
-            "EV/EBITDA are not meaningful for them — this model does not fit."
+            "EV/EBITDA are not meaningful for them. This model does not fit."
         )
     if REIT_SIC[0] <= sic <= REIT_SIC[1]:
         return [
             f"{ticker} is classified as {desc} (SIC {sic}). Real-estate names are "
-            "normally valued on FFO or cap rates rather than EV/EBITDA — treat the "
+            "normally valued on FFO or cap rates rather than EV/EBITDA. Treat the "
             "multiple with care."
         ]
     return []
@@ -426,7 +471,7 @@ def _ebitda_history(facts: dict, rev_annual: dict, da_annual: dict) -> tuple:
     """
     EBITDA per year, trying progressively looser reconstructions.
 
-    Not every filer tags operating income — Dycom, for one, does not — so fall
+    Not every filer tags operating income (Dycom, for one, does not), so fall
     back to gross profit less operating expenses, and then to pre-tax income
     plus interest. Returns ({year: ebitda}, description of the basis used).
     """
@@ -501,6 +546,42 @@ def build_profile(ticker: str, history_years: int = 10) -> dict:
 
     ttm = trailing_twelve_months(rev_annual, quarterly_series(facts, REVENUE_TAGS))
 
+    # Historical EV/EBITDA on a public-float basis. Public float undercounts
+    # market cap by the insider stake, so the LEVEL is biased low; the
+    # year-to-year DISPERSION and the ratio of today to history are what we use.
+    float_hist = _public_float_series(facts)
+    cash_hist = _instant_series(facts, CASH_TAGS)
+    debt_hist: dict = {}
+    for group in DEBT_COMPONENT_TAGS:
+        parts = [_instant_series(facts, [t]) for t in group]
+        years = set.intersection(*(set(p) for p in parts)) if parts else set()
+        if years:
+            debt_hist = {y: sum(p[y] for p in parts) for y in years}
+            break
+    # A multiple on near-zero EBITDA is noise, not valuation: QuinStreet's 0.2%
+    # margin year would otherwise contribute a 447x observation.
+    MIN_MARGIN_FOR_MULTIPLE, MAX_SANE_MULTIPLE = 0.02, 50.0
+    multiple_hist = {}
+    for y in sorted(set(float_hist) & set(ebitda_annual) & set(cash_hist)):
+        if y < cutoff or ebitda_annual[y] <= 0 or not rev_annual.get(y):
+            continue
+        if ebitda_annual[y] / rev_annual[y] < MIN_MARGIN_FOR_MULTIPLE:
+            continue
+        ev_proxy = float_hist[y] + debt_hist.get(y, 0.0) - cash_hist[y]
+        if ev_proxy > 0:
+            m = ev_proxy / ebitda_annual[y]
+            if m <= MAX_SANE_MULTIPLE:
+                multiple_hist[y] = m
+
+    # Free cash flow history for the net-debt drift
+    cfo_annual = annual_series(facts, CFO_TAGS)
+    capex_annual = annual_series(facts, CAPEX_TAGS)
+    fcf_hist = {
+        y: cfo_annual[y] - capex_annual[y]
+        for y in sorted(set(cfo_annual) & set(capex_annual))
+        if y >= cutoff
+    }
+
     shares = _point_in_time(facts, SHARES_TAGS, taxonomy="dei", unit="shares")
     if not shares:
         raise DataError(f"No share count tagged in {ticker}'s filings")
@@ -551,6 +632,11 @@ def build_profile(ticker: str, history_years: int = 10) -> dict:
         "net_debt_meta": net_debt_meta,
         "revenue_history_m": {str(y): rev_hist[y] / 1e6 for y in sorted(rev_hist)},
         "margin_history": {str(y): margin_hist[y] for y in sorted(margin_hist)},
+        "multiple_history": {str(y): multiple_hist[y] for y in sorted(multiple_hist)},
+        "public_float_latest_m": (
+            float_hist[max(float_hist)] / 1e6 if float_hist else None
+        ),
+        "fcf_history_m": {str(y): fcf_hist[y] / 1e6 for y in sorted(fcf_hist)},
         "share_change_stats": _share_change_stats(facts),
         "source": "SEC EDGAR XBRL company facts",
     }
@@ -559,12 +645,26 @@ def build_profile(ticker: str, history_years: int = 10) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 # Driver calibration from filed history
 # ─────────────────────────────────────────────────────────────────────────────
-def _triple(values: list) -> tuple:
-    """(low, mode, high) = (min, median, max) of observed values."""
-    vals = sorted(values)
-    n = len(vals)
-    mid = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
-    return (vals[0], mid, vals[-1])
+def _median(vals: list) -> float:
+    v = sorted(vals)
+    n = len(v)
+    return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+
+
+def _robust_bounds(values: list, trim_at: int = 8) -> tuple:
+    """
+    (low, median, high) of a history, trimming one extreme each side once there
+    are enough observations to spare them.
+
+    A single impairment year or divestiture otherwise defines the whole tail:
+    TDS's 2023 write-down put a -34% margin into the range, and the UScellular
+    sale put a -53% revenue CAGR there. Trimming is not a claim those years did
+    not happen; it is a claim that one event should not set the mode-weighted
+    mean of a triangular distribution.
+    """
+    v = sorted(values)
+    trimmed = v[1:-1] if len(v) >= trim_at else v
+    return trimmed[0], _median(trimmed), trimmed[-1]
 
 
 def _widen(low: float, mode: float, high: float, floor: float = 1e-4) -> tuple:
@@ -572,6 +672,7 @@ def _widen(low: float, mode: float, high: float, floor: float = 1e-4) -> tuple:
     if high - low < floor:
         pad = max(abs(mode) * 0.05, floor)
         low, high = mode - pad, mode + pad
+    low, high = min(low, mode), max(high, mode)
     mode = min(max(mode, low + floor / 2), high - floor / 2)
     return (round(low, 6), round(mode, 6), round(high, 6))
 
@@ -582,9 +683,8 @@ def rolling_cagrs(history: dict, years: int) -> list:
     out = []
     for i in range(len(pts)):
         for j in range(i + 1, len(pts)):
-            span = pts[j][0] - pts[i][0]
-            if span == years:
-                out.append((pts[j][1] / pts[i][1]) ** (1 / span) - 1)
+            if pts[j][0] - pts[i][0] == years:
+                out.append((pts[j][1] / pts[i][1]) ** (1 / years) - 1)
     return out
 
 
@@ -592,69 +692,160 @@ def calibrate_drivers(profile: dict, horizon_years: float = 2.0) -> dict:
     """
     Derive driver distributions from what the company actually filed.
 
-    Revenue growth and EBITDA margin come straight from the realised history —
-    that is the whole point, since hand-set ranges tend to encode a directional
-    view as if it were uncertainty. The exit multiple genuinely is an analyst
-    judgement (it is the comps view, and EDGAR carries no price history), so it
-    is anchored on the current multiple and flagged as uncalibrated.
+    The WIDTH of each range comes from history; that is the uncertainty. The
+    MODE is where the analyst's view belongs, and by default it is held at
+    today's value, which makes the untouched model a status-quo projection:
+    revenue grows, margin and multiple stay put, so the median lands near spot.
+    That is the honest null, not a forecast. Every driver therefore returns a
+    `reference` block with the current value and the historical median so the
+    view can be set deliberately rather than inherited.
     """
-    notes = {}
+    notes, refs = {}, {}
 
+    # ── Revenue growth ──
     span = max(1, int(round(horizon_years)))
     cagrs = rolling_cagrs(profile["revenue_history_m"], span)
     if len(cagrs) >= 3:
-        rev_cagr = _widen(*_triple(cagrs))
+        lo, med, hi = _robust_bounds(cagrs)
+        rev_cagr = _widen(lo, med, hi)
+        trimmed = " (one extreme trimmed each side)" if len(cagrs) >= 8 else ""
         notes["rev_cagr"] = (
-            f"{len(cagrs)} realised {span}-year CAGRs, FY"
-            f"{min(profile['revenue_history_m'])}–FY{max(profile['revenue_history_m'])}"
+            f"{len(cagrs)} realised {span}-year CAGRs, FY{min(profile['revenue_history_m'])}"
+            f"-FY{max(profile['revenue_history_m'])}{trimmed}. Mode is the historical median."
         )
+        refs["rev_cagr"] = {"hist_median": round(med, 4), "raw_min": round(min(cagrs), 4),
+                            "raw_max": round(max(cagrs), 4), "n": len(cagrs)}
     else:
         rev_cagr = _widen(0.0, 0.03, 0.06)
-        notes["rev_cagr"] = "insufficient revenue history — generic range, set this yourself"
+        notes["rev_cagr"] = "Insufficient revenue history. Generic range; set this yourself."
+        refs["rev_cagr"] = {}
 
+    # ── EBITDA margin ──
     margins = list(profile["margin_history"].values())
+    current_margin = profile["ebitda_margin_fy"]
     if len(margins) >= 3:
-        lo, mid, hi = _triple(margins)
-        ebitda_margin = _widen(lo, profile["ebitda_margin_fy"], hi)
+        lo, med, hi = _robust_bounds(margins)
+        ebitda_margin = _widen(lo, current_margin, hi)
+        loss_years = sum(1 for m in margins if m <= 0)
+        trimmed = " (one extreme trimmed each side)" if len(margins) >= 8 else ""
         notes["ebitda_margin"] = (
-            f"{len(margins)} filed years, {min(margins)*100:.2f}–{max(margins)*100:.2f}%; "
-            f"mode set to latest FY"
+            f"{len(margins)} filed years, {min(margins)*100:.1f}% to {max(margins)*100:.1f}%{trimmed}. "
+            f"Mode held at latest FY ({current_margin*100:.2f}%); historical median is {med*100:.2f}%."
+            + (f" {loss_years} loss year(s) in the record." if loss_years else "")
         )
+        refs["ebitda_margin"] = {"current": round(current_margin, 5), "hist_median": round(med, 5),
+                                 "raw_min": round(min(margins), 5), "raw_max": round(max(margins), 5),
+                                 "n": len(margins)}
     else:
-        m = profile["ebitda_margin_fy"]
-        ebitda_margin = _widen(m * 0.8, m, m * 1.2)
-        notes["ebitda_margin"] = "insufficient margin history — ±20% around latest FY"
+        ebitda_margin = _widen(current_margin * 0.8, current_margin, current_margin * 1.2)
+        notes["ebitda_margin"] = "Insufficient margin history. Plus or minus 20% around latest FY."
+        refs["ebitda_margin"] = {"current": round(current_margin, 5)}
 
+    # ── Exit multiple ──
     current_multiple = profile.get("current_ev_ebitda")
+    mult_hist = list(profile.get("multiple_history", {}).values())
+    float_basis_current = None
+    if profile.get("public_float_latest_m") and profile.get("ebitda_fy_m"):
+        nd = profile.get("net_debt_m") or 0.0
+        float_basis_current = (profile["public_float_latest_m"] + nd) / profile["ebitda_fy_m"]
+
     if current_multiple and current_multiple > 0:
-        ev_ebitda = _widen(current_multiple * 0.70, current_multiple, current_multiple * 1.15)
-        notes["ev_ebitda_multiple"] = (
-            f"anchored on the current {current_multiple:.1f}× — NOT calibrated from "
-            "filings; replace with your comps range"
-        )
+        if len(mult_hist) >= 6 and float_basis_current and float_basis_current > 0:
+            # Dispersion and rich/cheap ratio on the float basis, applied to the
+            # true current multiple so the insider-stake bias cancels. Bounded to
+            # half and one-and-a-half times today: a multiple history built on
+            # depressed earnings (QuinStreet at 30-40x on 2% margins) is not a
+            # forecast of where a re-earning business will trade.
+            lo_f, med_f, hi_f = _robust_bounds(mult_hist)
+            scale = current_multiple / float_basis_current
+            lo, med, hi = lo_f * scale, med_f * scale, hi_f * scale
+            lo, hi = min(lo, med, current_multiple * 0.85), max(hi, med, current_multiple * 1.15)
+            lo = max(lo, current_multiple * 0.5)
+            hi = min(hi, current_multiple * 1.5)
+            ev_ebitda = _widen(lo, current_multiple, hi)
+            rich = current_multiple / med - 1
+            notes["ev_ebitda_multiple"] = (
+                f"Width from {len(mult_hist)} years of filed public float and EBITDA. Mode held at the "
+                f"current {current_multiple:.1f}x; the historical median on the same basis is {med:.1f}x, "
+                f"so the stock is {abs(rich)*100:.0f}% {'richer' if rich > 0 else 'cheaper'} than its own history. "
+                "Your comps view belongs in the mode."
+            )
+            refs["ev_ebitda_multiple"] = {"current": round(current_multiple, 2), "hist_median": round(med, 2),
+                                          "raw_min": round(min(mult_hist) * scale, 2),
+                                          "raw_max": round(max(mult_hist) * scale, 2), "n": len(mult_hist),
+                                          "basis": "public float, rescaled to today's true multiple"}
+        else:
+            ev_ebitda = _widen(current_multiple * 0.80, current_multiple, current_multiple * 1.20)
+            notes["ev_ebitda_multiple"] = (
+                f"Anchored on the current {current_multiple:.1f}x, plus or minus 20%. "
+                + (f"Only {len(mult_hist)} usable years of filed multiple history, too few to set a width. "
+                   if mult_hist else "No usable filed multiple history. ")
+                + "Your comps view belongs in the mode."
+            )
+            refs["ev_ebitda_multiple"] = {"current": round(current_multiple, 2)}
+            if mult_hist:
+                refs["ev_ebitda_multiple"]["hist_median"] = round(
+                    _median(mult_hist) * (current_multiple / float_basis_current if float_basis_current else 1), 2)
+                refs["ev_ebitda_multiple"]["n"] = len(mult_hist)
     else:
         ev_ebitda = _widen(8.0, 11.0, 14.0)
-        notes["ev_ebitda_multiple"] = "no price, so no current multiple — placeholder, set from comps"
+        notes["ev_ebitda_multiple"] = "No price, so no current multiple. Placeholder; set from comps."
+        refs["ev_ebitda_multiple"] = {}
 
-    dilution = profile.get("share_change_stats")
-    if dilution:
-        share_dilution = (round(dilution["mean"], 6), round(max(dilution["std"], 0.001), 6))
-        notes["share_dilution_pct"] = f"{dilution['n']} year-over-year share-count changes"
+    # ── Net debt drift from free cash flow ──
+    fcf = list(profile.get("fcf_history_m", {}).values())
+    ev_m = profile.get("current_ev_m")
+    if len(fcf) >= 3 and ev_m and ev_m > 0:
+        recent = fcf[-3:]
+        yields = [f / ev_m for f in recent]
+        mean_yield = sum(yields) / len(yields)
+        n = len(yields)
+        var = sum((y - mean_yield) ** 2 for y in yields) / max(n - 1, 1)
+        std_yield = var ** 0.5
+        # Cash generated over the horizon reduces net debt; the engine scales this by EV.
+        drift = -mean_yield * horizon_years
+        std = max(std_yield * horizon_years ** 0.5, 0.005)
+        MAX_DRIFT, MAX_STD = 0.60, 0.15
+        capped = abs(drift) > MAX_DRIFT or std > MAX_STD
+        drift = max(-MAX_DRIFT, min(MAX_DRIFT, drift))
+        std = min(std, MAX_STD)
+        net_debt_change = (round(drift, 5), round(std, 5))
+        notes["net_debt_change_pct"] = (
+            f"Free cash flow (operating cash flow less capex) averaged {mean_yield*100:.1f}% of EV over the "
+            f"last {n} filed years, so net debt drifts {drift*100:+.1f}% of EV over {horizon_years:g} years "
+            "before any buybacks, dividends or M&A, which are yours to add."
+            + (" Capped: the cash-flow history is large relative to enterprise value, which the bridge "
+               "cannot represent well." if capped else "")
+        )
+        refs["net_debt_change_pct"] = {"fcf_yield_mean": round(mean_yield, 4),
+                                       "fcf_recent_m": [round(f, 1) for f in recent], "capped": capped}
+    else:
+        net_debt_change = (0.0, 0.015)
+        notes["net_debt_change_pct"] = "Generic assumption. Cash-flow tags were not usable for this filer."
+        refs["net_debt_change_pct"] = {}
+
+    # ── Dilution ──
+    dil = profile.get("share_change_stats")
+    if dil:
+        share_dilution = (round(dil["mean"], 6), round(max(dil["std"], 0.001), 6))
+        notes["share_dilution_pct"] = (
+            f"{dil['n']} year-over-year share-count changes; "
+            f"{'net buybacks' if dil['mean'] < 0 else 'net issuance'} on average."
+        )
+        refs["share_dilution_pct"] = {"hist_mean": round(dil["mean"], 4), "hist_std": round(dil["std"], 4)}
     else:
         share_dilution = (0.01, 0.01)
-        notes["share_dilution_pct"] = "no usable share-count history — generic assumption"
-
-    notes["net_debt_change_pct"] = (
-        "generic assumption — EDGAR gives the balance-sheet level, not a forward path"
-    )
+        notes["share_dilution_pct"] = "No usable share-count history. Generic assumption."
+        refs["share_dilution_pct"] = {}
 
     return {
         "rev_cagr": rev_cagr,
         "ebitda_margin": ebitda_margin,
         "ev_ebitda_multiple": ev_ebitda,
-        "net_debt_change_pct": (0.0, 0.015),
+        "net_debt_change_pct": net_debt_change,
         "share_dilution_pct": share_dilution,
         "notes": notes,
+        "reference": refs,
     }
 
 
@@ -698,7 +889,7 @@ def build_prefill(ticker: str, price: Optional[float] = None,
 
     # Revenue and margin must come from the same period, or revenue x margin
     # equals no EBITDA the company ever filed. TTM revenue rolls cleanly from
-    # quarterly tags, but TTM D&A does not — most filers tag it annually only —
+    # quarterly tags, but TTM D&A does not. most filers tag it annually only -
     # so the fiscal year is the one basis where both halves are real.
     revenue = profile["revenue_fy_m"]
     revenue_basis = f"FY{profile['latest_fy']}"
@@ -724,7 +915,7 @@ def build_prefill(ticker: str, price: Optional[float] = None,
     provenance = {
         "current_price": (
             f"{price_meta['source']}, {price_meta['as_of']}" if price_meta
-            else ("entered by hand" if price is not None else "not set — no quote provider configured")
+            else ("entered by hand" if price is not None else "not set. No quote provider configured")
         ),
         "current_revenue": (
             f"SEC EDGAR, {revenue_basis}. TTM revenue is "
@@ -734,7 +925,7 @@ def build_prefill(ticker: str, price: Optional[float] = None,
         ),
         "current_ebitda_margin": (
             f"SEC EDGAR, FY{profile['latest_fy']}: {profile['ebitda_basis']}, over revenue "
-            f"— pairs with revenue above to give filed EBITDA of ${profile['ebitda_fy_m']:,.1f}M"
+            f". Pairs with revenue above to give filed EBITDA of ${profile['ebitda_fy_m']:,.1f}M"
         ),
         "current_ev": (
             "derived: price × shares + net debt" if price is not None
@@ -743,7 +934,7 @@ def build_prefill(ticker: str, price: Optional[float] = None,
         "current_net_debt": (
             f"SEC EDGAR, {nd.get('as_of', 'n/a')}: debt "
             f"${nd.get('total_debt_m', 0):,.1f}M less cash ${nd.get('cash_m', 0):,.1f}M"
-            if nd else "not tagged in filings — set by hand"
+            if nd else "not tagged in filings. Set by hand"
         ),
         "shares_outstanding": (
             f"SEC EDGAR, {profile['shares_meta']['as_of']} "
@@ -752,12 +943,31 @@ def build_prefill(ticker: str, price: Optional[float] = None,
         **drivers["notes"],
     }
 
+    warnings = list(profile.get("warnings") or [])
+    nd, mc = profile.get("net_debt_m"), profile.get("market_cap_m")
+    if price is not None and nd is not None and mc and nd < -0.5 * mc:
+        warnings.append(
+            f"Net cash is {abs(nd)/mc*100:.0f}% of market cap. An EV/EBITDA bridge values the operating "
+            "business and carries the cash across unchanged, so what management does with that cash "
+            "(buybacks, special dividend, acquisitions) is most of the equity story and this model "
+            "cannot see it. Consider a sum-of-parts alongside."
+        )
+    if profile.get("ebitda_fy_m") and price is not None and profile.get("current_ev_ebitda") and profile["current_ev_ebitda"] < 4:
+        warnings.append(
+            f"Current EV/EBITDA of {profile['current_ev_ebitda']:.1f}x is unusually low, which usually means "
+            "the enterprise value is dominated by cash or the EBITDA is transitional. Check the filing."
+        )
+
     return {
         "fields": fields,
         "provenance": provenance,
+        "reference": drivers["reference"],
+        "warnings": warnings,
         "history": {
             "revenue_m": profile["revenue_history_m"],
             "margin": profile["margin_history"],
+            "multiple": profile.get("multiple_history", {}),
+            "fcf_m": profile.get("fcf_history_m", {}),
         },
         "company": {
             "cik": profile["cik"],
@@ -775,5 +985,5 @@ def build_prefill(ticker: str, price: Optional[float] = None,
             ),
         },
         "needs_price": price is None,
-        "source": "SEC EDGAR XBRL company facts — no third-party model or inference in this path",
+        "source": "SEC EDGAR XBRL company facts. No third-party model or inference in this path",
     }

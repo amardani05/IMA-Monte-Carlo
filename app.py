@@ -2,7 +2,7 @@
 Vercel entrypoint.
 
 Serves the static front end out of public/ and exposes the simulation engine at
-POST /api/simulate. Flask owns transport only — validation and the model live in
+POST /api/simulate. Flask owns transport only; validation and the model live in
 montecarlo/service.py, so the local CLI (MonteCarlo.py) runs identical code.
 """
 
@@ -65,7 +65,7 @@ def simulate():
         result = run_simulation(payload)
     except ValidationError as exc:
         return jsonify(error=str(exc)), 400
-    except Exception as exc:  # noqa: BLE001 — surface engine failures as 500s
+    except Exception as exc:  # noqa: BLE001, surface engine failures as 500s
         return jsonify(error=f"Simulation failed: {type(exc).__name__}: {exc}"), 500
 
     response = jsonify(result)

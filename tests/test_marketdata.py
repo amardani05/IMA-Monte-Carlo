@@ -129,8 +129,12 @@ class Calibration(unittest.TestCase):
         self.assertAlmostEqual(high, 0.06)
         self.assertIn("filed years", drivers["notes"]["ebitda_margin"])
         # the multiple is analyst judgement and must say so
-        self.assertIn("NOT calibrated", drivers["notes"]["ev_ebitda_multiple"])
+        self.assertIn("comps view", drivers["notes"]["ev_ebitda_multiple"])
         self.assertAlmostEqual(drivers["ev_ebitda_multiple"][1], 12.0)
+        # reference block exposes both anchors so the mode can be chosen deliberately
+        ref = drivers["reference"]["ebitda_margin"]
+        self.assertAlmostEqual(ref["current"], 0.06)
+        self.assertAlmostEqual(ref["hist_median"], 0.05)
 
     def test_thin_history_falls_back_and_says_so(self):
         profile = {
@@ -141,8 +145,79 @@ class Calibration(unittest.TestCase):
             "share_change_stats": None,
         }
         drivers = md.calibrate_drivers(profile, horizon_years=2.0)
-        self.assertIn("insufficient", drivers["notes"]["rev_cagr"])
-        self.assertIn("placeholder", drivers["notes"]["ev_ebitda_multiple"])
+        self.assertIn("Insufficient", drivers["notes"]["rev_cagr"])
+        self.assertIn("Placeholder", drivers["notes"]["ev_ebitda_multiple"])
+
+
+class RobustBounds(unittest.TestCase):
+    def test_trims_one_extreme_each_side_when_history_is_long_enough(self):
+        vals = [-0.34, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.60]
+        lo, med, hi = md._robust_bounds(vals)
+        self.assertAlmostEqual(lo, 0.05)     # the -34% impairment year is gone
+        self.assertAlmostEqual(hi, 0.12)     # so is the +60% outlier
+        self.assertAlmostEqual(med, 0.085)
+
+    def test_keeps_everything_when_history_is_short(self):
+        lo, med, hi = md._robust_bounds([0.01, 0.05, 0.09])
+        self.assertEqual((lo, hi), (0.01, 0.09))
+
+    def test_widen_extends_range_to_include_an_out_of_range_mode(self):
+        """Current margin above every filed year must still sit inside the triangle."""
+        low, mode, high = md._widen(0.03, 0.08, 0.06)
+        self.assertLessEqual(low, 0.08)
+        self.assertGreaterEqual(high, 0.08)
+        self.assertLess(low, mode)
+        self.assertLess(mode, high)
+
+
+class DriftAndMultiple(unittest.TestCase):
+    def _profile(self, **over):
+        base = {
+            "revenue_history_m": {str(2016 + i): 100.0 * 1.05 ** i for i in range(10)},
+            "margin_history": {str(2016 + i): 0.10 for i in range(10)},
+            "ebitda_margin_fy": 0.10,
+            "current_ev_ebitda": 12.0,
+            "current_ev_m": 1000.0,
+            "ebitda_fy_m": 83.0,
+            "public_float_latest_m": None,
+            "multiple_history": {},
+            "fcf_history_m": {},
+            "share_change_stats": None,
+        }
+        base.update(over)
+        return base
+
+    def test_fcf_drift_is_negative_for_a_cash_generative_business(self):
+        d = md.calibrate_drivers(self._profile(fcf_history_m={"2023": 50.0, "2024": 60.0, "2025": 70.0}), 2.0)
+        mean, std = d["net_debt_change_pct"]
+        self.assertLess(mean, 0)                    # cash builds, net debt falls
+        self.assertAlmostEqual(mean, -0.06 * 2, places=3)  # 6% of EV a year for two years
+        self.assertFalse(d["reference"]["net_debt_change_pct"]["capped"])
+
+    def test_fcf_drift_is_capped_when_ev_is_cash_dominated(self):
+        """TDS: $500M a year of FCF against a $387M EV."""
+        d = md.calibrate_drivers(self._profile(current_ev_m=387.0,
+                                               fcf_history_m={"2023": 498.0, "2024": 780.0, "2025": 199.0}), 2.0)
+        mean, std = d["net_debt_change_pct"]
+        self.assertGreaterEqual(mean, -0.60)
+        self.assertLessEqual(std, 0.15)
+        self.assertTrue(d["reference"]["net_debt_change_pct"]["capped"])
+        self.assertIn("Capped", d["notes"]["net_debt_change_pct"])
+
+    def test_multiple_width_is_symmetric_without_history(self):
+        d = md.calibrate_drivers(self._profile(), 2.0)
+        lo, mode, hi = d["ev_ebitda_multiple"]
+        self.assertAlmostEqual(mode, 12.0)
+        self.assertAlmostEqual(mode - lo, hi - mode, places=4)
+
+    def test_multiple_history_is_bounded_to_half_and_one_and_a_half_times_today(self):
+        """Depressed-earnings years must not set a 40x ceiling on a 15x stock."""
+        hist = {str(2016 + i): v for i, v in enumerate([30.0, 35.0, 40.0, 38.0, 33.0, 36.0, 31.0])}
+        d = md.calibrate_drivers(self._profile(multiple_history=hist, public_float_latest_m=900.0,
+                                               net_debt_m=0.0), 2.0)
+        lo, mode, hi = d["ev_ebitda_multiple"]
+        self.assertLessEqual(hi, 12.0 * 1.5 + 1e-6)
+        self.assertGreaterEqual(lo, 12.0 * 0.5 - 1e-6)
 
 
 class TickerResolution(unittest.TestCase):

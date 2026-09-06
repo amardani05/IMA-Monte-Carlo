@@ -1,5 +1,5 @@
 """
-Request layer for the simulation API — transport agnostic.
+Request layer for the simulation API. Transport agnostic.
 
 Validates an incoming assumption payload, runs the Monte Carlo engine, and
 returns summary stats plus pre-aggregated chart series. The raw price vector is
@@ -101,7 +101,7 @@ def build_assumptions(payload: dict) -> PitchAssumptions:
             np.linalg.cholesky(corr)
         except np.linalg.LinAlgError:
             raise ValidationError(
-                "correlation_matrix is not positive definite — the copula cannot be built from it"
+                "correlation_matrix is not positive definite, so the copula cannot be built from it"
             )
 
     return PitchAssumptions(
@@ -128,20 +128,98 @@ def build_assumptions(payload: dict) -> PitchAssumptions:
     )
 
 
+def _se(p: float, n: int) -> float:
+    """Monte Carlo standard error of a probability estimate."""
+    return (max(p * (1 - p), 0.0) / n) ** 0.5
+
+
+def reconcile(engine: MonteCarloEngine) -> dict:
+    """
+    What each case target implicitly assumes.
+
+    The DCF produced the targets; the simulation produced a distribution. When
+    they disagree, this shows the disagreement in driver terms: holding revenue
+    growth and margin at their modes, what exit multiple does each target need,
+    and holding the multiple at its mode, what margin? Those are the numbers an
+    analyst has to be able to defend out loud.
+    """
+    a = engine.a
+    g = a.rev_cagr[1]
+    m = a.ebitda_margin[1]
+    mult = a.ev_ebitda_multiple[1]
+    nd_chg = a.net_debt_change_pct[0]
+    dil = a.share_dilution_pct[0]
+
+    terminal_rev = a.current_revenue * (1 + g) ** a.horizon_years
+    terminal_net_debt = a.current_net_debt + a.current_ev * nd_chg
+    terminal_shares = a.shares_outstanding * (1 + dil)
+    prices = engine.terminal_prices
+    n = len(prices)
+
+    def implied(target):
+        needed_ev = target * terminal_shares + terminal_net_debt
+        needed_ebitda_at_mode_mult = needed_ev / mult if mult else None
+        return {
+            "target": target,
+            "implied_multiple_at_mode_margin": (
+                needed_ev / (terminal_rev * m) if terminal_rev * m > 0 else None
+            ),
+            "implied_margin_at_mode_multiple": (
+                needed_ebitda_at_mode_mult / terminal_rev
+                if needed_ebitda_at_mode_mult is not None and terminal_rev > 0 else None
+            ),
+            "p_at_least": float((prices >= target).sum() / n),
+            "vs_spot": target / a.current_price - 1,
+        }
+
+    mode_path_price = (terminal_rev * m * mult - terminal_net_debt) / terminal_shares
+    median = float(np.median(prices))
+    return {
+        "mode_path_price": float(mode_path_price),
+        "median_price": median,
+        "base_gap_pct": median / a.base_price - 1,
+        "cases": {
+            "bear": implied(a.bear_price),
+            "base": implied(a.base_price),
+            "bull": implied(a.bull_price),
+        },
+        "mode_drivers": {
+            "rev_cagr": g, "ebitda_margin": m, "ev_ebitda_multiple": mult,
+            "net_debt_change_pct": nd_chg, "share_dilution_pct": dil,
+        },
+    }
+
+
 def summarize(engine: MonteCarloEngine) -> dict:
     """Aggregate the price vector into wire-sized chart series."""
     a = engine.a
     prices = engine.terminal_prices
     stats_out = engine.compute_case_probabilities()
+    n = len(prices)
 
-    # Histogram — mirrors the matplotlib panel (density, clipped at P99.5)
+    # Sampling error on every probability, so precision is not mistaken for accuracy
+    stats_out["se"] = {
+        k: _se(stats_out[k], n)
+        for k in ("below_bear", "bear_to_base", "base_to_bull", "above_bull",
+                  "p_at_least_bear", "p_at_least_base", "p_at_least_bull")
+    }
+    h = a.horizon_years
+    stats_out["median_return"] = stats_out["median_price"] / a.current_price - 1
+    stats_out["median_return_annualized"] = (
+        (stats_out["median_price"] / a.current_price) ** (1 / h) - 1 if h > 0 else None
+    )
+    stats_out["mean_return_annualized"] = (
+        (stats_out["mean_price"] / a.current_price) ** (1 / h) - 1 if h > 0 else None
+    )
+
+    # Histogram. mirrors the matplotlib panel (density, clipped at P99.5)
     upper = float(np.percentile(prices, 99.5))
     if upper <= 0:
         upper = max(float(prices.max()), 1.0)
     edges = np.linspace(0.0, upper, HIST_BINS + 1)
     density, _ = np.histogram(prices, bins=edges, density=True)
 
-    # CDF — downsample the sorted vector to a fixed number of points
+    # CDF. downsample the sorted vector to a fixed number of points
     sorted_prices = np.sort(prices)
     idx = np.linspace(0, len(sorted_prices) - 1, CDF_POINTS).astype(int)
     cdf_x = sorted_prices[idx]
@@ -164,6 +242,7 @@ def summarize(engine: MonteCarloEngine) -> dict:
         },
         "tornado": engine.tornado(),
         "sensitivity": sensitivity,
+        "reconciliation": reconcile(engine),
         "meta": {
             "ticker": a.ticker,
             "company_name": a.company_name,

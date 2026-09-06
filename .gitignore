@@ -15,3 +15,6 @@ env/
 node_modules/
 .vercel
 .env*
+
+# rendered charts are build output
+results/*.png

@@ -153,6 +153,48 @@ class Validation(unittest.TestCase):
         self.assertIn("greater than zero", self._err(shares_outstanding=0))
 
 
+class Reconciliation(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        payload = {k: (list(v) if isinstance(v, tuple) else v) for k, v in MYRG.items()}
+        cls.result = run_simulation(payload)
+
+    def test_implied_multiple_reproduces_the_target(self):
+        """Plugging the implied multiple back into the mode path must land on the target."""
+        a = PitchAssumptions(**MYRG)
+        rc = self.result["reconciliation"]
+        base = rc["cases"]["base"]
+        rev = a.current_revenue * (1 + a.rev_cagr[1]) ** a.horizon_years
+        nd = a.current_net_debt + a.current_ev * a.net_debt_change_pct[0]
+        sh = a.shares_outstanding * (1 + a.share_dilution_pct[0])
+        price = (rev * a.ebitda_margin[1] * base["implied_multiple_at_mode_margin"] - nd) / sh
+        self.assertAlmostEqual(price, a.base_price, places=6)
+
+    def test_implied_margin_reproduces_the_target(self):
+        a = PitchAssumptions(**MYRG)
+        bull = self.result["reconciliation"]["cases"]["bull"]
+        rev = a.current_revenue * (1 + a.rev_cagr[1]) ** a.horizon_years
+        nd = a.current_net_debt + a.current_ev * a.net_debt_change_pct[0]
+        sh = a.shares_outstanding * (1 + a.share_dilution_pct[0])
+        price = (rev * bull["implied_margin_at_mode_multiple"] * a.ev_ebitda_multiple[1] - nd) / sh
+        self.assertAlmostEqual(price, a.bull_price, places=6)
+
+    def test_case_probabilities_agree_with_stats(self):
+        rc, st = self.result["reconciliation"], self.result["stats"]
+        self.assertAlmostEqual(rc["cases"]["base"]["p_at_least"], st["p_at_least_base"], places=9)
+
+    def test_standard_errors_are_reported_and_small(self):
+        se = self.result["stats"]["se"]
+        p = self.result["stats"]["p_at_least_base"]
+        self.assertAlmostEqual(se["p_at_least_base"], (p * (1 - p) / 100_000) ** 0.5, places=9)
+        self.assertLess(se["p_at_least_base"], 0.002)
+
+    def test_annualised_return_compounds_to_total(self):
+        st = self.result["stats"]
+        h = MYRG.get("horizon_years", 2.0)
+        self.assertAlmostEqual((1 + st["median_return_annualized"]) ** h - 1, st["median_return"], places=9)
+
+
 class ResponseShape(unittest.TestCase):
     def test_payload_is_aggregated_not_raw(self):
         payload = {k: (list(v) if isinstance(v, tuple) else v) for k, v in MYRG.items()}
