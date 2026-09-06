@@ -1,222 +1,148 @@
 # Roadmap
 
-Status as of 2026-09-02. Live at **https://ima-monte-carlo.vercel.app**
+Status as of 2026-09-06. Live at **https://ima-monte-carlo.vercel.app**
 
-The engine is deployed and now fills itself in: type a ticker and the
-assumptions come from SEC filings, with driver ranges calibrated to what the
-company has actually delivered. What remains is mostly leverage rather than
-correctness.
+The build-out is complete. What remains needs a decision or a credential from
+the operator rather than code, and is listed at the end.
 
 **Nothing in this project calls a model or inference service.** Every figure is
 a number filed with the SEC, arithmetic over those numbers, or output from the
-simulation engine, and each auto-filled field carries its source and as-of date.
+simulation engine. Each auto-filled field carries its source and as-of date.
 
 ---
 
-## Phase 0 — Shipped
+## Why terminal prices sit near spot, and what to do about it
 
-- Engine extracted to `montecarlo/engine.py`, shared by the CLI and the web app
-- `POST /api/simulate` with payload validation (distribution ordering, positive
-  std, symmetric + positive-definite correlation matrix, 250k path cap)
-- Browser front end: assumption form, stat cards, four SVG panels, sensitivity
-  tables, JSON export
-- 100k paths in ~180 ms server-side, ~350 ms round trip, ~12 KB response
-- Horizon is now a parameter instead of a hardcoded `** 2`
-- **Auto-fill from SEC EDGAR** (`GET /api/company/<ticker>`): revenue, EBITDA
-  margin, share count, cash and debt pulled from XBRL company facts, with
-  provenance on every field. Ticker→CIK resolves against a bundled 10,391-entry
-  map, so the hot path makes no call to `www.sec.gov`.
-- **Driver ranges calibrated from filed history** — see 1.2, which this largely
-  closes
-- **42 tests** covering the engine, validation and SEC parsing — see 1.4
+This came up on TDS and QuinStreet and it is worth understanding rather than
+tuning away, because the behaviour is mostly correct.
+
+**1. The mode is held at today's value.** Auto-fill puts the historical width
+around margin and multiple but leaves the mode at the current figure. The median
+path is therefore "revenue grows at its historical median; margin and multiple
+stay put." That is the right null hypothesis. It is not a forecast, and a pitch
+has a thesis. The thesis enters through the mode. The chips under each driver
+now make that a one-click choice between the current value, the historical
+median, or a typed view, and the label on the middle input says whose number it is.
+
+**2. Triangular means sit below their modes when the range is left-skewed.**
+Ten filed years almost always carry more downside than upside: loss years,
+impairments, multiple compression in drawdowns. So even with every mode at
+current, the mean of each driver is below current and the simulated median lands
+below the mode path. The reconciliation panel shows both numbers together. For
+QuinStreet the mode path is $20.66 and the median $16.32; the 21% gap is skew,
+not a bug.
+
+**3. Single events were setting the tails.** TDS's 2023 impairment put a -34%
+margin into the range and the UScellular sale put a -53% two-year CAGR there,
+each dominating the triangular mean on its own. Bounds now trim one extreme per
+side once eight observations exist. The chips still show the full filed range so
+nothing is hidden.
+
+**4. The multiple band was biased.** The old 0.70x to 1.15x anchor had a mean 5%
+below current, a systematic drag on every run. It is symmetric now, and where
+six or more years of filed public float exist the width comes from the company's
+own multiple history, bounded to half and one-and-a-half times today.
+
+What "more accurate" means here: a Monte Carlo turns assumptions into a
+distribution. It cannot supply the view. With status-quo assumptions the honest
+answer is "status quo plus noise", and that answer near spot is correct.
+Accuracy comes from putting the thesis in the mode explicitly and keeping the
+width honest. The reconciliation table then states what each target implicitly
+assumes, which is exactly the thing that has to be defended out loud.
+
+**TDS specifically.** Net cash is 80% of market cap after the UScellular sale.
+An EV/EBITDA bridge values the operating business and carries the cash across
+unchanged, so what management does with $1.5B is most of the equity story and
+the model cannot see it. Run it, but read the warning it now raises and put a
+sum-of-parts beside it.
 
 ---
 
-## Phase 1 — Make the numbers defensible
+## Shipped
 
-**This is the blocker.** Running the shipped MYRG assumptions surfaces three
-problems that would be asked about in the first two minutes of a pitch.
+### Engine and API
+- Engine in `montecarlo/engine.py`, shared by the CLI and the web app
+- `POST /api/simulate` with full payload validation; 100k paths in ~180 ms
+- Response carries a histogram, a 400-point CDF, tornado bounds, summary
+  statistics, Monte Carlo standard errors on every probability, annualised
+  median and mean returns, and a reconciliation block. Never the raw price vector.
+- Horizon is a parameter, not a hardcoded exponent
 
-### 1.1 Reconcile the simulation against the case targets — *highest priority*
+### Auto-fill from SEC EDGAR
+- `GET /api/company/<ticker>`: revenue, EBITDA margin, share count, cash and debt
+  from XBRL company facts, with provenance on every field
+- Ticker to CIK resolves against a bundled 10,391-entry map; no call to
+  `www.sec.gov` on the hot path. `tools/refresh_tickers.py` regenerates it.
+- Candidate XBRL tags are merged, not first-hit, so filers that changed tagging
+  keep their early years
+- TTM rolls four quarters, reconstructing the Q4 most filers leave untagged;
+  revenue and margin are then taken from the same fiscal year so their product
+  is an EBITDA the company actually filed
+- EBITDA falls back from operating income to gross profit less opex to pre-tax
+  plus interest, which is what makes Dycom resolve
+- Banks, brokers and insurers rejected by SIC; REITs warned; implausible margins
+  warned; net cash above half of market cap warned
 
-| | |
+### Calibration from filed history
+- Revenue CAGR width from every realised N-year CAGR in the record
+- Margin width from filed years; multiple width from public-float history where
+  six or more usable years exist; net-debt drift from filed free cash flow
+- One extreme trimmed per side at eight or more observations
+- Every driver returns current value, historical median and raw range; the UI
+  renders them as chips that set the mode
+
+### Front end
+- Light institutional theme: cool off-white ground, deep navy accent, IBM Plex
+  Sans and Mono, tabular numerics. No em dashes anywhere in the UI.
+- Reconciliation panel: mode-path price against the simulated median, and for
+  each case target the multiple needed at the mode margin and the margin needed
+  at the mode multiple, flagged red when outside the range given
+- Share links: full payload including the correlation matrix encoded in the URL
+  fragment, restored with an auto-run on load
+- Correlation matrix editor, symmetric by construction, positive-definiteness
+  checked server-side
+- PNG export composites the four panels for decks; JSON export carries inputs
+  and results together
+- Pin-and-compare strip with deltas against a pinned run
+- aria-labels on every chart describing the numbers they show
+
+### Tests
+- 54 tests, offline by default; SEC parsing runs against a synthetic fixture
+- Golden-value regressions pin the published MYRG numbers
+- Reconciliation tests prove each implied driver reproduces its target exactly
+- `IMA_LIVE_SEC=1` additionally exercises EDGAR
+
+---
+
+## Needs the operator
+
+| Item | Why it needs you |
 | --- | --- |
-| Base target (from DCF/comps) | **$323.01** |
-| Simulated median | **$298.90** (−7.5%) |
-| P(≥ base) | **17.9%** |
+| `FINNHUB_API_KEY` | Sign up for the free tier and set it in Vercel. Removes the one remaining manual field. |
+| `SEC_USER_AGENT` | Set to `"Your Name you@example.com"`. Only needed for tickers missing from the bundled map, but SEC asks for it. |
+| Push to GitHub | Every commit is local. The repository remote exists and nothing has been pushed. |
+| Vercel GitHub app | Install on `amardani05/IMA-Monte-Carlo` so pushes to `main` deploy. The CLI link failed. |
+| Access control | The production URL is public. Nothing is persisted server-side, so the exposure is the tool, not the data. Decide before anything saves state. |
 
-The simulation says the base case is a roughly 1-in-6 outcome. That is a
-coherent thing to believe, but right now it is unintentional: the DCF and the
-Monte Carlo bridge are two different models that were never reconciled. Either
+## Deliberately not done
 
-- **calibrate** — back-solve the driver assumptions so the median lands on base,
-  and report the implied drivers as the pitch's actual assumption set, or
-- **decide the divergence is the finding** — and say so explicitly, with the
-  DCF-vs-simulation delta shown as a first-class output.
+- **SciPy removal.** It is used for `norm.cdf` and `norm.ppf` only and adds
+  ~40 MB to the bundle. Replacing it with an `erf` approximation changes the
+  numerical core at the 1e-7 level for a cold-start gain. Not worth the risk for
+  a tool whose value is in its numbers agreeing with themselves.
+- **Estimating the correlation matrix.** It is editable now. Estimating it from
+  data needs return series the tool deliberately does not ingest.
+- **Present-value discounting.** Returns are annualised, which is the honest
+  comparable. A discounted variant needs a cost-of-equity input, which is a
+  DCF concern rather than a scenario-analysis one.
+- **Exxon and other custom-taxonomy filers.** Need per-filer tag overrides.
+  Fails with a clear message.
+- **Sector presets.** Superseded by auto-fill.
+- **Scheduled ticker-map refresh.** A GitHub Action, once the repository is pushed.
 
-Ship a reconciliation panel that shows the gap and its driver attribution
-either way. Silently presenting both numbers is the thing to avoid.
+## Latent
 
-### 1.2 The distributions encode directional bets as certainties — *largely fixed*
-
-**Auto-fill now calibrates these from filed history rather than by hand.** On
-MYRG that changes the picture completely:
-
-| | Hand-typed | SEC-calibrated |
-| --- | --- | --- |
-| P(below bear) | 0.2% | **15.7%** |
-| P5–P95 band | $246–$338 | **$186–$403** |
-| P(≥ base) | 18.0% | 33.0% |
-| EBITDA margin range | 7.1–7.7% | 3.55–6.82% (ten filed years) |
-
-The remaining work is to let the analyst set the *direction* (the mode) while
-keeping the historical *width*, so a view and its uncertainty are argued
-separately. The original diagnosis is kept below because it is what the
-calibration is answering.
-
-### 1.2a Original diagnosis
-
-Measured over 200k paths on the shipped assumptions:
-
-| Driver | Current | Sampled range | Paths on the "no change" side |
-| --- | --- | --- | --- |
-| EBITDA margin | 6.1% | 7.10% – 7.70% | **0.00%** |
-| EV/EBITDA multiple | 20.1x | 12.4x – 18.5x | **100% below current** |
-| Net debt change | — | mean +0.00% of EV | no FCF deleveraging modelled |
-
-Every path assumes 100–160 bps of margin expansion **and** multiple compression.
-Those may both be right, but they are assumptions, not uncertainty — and folding
-them into the "distribution" hides them. Consequences downstream:
-
-- P90/P10 terminal price ratio is **1.29x**. For a two-year equity forecast that
-  is implausibly tight.
-- P(below bear) is **0.2%** — the model claims near-certainty of clearing the
-  bear case.
-
-**Work:** calibrate triangular ranges to realized historical dispersion
-(revenue growth, margin volatility, multiple range through a cycle) rather than
-to the analyst's point-estimate band. Separate *directional view* (the mode)
-from *uncertainty* (the width) in the UI so the two are argued independently.
-
-### 1.3 Precision is currently overstating accuracy
-
-Monte Carlo sampling error is negligible and not the problem:
-
-| | |
-| --- | --- |
-| SE on P(≥base) @ 100k paths | 0.12 pp (95% CI ±0.24 pp) |
-| Median across 8 seeds | $298.67 – $299.14 (spread $0.48) |
-
-So the tool reports `17.8%` to a tenth of a point while the real uncertainty —
-assumption uncertainty — is orders of magnitude larger. **Work:** report the MC
-standard error alongside each probability, and add an assumption-uncertainty
-band (re-run across a grid of plausible driver ranges) so the headline number
-carries an honest error bar. Round displayed probabilities accordingly.
-
-### 1.4 Test suite — *done*
-
-42 tests, no network required:
-
-- Golden-value regressions pinning the published MYRG numbers
-- Sampler properties — the triangular inverse CDF recovers its analytic mean;
-  the Gaussian copula recovers target correlations within 0.02
-- Every `ValidationError` branch
-- Bridge arithmetic against a hand-computed single path
-- SEC parsing against a synthetic company-facts fixture: tag merging, the TTM
-  roll with a reconstructed Q4, the EBITDA fallback chain, the industry guard
-
-Verified by mutation — perturbing the horizon exponent fails three of them.
-`IMA_LIVE_SEC=1` additionally exercises EDGAR.
-
-```bash
-python -m unittest discover -s tests -t .
-```
-
-### 1.5 Model mechanics worth revisiting
-
-- **Net debt** moves as a zero-mean shock scaled by *EV*. A cash-generative
-  business should deleverage mechanically over the horizon; tie the change to
-  modelled FCF instead of an EV-scaled random walk.
-- **No discounting.** `expected_return` compares a two-year terminal price to
-  today's price — it is a cumulative, undiscounted, non-annualised return.
-  Label it precisely, and add annualised and PV variants.
-- **`np.maximum(price, 0)`** truncates the left tail rather than modelling
-  distress. It never binds on the current assumptions (minimum simulated price
-  is $204), so this is a latent issue that appears only once the distributions
-  are widened in 1.2 — but then it matters.
-- **Mean vs median.** The distribution is *left*-skewed (skew −0.31), so the
-  mean ($296.15) sits below the median ($298.87) and `expected_return`, which is
-  computed off the mean, slightly understates the central outcome. Lead with the
-  median — the UI already does — and label the mean-based figure as such.
-- **Correlation matrix is invented.** The "default cross-sector assumptions" are
-  not estimated from anything. Estimate them, or run the output's sensitivity to
-  the correlation assumption and show it.
-
----
-
-## Phase 2 — Make it a tool rather than a demo
-
-- **Save and share a scenario.** Today every run is ephemeral. Start with
-  URL-encoded state (no backend needed), then a small store for named pitches.
-- **Edit the correlation matrix in the UI.** The API already validates symmetry
-  and positive-definiteness; the front end just needs a 5×5 grid with live
-  feedback on why a matrix was rejected.
-- **Export charts for decks.** JSON export exists; analysts need the PNG/PDF.
-  The matplotlib panel already exists in `MonteCarlo.py` — either expose it
-  behind an endpoint or render SVG → PNG client-side.
-- **Compare scenarios side by side** — two pitches, or one pitch under two
-  assumption sets, on shared axes. This is what makes the distribution argument
-  legible to a committee.
-- **Preset library** per sector, so driver ranges start from something
-  defensible instead of blank fields.
-
----
-
-## Phase 3 — Stop typing financials by hand — *done, except price*
-
-Seventeen fields became three. Revenue, margin, share count, cash and debt come
-from EDGAR; enterprise value is derived from price × shares + net debt and
-recomputes as the price is typed. Bear, base and bull stay manual on purpose —
-they are the DCF output the simulation exists to test.
-
-**Price is the one gap.** No keyless quote feed proved reliable: Stooq now sits
-behind a JavaScript proof-of-work wall, and Yahoo's undocumented endpoints
-rate-limit datacenter IPs. Setting `FINNHUB_API_KEY` closes it and makes the
-lookup fully hands-off; without it the analyst types one number.
-
-Remaining:
-
-- Set `FINNHUB_API_KEY` (free tier) to remove the last manual field
-- Filers using custom revenue taxonomies (Exxon) still fail — needs per-filer
-  tag overrides
-- `tools/refresh_tickers.py` should run on a schedule rather than by hand, so
-  recent listings resolve
-
----
-
-## Phase 4 — Team readiness
-
-- **Git-connected deploys.** The Vercel↔GitHub link failed during setup, so
-  production currently ships via `vercel --prod` from a laptop. Install the
-  Vercel GitHub app on `amardani05/IMA-Monte-Carlo` so pushes to `main` deploy.
-- **Access control.** The production URL is public. Nothing is persisted
-  server-side today, so the exposure is the tool rather than the data — but that
-  changes the moment Phase 2 saves scenarios. Decide before then.
-- **Error monitoring** on the function, and analytics on which drivers people
-  actually edit.
-- **Housekeeping:** `results/*.png` are build artifacts committed to git;
-  `scipy` is pulled in for `norm.cdf`/`norm.ppf` alone and could be replaced
-  with a numpy `erf` implementation to cut bundle size and cold-start time.
-- **Accessibility:** the SVG panels have no text alternative. The sensitivity
-  tables partly cover this; the four charts do not.
-
----
-
-## Suggested order
-
-1. ~~**1.4 tests**~~ — done
-2. ~~**1.2 distribution calibration**~~ — largely done via auto-fill
-3. **1.1 reconciliation** — now the remaining credibility blocker
-4. **2.1 save/share + 2.3 chart export** — what makes it get used
-5. **`FINNHUB_API_KEY`** — one env var removes the last manual field
-6. **1.3 error bars**, then the rest of Phase 4 as it gets real users
+- The zero floor on terminal price never binds on current assumptions but will
+  once distributions are widened further.
+- Free-cash-flow drift is capped at 60% of EV and 15% standard deviation. On a
+  cash-dominated EV like TDS the cap binds and the note says so.

@@ -237,6 +237,7 @@ function recomputeEV() {
   const label = document.querySelector('label[data-field="current_ev"]');
   if (label && !label.querySelector(".src-badge")) label.prepend(badge("derived", "derived: price x shares + net debt", "derived"));
   document.querySelector('label[data-field="current_price"]')?.classList.remove("needs-input");
+  cashWarning(nd, price * shares, ev);
   const ebitda = parseFloat(form.current_revenue.value) * parseFloat(form.current_ebitda_margin.value);
   if (!Number.isFinite(ebitda) || ebitda <= 0) return;
   const m = ev / ebitda;
@@ -247,6 +248,25 @@ function recomputeEV() {
     renderRefs("ev_ebitda_multiple", { current: round(m, 2) },
       `Anchored on the current ${mult(m)}, plus or minus 20%. Your comps view belongs in the mode.`);
   }
+}
+
+/* The server can only raise this when it has a price. When the price arrives
+   later by hand, raise it here so a cash-dominated balance sheet is never silent. */
+function cashWarning(netDebt, marketCap, ev) {
+  const box = $("lookupMsg");
+  if (box.hidden || !box.classList.contains("ok")) return;
+  box.querySelectorAll(".warn.cash").forEach((el) => el.remove());
+  if (!(marketCap > 0)) return;
+  const msgs = [];
+  if (netDebt < -0.5 * marketCap) {
+    msgs.push(`Net cash is ${Math.round(-netDebt / marketCap * 100)}% of market cap. An EV/EBITDA bridge values the operating business and carries the cash across unchanged, so what management does with that cash is most of the equity story and this model cannot see it. Consider a sum-of-parts alongside.`);
+  }
+  const ebitda = parseFloat(form.current_revenue.value) * parseFloat(form.current_ebitda_margin.value);
+  if (ebitda > 0 && ev / ebitda < 4) {
+    msgs.push(`Current EV/EBITDA of ${mult(ev / ebitda)} is unusually low, which usually means enterprise value is dominated by cash or the EBITDA is transitional. Check the filing.`);
+  }
+  const anchor = box.querySelector(".fine:last-child");
+  msgs.forEach((m) => { const p = document.createElement("p"); p.className = "warn cash"; p.textContent = m; anchor ? box.insertBefore(p, anchor) : box.appendChild(p); });
 }
 
 async function autofill() {
