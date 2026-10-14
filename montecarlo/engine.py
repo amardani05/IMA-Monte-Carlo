@@ -56,6 +56,28 @@ class PitchAssumptions:
     random_seed: int = 42
     horizon_years: float = 2.0
 
+    # ── Phase 2 options (all default to the legacy behaviour) ────────────
+    # driver_specs: per-driver distribution specs that override the tuples
+    # above, e.g. {"ebitda_margin": {"type": "metalog", "p10": .., "p50": .., "p90": ..}}.
+    # copula: "gaussian" (legacy) or "t"; copula_df is the t-copula's degrees of freedom.
+    driver_specs: Optional[dict] = None
+    copula: str = "gaussian"
+    copula_df: float = 5.0
+
+    # ── Phase 3 mechanisms (each None = not used) ────────────────────────
+    # cost_model: {"gross_margin": spec, "fixed_cost_m": $M today, "fixed_cost_growth": spec}
+    #   EBITDA = revenue x gross margin - fixed cost; margin becomes an output.
+    # backlog: {"backlog_m": $M, "conversion": spec}
+    #   year-one revenue = backlog x conversion + uncovered part grown at the CAGR.
+    # fcf_bridge: {"fcf_margin": spec, "ev_fcf_multiple": spec}
+    #   a second valuation path, FCF x EV/FCF, reported beside the EBITDA bridge.
+    # justified_multiple: {"roic", "wacc", "tax_rate", "da_share", "long_run_growth", "fade"}
+    #   ties the drawn multiple to drawn growth through a justified EV/EBITDA.
+    cost_model: Optional[dict] = None
+    backlog: Optional[dict] = None
+    fcf_bridge: Optional[dict] = None
+    justified_multiple: Optional[dict] = None
+
     def __post_init__(self):
         if self.correlation_matrix is None:
             # Default cross-sector correlation assumptions
@@ -90,6 +112,8 @@ class MonteCarloEngine:
         self.a = assumptions
         self.rng = np.random.default_rng(self.a.random_seed)
         self.terminal_prices = None
+        self.terminal_prices_fcf = None
+        self.terminal_revenue = None
         self.driver_samples = None
 
     def _generate_correlated_uniforms(self, n: int) -> np.ndarray:
@@ -100,6 +124,14 @@ class MonteCarloEngine:
         L = np.linalg.cholesky(self.a.correlation_matrix)
         z = self.rng.standard_normal((n, NUM_DRIVERS))
         correlated_z = z @ L.T
+        if self.a.copula == "t":
+            # Student-t copula: same correlation, but a shared chi-square
+            # scaling makes extreme moves arrive together. The Gaussian copula
+            # has zero tail dependence, which understates joint drawdowns.
+            nu = float(self.a.copula_df)
+            w = self.rng.chisquare(nu, size=(n, 1)) / nu
+            t_draws = correlated_z / np.sqrt(w)
+            return stats.t.cdf(t_draws, df=nu)
         u = stats.norm.cdf(correlated_z)
         return u
 
@@ -132,16 +164,76 @@ class MonteCarloEngine:
         u = self._generate_correlated_uniforms(n)
 
         # ── Sample each driver ───────────────────────────────────────────
-        rev_cagr = self._sample_triangular(u[:, 0], *self.a.rev_cagr)
-        ebitda_margin = self._sample_triangular(u[:, 1], *self.a.ebitda_margin)
-        ev_ebitda = self._sample_triangular(u[:, 2], *self.a.ev_ebitda_multiple)
-        net_debt_chg = self._sample_normal_clipped(u[:, 3], *self.a.net_debt_change_pct)
-        dilution = self._sample_normal_clipped(u[:, 4], *self.a.share_dilution_pct,
-                                                clip_low=-0.10, clip_high=0.15)
+        specs = self.a.driver_specs or {}
 
-        # ── Terminal financials ──────────────────────────────────────────
-        terminal_revenue = self.a.current_revenue * (1 + rev_cagr) ** self.a.horizon_years
-        terminal_ebitda = terminal_revenue * ebitda_margin
+        def draw(idx, name, legacy):
+            spec = specs.get(name)
+            if spec is None:
+                return legacy()
+            from .distributions import make_sampler
+            return make_sampler(spec)(u[:, idx])
+
+        rev_cagr = draw(0, "rev_cagr", lambda: self._sample_triangular(u[:, 0], *self.a.rev_cagr))
+        ebitda_margin = draw(1, "ebitda_margin", lambda: self._sample_triangular(u[:, 1], *self.a.ebitda_margin))
+        ev_ebitda = draw(2, "ev_ebitda_multiple", lambda: self._sample_triangular(u[:, 2], *self.a.ev_ebitda_multiple))
+        net_debt_chg = draw(3, "net_debt_change_pct", lambda: self._sample_normal_clipped(u[:, 3], *self.a.net_debt_change_pct))
+        dilution = draw(4, "share_dilution_pct", lambda: self._sample_normal_clipped(
+            u[:, 4], *self.a.share_dilution_pct, clip_low=-0.10, clip_high=0.15))
+        ev_ebitda = np.maximum(ev_ebitda, 0.0)
+
+        from .distributions import make_sampler
+        T = self.a.horizon_years
+        extra = {}
+
+        # ── Revenue path, with backlog covering year one when supplied ───
+        if self.a.backlog:
+            b = self.a.backlog
+            conv = make_sampler(b["conversion"])(self.rng.random(n))
+            covered = float(b["backlog_m"]) * conv
+            organic_y1 = self.a.current_revenue * (1 + rev_cagr)
+            coverage = np.clip(covered / np.maximum(self.a.current_revenue, 1e-9), 0.0, 1.0)
+            revenue_y1 = covered + organic_y1 * (1.0 - coverage)
+            terminal_revenue = revenue_y1 * (1 + rev_cagr) ** max(T - 1.0, 0.0)
+            extra["Backlog Conversion"] = conv
+        else:
+            terminal_revenue = self.a.current_revenue * (1 + rev_cagr) ** T
+
+        # ── Margin: a single draw, or a cost structure ───────────────────
+        if self.a.cost_model:
+            cm = self.a.cost_model
+            gross_margin = make_sampler(cm["gross_margin"])(u[:, 1])
+            fc_growth = make_sampler(cm["fixed_cost_growth"])(self.rng.random(n)) if cm.get("fixed_cost_growth") else 0.0
+            fixed_cost = float(cm["fixed_cost_m"]) * (1 + fc_growth) ** T
+            terminal_ebitda = terminal_revenue * gross_margin - fixed_cost
+            ebitda_margin = terminal_ebitda / np.maximum(terminal_revenue, 1e-9)
+            extra["Gross Margin"] = gross_margin
+            if cm.get("fixed_cost_growth"):
+                extra["Fixed Cost Growth"] = np.broadcast_to(fc_growth, (n,))
+        else:
+            terminal_ebitda = terminal_revenue * ebitda_margin
+
+        # ── Exit multiple: free draw, or justified by growth and returns ─
+        if self.a.justified_multiple:
+            jm = self.a.justified_multiple
+            g_lr = float(jm.get("long_run_growth", 0.03))
+            fade = float(jm.get("fade", 0.5))
+            g_term = g_lr + (1 - fade) * (rev_cagr - g_lr)          # drawn growth fades toward long run
+            roic, wacc = float(jm["roic"]), float(jm["wacc"])
+            tax, da_share = float(jm.get("tax_rate", 0.25)), float(jm.get("da_share", 0.15))
+            spread = np.maximum(wacc - g_term, 0.01)
+            reinvest = np.clip(g_term / max(roic, 1e-6), 0.0, 0.95)
+            justified = (1 - reinvest) * (1 - tax) * (1 - da_share) / spread
+            # the company's premium to its own justified multiple today, decayed toward 1
+            g_mode = float(jm.get("current_growth", np.median(rev_cagr)))
+            g_term0 = g_lr + (1 - fade) * (g_mode - g_lr)
+            j0 = (1 - np.clip(g_term0 / max(roic, 1e-6), 0, 0.95)) * (1 - tax) * (1 - da_share) / max(wacc - g_term0, 0.01)
+            prem0 = float(jm.get("current_multiple", j0)) / max(j0, 1e-6)
+            prem_T = 1.0 + (prem0 - 1.0) * (1 - float(jm.get("premium_reversion", 0.5))) ** T
+            # the drawn multiple keeps only its relative dispersion around its median
+            med = float(np.median(ev_ebitda))
+            rel_noise = ev_ebitda / max(med, 1e-6)
+            ev_ebitda = justified * prem_T * rel_noise
+            extra["Justified Multiple"] = justified * prem_T
         terminal_ev = terminal_ebitda * ev_ebitda
 
         # ── Bridge to equity value per share ─────────────────────────────
@@ -154,13 +246,26 @@ class MonteCarloEngine:
 
         terminal_price = np.maximum(terminal_price, 0.0)
 
+        # ── Second bridge: free cash flow x EV/FCF ───────────────────────
+        self.terminal_prices_fcf = None
+        if self.a.fcf_bridge:
+            fb = self.a.fcf_bridge
+            fcf_margin = make_sampler(fb["fcf_margin"])(u[:, 1])        # moves with the margin draw
+            ev_fcf = make_sampler(fb["ev_fcf_multiple"])(u[:, 2])       # moves with the multiple draw
+            fcf_ev = terminal_revenue * fcf_margin * ev_fcf
+            self.terminal_prices_fcf = np.maximum((fcf_ev - terminal_net_debt) / terminal_shares, 0.0)
+            extra["FCF Margin"] = fcf_margin
+            extra["EV/FCF Multiple"] = ev_fcf
+
         self.terminal_prices = terminal_price
+        self.terminal_revenue = terminal_revenue
         self.driver_samples = {
             "Revenue CAGR": rev_cagr,
             "EBITDA Margin": ebitda_margin,
             "EV/EBITDA Multiple": ev_ebitda,
             "Net Debt Chg (% EV)": net_debt_chg,
             "Share Dilution (%)": dilution,
+            **extra,
         }
         return terminal_price
 

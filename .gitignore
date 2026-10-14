@@ -18,3 +18,4 @@ node_modules/
 
 # rendered charts are build output
 results/*.png
+backtests/

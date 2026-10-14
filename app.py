@@ -6,6 +6,11 @@ POST /api/simulate. Flask owns transport only; validation and the model live in
 montecarlo/service.py, so the local CLI (MonteCarlo.py) runs identical code.
 """
 
+import datetime
+import json
+import os
+import tempfile
+
 from flask import Flask, jsonify, request, send_from_directory
 
 from montecarlo.marketdata import DataError, build_prefill
@@ -71,6 +76,42 @@ def simulate():
     response = jsonify(result)
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+LOG_PATH = os.environ.get("CALIBRATION_LOG_PATH", os.path.join(tempfile.gettempdir(), "ima_calibration_log.jsonl"))
+
+
+@app.post("/api/calibration-log")
+def calibration_log_append():
+    """
+    Append the analyst's stated P10/P50/P90 and targets for a run, so they can
+    be scored against the realised price later (Hubbard's calibration method).
+    On Vercel the default path is ephemeral; set CALIBRATION_LOG_PATH to a
+    mounted store, or export the log from the UI.
+    """
+    entry = request.get_json(silent=True)
+    if not isinstance(entry, dict) or not entry.get("ticker"):
+        return jsonify(error="Body must be an object with at least a ticker"), 400
+    entry = {k: entry[k] for k in entry if k in ("ticker", "as_of", "horizon_years", "spot", "targets",
+                                                   "driver_specs", "mechanisms", "median", "p5", "p95", "note", "analyst")}
+    entry["logged_at"] = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    try:
+        with open(LOG_PATH, "a") as fh:
+            fh.write(json.dumps(entry) + "\n")
+    except OSError as exc:
+        return jsonify(error=f"Could not write the calibration log: {exc}"), 500
+    return jsonify(ok=True, path=LOG_PATH, entry=entry)
+
+
+@app.get("/api/calibration-log")
+def calibration_log_list():
+    rows = []
+    try:
+        with open(LOG_PATH) as fh:
+            rows = [json.loads(line) for line in fh if line.strip()]
+    except OSError:
+        pass
+    return jsonify(rows=rows[-500:], path=LOG_PATH, ephemeral=LOG_PATH.startswith(tempfile.gettempdir()))
 
 
 @app.errorhandler(404)

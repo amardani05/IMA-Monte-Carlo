@@ -1,0 +1,934 @@
+{
+ "AAPL": {
+  "cik": 320193,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Apple Inc.",
+  "sic": 3571,
+  "sic_description": "Electronic Computers"
+ },
+ "ACM": {
+  "cik": 868857,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "AECOM",
+  "sic": 8711,
+  "sic_description": "Services-Engineering Services"
+ },
+ "ADBE": {
+  "cik": 796343,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "ADOBE INC.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "ADI": {
+  "cik": 6281,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "ANALOG DEVICES INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "AMD": {
+  "cik": 2488,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "ADVANCED MICRO DEVICES INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "AME": {
+  "cik": 1037868,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "AMETEK INC/",
+  "sic": 3823,
+  "sic_description": "Industrial Instruments For Measurement, Display, and Control"
+ },
+ "APG": {
+  "cik": 1796209,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "APi Group Corp",
+  "sic": 7340,
+  "sic_description": "Services-To Dwellings & Other Buildings"
+ },
+ "APP": {
+  "cik": 1751008,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "AppLovin Corp",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "ATNI": {
+  "cik": 879585,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "ATN International, Inc.",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "AVGO": {
+  "cik": 1730168,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Broadcom Inc.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "BBY": {
+  "cik": 764478,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "BEST BUY CO INC",
+  "sic": 5731,
+  "sic_description": "Retail-Radio, Tv & Consumer Electronics Stores"
+ },
+ "CABO": {
+  "cik": 1632127,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Cable One, Inc.",
+  "sic": 4841,
+  "sic_description": "Cable & Other Pay Television Services"
+ },
+ "CARG": {
+  "cik": 1494259,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "CarGurus, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "CAT": {
+  "cik": 18230,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "CATERPILLAR INC",
+  "sic": 3531,
+  "sic_description": "Construction Machinery & Equip"
+ },
+ "CHTR": {
+  "cik": 1091667,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "name": "CHARTER COMMUNICATIONS, INC. /MO/",
+  "sic": 4841,
+  "sic_description": "Cable & Other Pay Television Services"
+ },
+ "CLH": {
+  "cik": 822818,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "CLEAN HARBORS INC",
+  "sic": 4955,
+  "sic_description": "Hazardous Waste Management"
+ },
+ "CMCSA": {
+  "cik": 1166691,
+  "exchanges": [
+   "Nasdaq",
+   "NYSE"
+  ],
+  "name": "COMCAST CORP",
+  "sic": 4841,
+  "sic_description": "Cable & Other Pay Television Services"
+ },
+ "CMI": {
+  "cik": 26172,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "CUMMINS INC",
+  "sic": 3510,
+  "sic_description": "Engines & Turbines"
+ },
+ "COST": {
+  "cik": 909832,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "COSTCO WHOLESALE CORP /NEW",
+  "sic": 5331,
+  "sic_description": "Retail-Variety Stores"
+ },
+ "CRM": {
+  "cik": 1108524,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Salesforce, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "CROX": {
+  "cik": 1334036,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Crocs, Inc.",
+  "sic": 3021,
+  "sic_description": "Rubber & Plastics Footwear"
+ },
+ "CRTO": {
+  "cik": 1576427,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Criteo S.A.",
+  "sic": 7311,
+  "sic_description": "Services-Advertising Agencies"
+ },
+ "CRWD": {
+  "cik": 1535527,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "CrowdStrike Holdings, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "CSX": {
+  "cik": 277948,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "CSX CORP",
+  "sic": 4011,
+  "sic_description": "Railroads, Line-Haul Operating"
+ },
+ "CWST": {
+  "cik": 911177,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "CASELLA WASTE SYSTEMS INC",
+  "sic": 4953,
+  "sic_description": "Refuse Systems"
+ },
+ "DE": {
+  "cik": 315189,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "DEERE & CO",
+  "sic": 3523,
+  "sic_description": "Farm Machinery & Equipment"
+ },
+ "DECK": {
+  "cik": 910521,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "DECKERS OUTDOOR CORP",
+  "sic": 3021,
+  "sic_description": "Rubber & Plastics Footwear"
+ },
+ "DG": {
+  "cik": 29534,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "DOLLAR GENERAL CORP",
+  "sic": 5331,
+  "sic_description": "Retail-Variety Stores"
+ },
+ "DLTR": {
+  "cik": 935703,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "DOLLAR TREE, INC.",
+  "sic": 5331,
+  "sic_description": "Retail-Variety Stores"
+ },
+ "DOV": {
+  "cik": 29905,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "DOVER Corp",
+  "sic": 3530,
+  "sic_description": "Construction, Mining & Materials Handling Machinery & Equip"
+ },
+ "DV": {
+  "cik": 1819928,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "DoubleVerify Holdings, Inc.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "DY": {
+  "cik": 67215,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "DYCOM INDUSTRIES INC",
+  "sic": 1623,
+  "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "EME": {
+  "cik": 105634,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "EMCOR Group, Inc.",
+  "sic": 1731,
+  "sic_description": "Electrical Work"
+ },
+ "EMR": {
+  "cik": 32604,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "EMERSON ELECTRIC CO",
+  "sic": 3600,
+  "sic_description": "Electronic & Other Electrical Equipment (No Computer Equip)"
+ },
+ "ETN": {
+  "cik": 1551182,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Eaton Corp plc",
+  "sic": 3590,
+  "sic_description": "Misc Industrial & Commercial Machinery & Equipment"
+ },
+ "EVER": {
+  "cik": 1640428,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "EverQuote, Inc.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "F": {
+  "cik": 37996,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "name": "FORD MOTOR CO",
+  "sic": 3711,
+  "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "FAST": {
+  "cik": 815556,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "FASTENAL CO",
+  "sic": 5200,
+  "sic_description": "Retail-Building Materials, Hardware, Garden Supply"
+ },
+ "FIX": {
+  "cik": 1035983,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "COMFORT SYSTEMS USA INC",
+  "sic": 1731,
+  "sic_description": "Electrical Work"
+ },
+ "FLR": {
+  "cik": 1124198,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "FLUOR CORP",
+  "sic": 1600,
+  "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "GM": {
+  "cik": 1467858,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "General Motors Co",
+  "sic": 3711,
+  "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "GVA": {
+  "cik": 861459,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "GRANITE CONSTRUCTION INC",
+  "sic": 1600,
+  "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "GWW": {
+  "cik": 277135,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "W.W. GRAINGER, INC.",
+  "sic": 5000,
+  "sic_description": "Wholesale-Durable Goods"
+ },
+ "HD": {
+  "cik": 354950,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "HOME DEPOT, INC.",
+  "sic": 5211,
+  "sic_description": "Retail-Lumber & Other Building Materials Dealers"
+ },
+ "IESC": {
+  "cik": 1048268,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "IES Holdings, Inc.",
+  "sic": 1731,
+  "sic_description": "Electrical Work"
+ },
+ "INTC": {
+  "cik": 50863,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "INTEL CORP",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "INTU": {
+  "cik": 896878,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "INTUIT INC.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "IR": {
+  "cik": 1699150,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Ingersoll Rand Inc.",
+  "sic": 3560,
+  "sic_description": "General Industrial Machinery & Equipment"
+ },
+ "ITW": {
+  "cik": 49826,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "ILLINOIS TOOL WORKS INC",
+  "sic": 3560,
+  "sic_description": "General Industrial Machinery & Equipment"
+ },
+ "J": {
+  "cik": 52988,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "JACOBS SOLUTIONS INC.",
+  "sic": 1600,
+  "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "JBHT": {
+  "cik": 728535,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "HUNT J B TRANSPORT SERVICES INC",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "KBR": {
+  "cik": 1357615,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "KBR, INC.",
+  "sic": 1600,
+  "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "KNX": {
+  "cik": 1492691,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Knight-Swift Transportation Holdings Inc.",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "KR": {
+  "cik": 56873,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "KROGER CO",
+  "sic": 5411,
+  "sic_description": "Retail-Grocery Stores"
+ },
+ "LOW": {
+  "cik": 60667,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "LOWES COMPANIES INC",
+  "sic": 5211,
+  "sic_description": "Retail-Lumber & Other Building Materials Dealers"
+ },
+ "LULU": {
+  "cik": 1397187,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "lululemon athletica inc.",
+  "sic": 2300,
+  "sic_description": "Apparel & Other Finishd Prods of  Fabrics & Similar Matl"
+ },
+ "LUMN": {
+  "cik": 18926,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Lumen Technologies, Inc.",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "MGNI": {
+  "cik": 1595974,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "MAGNITE, INC.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "MSFT": {
+  "cik": 789019,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "MICROSOFT CORP",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "MTZ": {
+  "cik": 15615,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "MASTEC INC",
+  "sic": 1623,
+  "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "MU": {
+  "cik": 723125,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "MICRON TECHNOLOGY INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "MYRG": {
+  "cik": 700923,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "MYR GROUP INC.",
+  "sic": 1623,
+  "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "NKE": {
+  "cik": 320187,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "NIKE, Inc.",
+  "sic": 3021,
+  "sic_description": "Rubber & Plastics Footwear"
+ },
+ "NOW": {
+  "cik": 1373715,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "ServiceNow, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "NSC": {
+  "cik": 702165,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "NORFOLK SOUTHERN CORP",
+  "sic": 4011,
+  "sic_description": "Railroads, Line-Haul Operating"
+ },
+ "NVDA": {
+  "cik": 1045810,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "NVIDIA CORP",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "ODFL": {
+  "cik": 878927,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "OLD DOMINION FREIGHT LINE, INC.",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "ORCL": {
+  "cik": 1341439,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "name": "ORACLE CORP",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "PANW": {
+  "cik": 1327567,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Palo Alto Networks Inc",
+  "sic": 3577,
+  "sic_description": "Computer Peripheral Equipment, NEC"
+ },
+ "PCAR": {
+  "cik": 75362,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "PACCAR INC",
+  "sic": 3711,
+  "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "PERI": {
+  "cik": 1338940,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Perion Network Ltd.",
+  "sic": 7371,
+  "sic_description": "Services-Computer Programming Services"
+ },
+ "PH": {
+  "cik": 76334,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Parker-Hannifin Corp",
+  "sic": 3490,
+  "sic_description": "Miscellaneous Fabricated Metal Products"
+ },
+ "PRIM": {
+  "cik": 1361538,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "Primoris Services Corp",
+  "sic": 1623,
+  "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "PUBM": {
+  "cik": 1422930,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "PubMatic, Inc.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "PWR": {
+  "cik": 1050915,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "QUANTA SERVICES, INC.",
+  "sic": 1731,
+  "sic_description": "Electrical Work"
+ },
+ "QCOM": {
+  "cik": 804328,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "QUALCOMM INC/DE",
+  "sic": 3663,
+  "sic_description": "Radio & Tv Broadcasting & Communications Equipment"
+ },
+ "QNST": {
+  "cik": 1117297,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "QUINSTREET, INC",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "RIVN": {
+  "cik": 1874178,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Rivian Automotive, Inc. / DE",
+  "sic": 3711,
+  "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "ROAD": {
+  "cik": 1718227,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Construction Partners, Inc.",
+  "sic": 1600,
+  "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "ROK": {
+  "cik": 1024478,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "ROCKWELL AUTOMATION, INC",
+  "sic": 3829,
+  "sic_description": "Measuring & Controlling Devices, NEC"
+ },
+ "RSG": {
+  "cik": 1060391,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "REPUBLIC SERVICES, INC.",
+  "sic": 4953,
+  "sic_description": "Refuse Systems"
+ },
+ "SAIA": {
+  "cik": 1177702,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "SAIA INC",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "SHEN": {
+  "cik": 354963,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "SHENANDOAH TELECOMMUNICATIONS CO/VA/",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "STRL": {
+  "cik": 874238,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "STERLING INFRASTRUCTURE, INC.",
+  "sic": 1600,
+  "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "T": {
+  "cik": 732717,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "name": "AT&T INC.",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "TBLA": {
+  "cik": 1840502,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Taboola.com Ltd.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "TDS": {
+  "cik": 1051512,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "name": "TELEPHONE & DATA SYSTEMS INC /DE/",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "TGT": {
+  "cik": 27419,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "TARGET CORP",
+  "sic": 5331,
+  "sic_description": "Retail-Variety Stores"
+ },
+ "TMUS": {
+  "cik": 1283699,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "name": "T-Mobile US, Inc.",
+  "sic": 4812,
+  "sic_description": "Radiotelephone Communications"
+ },
+ "TSLA": {
+  "cik": 1318605,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Tesla, Inc.",
+  "sic": 3711,
+  "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "TTD": {
+  "cik": 1671933,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Trade Desk, Inc.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "TTEK": {
+  "cik": 831641,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "TETRA TECH INC",
+  "sic": 8711,
+  "sic_description": "Services-Engineering Services"
+ },
+ "TXN": {
+  "cik": 97476,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "TEXAS INSTRUMENTS INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "ULTA": {
+  "cik": 1403568,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Ulta Beauty, Inc.",
+  "sic": 5990,
+  "sic_description": "Retail-Retail Stores, NEC"
+ },
+ "UNP": {
+  "cik": 100885,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "UNION PACIFIC CORP",
+  "sic": 4011,
+  "sic_description": "Railroads, Line-Haul Operating"
+ },
+ "VFC": {
+  "cik": 103379,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "V F CORP",
+  "sic": 2320,
+  "sic_description": "Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+ },
+ "VZ": {
+  "cik": 732712,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "VERIZON COMMUNICATIONS INC",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "WDAY": {
+  "cik": 1327811,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Workday, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "WM": {
+  "cik": 823768,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "WASTE MANAGEMENT INC",
+  "sic": 4953,
+  "sic_description": "Refuse Systems"
+ },
+ "WMT": {
+  "cik": 104169,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "Walmart Inc.",
+  "sic": 5331,
+  "sic_description": "Retail-Variety Stores"
+ },
+ "XPO": {
+  "cik": 1166003,
+  "exchanges": [
+   "NYSE"
+  ],
+  "name": "XPO, Inc.",
+  "sic": 4700,
+  "sic_description": "Transportation Services"
+ },
+ "ZD": {
+  "cik": 1084048,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "name": "ZIFF DAVIS, INC.",
+  "sic": 4822,
+  "sic_description": "Telegraph & Other Message Communications"
+ }
+}

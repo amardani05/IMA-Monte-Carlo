@@ -8,6 +8,7 @@ and scalar statistics, which keeps a 100k-path run at roughly 13 KB.
 """
 
 import time
+from typing import Optional
 
 import numpy as np
 
@@ -104,6 +105,69 @@ def build_assumptions(payload: dict) -> PitchAssumptions:
                 "correlation_matrix is not positive definite, so the copula cannot be built from it"
             )
 
+    driver_specs = payload.get("driver_specs")
+    if driver_specs is not None:
+        if not isinstance(driver_specs, dict):
+            raise ValidationError("driver_specs must be an object keyed by driver name")
+        from .distributions import make_sampler
+        for name, spec in driver_specs.items():
+            if name not in ("rev_cagr", "ebitda_margin", "ev_ebitda_multiple",
+                            "net_debt_change_pct", "share_dilution_pct"):
+                raise ValidationError(f"driver_specs has an unknown driver '{name}'")
+            try:
+                make_sampler(spec)
+            except (ValueError, KeyError, TypeError) as exc:
+                raise ValidationError(f"driver_specs['{name}'] is not a valid distribution: {exc}")
+
+    def _spec(block, key, where):
+        try:
+            make_sampler(block[key])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ValidationError(f"{where}.{key} is not a valid distribution: {exc}")
+
+    from .distributions import make_sampler
+    cost_model = payload.get("cost_model")
+    if cost_model is not None:
+        if not isinstance(cost_model, dict):
+            raise ValidationError("cost_model must be an object")
+        _spec(cost_model, "gross_margin", "cost_model")
+        fc = float(cost_model.get("fixed_cost_m", 0.0))
+        if not np.isfinite(fc) or fc < 0:
+            raise ValidationError("cost_model.fixed_cost_m must be a non-negative number")
+        if cost_model.get("fixed_cost_growth") is not None:
+            _spec(cost_model, "fixed_cost_growth", "cost_model")
+    backlog = payload.get("backlog")
+    if backlog is not None:
+        if not isinstance(backlog, dict):
+            raise ValidationError("backlog must be an object")
+        b = float(backlog.get("backlog_m", 0.0))
+        if not np.isfinite(b) or b < 0:
+            raise ValidationError("backlog.backlog_m must be a non-negative number")
+        _spec(backlog, "conversion", "backlog")
+    fcf_bridge = payload.get("fcf_bridge")
+    if fcf_bridge is not None:
+        if not isinstance(fcf_bridge, dict):
+            raise ValidationError("fcf_bridge must be an object")
+        _spec(fcf_bridge, "fcf_margin", "fcf_bridge")
+        _spec(fcf_bridge, "ev_fcf_multiple", "fcf_bridge")
+    jm = payload.get("justified_multiple")
+    if jm is not None:
+        if not isinstance(jm, dict):
+            raise ValidationError("justified_multiple must be an object")
+        for k in ("roic", "wacc"):
+            v = float(jm.get(k, float("nan")))
+            if not np.isfinite(v) or v <= 0:
+                raise ValidationError(f"justified_multiple.{k} must be a positive number")
+        if float(jm["wacc"]) <= float(jm.get("long_run_growth", 0.03)):
+            raise ValidationError("justified_multiple.wacc must exceed long_run_growth")
+
+    copula = str(payload.get("copula") or "gaussian").lower()
+    if copula not in ("gaussian", "t"):
+        raise ValidationError("copula must be 'gaussian' or 't'")
+    copula_df = float(payload.get("copula_df") or 5.0)
+    if not (2.0 < copula_df <= 100.0):
+        raise ValidationError("copula_df must be between 2 and 100")
+
     return PitchAssumptions(
         ticker=ticker,
         company_name=company_name,
@@ -125,12 +189,115 @@ def build_assumptions(payload: dict) -> PitchAssumptions:
         n_simulations=n_sims,
         random_seed=int(payload.get("random_seed") or 42),
         horizon_years=horizon,
+        driver_specs=driver_specs,
+        copula=copula,
+        copula_df=copula_df,
+        cost_model=cost_model,
+        backlog=backlog,
+        fcf_bridge=fcf_bridge,
+        justified_multiple=jm,
     )
+
+
+def _driver_quantiles(a: PitchAssumptions) -> dict:
+    """P10/P50/P90 of every driver as actually sampled, for display."""
+    from .distributions import describe
+    specs = a.driver_specs or {}
+    out = {}
+    for name, legacy in (("rev_cagr", a.rev_cagr), ("ebitda_margin", a.ebitda_margin),
+                         ("ev_ebitda_multiple", a.ev_ebitda_multiple)):
+        out[name] = describe(specs.get(name, tuple(legacy)))
+    for name, legacy in (("net_debt_change_pct", a.net_debt_change_pct),
+                         ("share_dilution_pct", a.share_dilution_pct)):
+        spec = specs.get(name) or {"type": "normal", "mean": legacy[0], "std": legacy[1]}
+        out[name] = describe(spec)
+    return out
+
+
+def _fcf_stats(engine: MonteCarloEngine) -> Optional[dict]:
+    p = engine.terminal_prices_fcf
+    if p is None:
+        return None
+    a = engine.a
+    n = len(p)
+    q = np.percentile(p, [5, 25, 50, 75, 95])
+    return {
+        "median_price": float(q[2]), "p5": float(q[0]), "p25": float(q[1]), "p75": float(q[3]), "p95": float(q[4]),
+        "mean_price": float(p.mean()),
+        "p_at_least_bear": float((p >= a.bear_price).sum() / n),
+        "p_at_least_base": float((p >= a.base_price).sum() / n),
+        "p_at_least_bull": float((p >= a.bull_price).sum() / n),
+        "median_return": float(q[2] / a.current_price - 1),
+        "gap_to_ebitda_bridge": float(q[2] / np.median(engine.terminal_prices) - 1) if np.median(engine.terminal_prices) > 0 else None,
+    }
 
 
 def _se(p: float, n: int) -> float:
     """Monte Carlo standard error of a probability estimate."""
     return (max(p * (1 - p), 0.0) / n) ** 0.5
+
+
+def mode_path_price(a: PitchAssumptions, g=None, m=None, mult=None) -> float:
+    """Price along the path with every driver at its mode (or P50), overridable per driver."""
+    from .distributions import describe
+    specs = a.driver_specs or {}
+    g = g if g is not None else (describe(specs["rev_cagr"])["p50"] if "rev_cagr" in specs else a.rev_cagr[1])
+    m = m if m is not None else (describe(specs["ebitda_margin"])["p50"] if "ebitda_margin" in specs else a.ebitda_margin[1])
+    mult = mult if mult is not None else (describe(specs["ev_ebitda_multiple"])["p50"] if "ev_ebitda_multiple" in specs else a.ev_ebitda_multiple[1])
+    nd_chg = specs["net_debt_change_pct"]["mean"] if "net_debt_change_pct" in specs else a.net_debt_change_pct[0]
+    dil = specs["share_dilution_pct"]["mean"] if "share_dilution_pct" in specs else a.share_dilution_pct[0]
+    rev = a.current_revenue * (1 + g) ** a.horizon_years
+    nd = a.current_net_debt + a.current_ev * nd_chg
+    sh = a.shares_outstanding * (1 + dil)
+    return float((rev * m * mult - nd) / sh)
+
+
+def _bisect(f, lo, hi, target, iters=60):
+    flo, fhi = f(lo) - target, f(hi) - target
+    if flo * fhi > 0:
+        return None
+    for _ in range(iters):
+        mid = (lo + hi) / 2
+        fm = f(mid) - target
+        if abs(fm) < 1e-9:
+            return mid
+        if flo * fm < 0:
+            hi, fhi = mid, fm
+        else:
+            lo, flo = mid, fm
+    return (lo + hi) / 2
+
+
+def price_implied(a: PitchAssumptions) -> dict:
+    """
+    Expectations investing, inverted: the margin (holding growth and multiple
+    at their modes) and the growth (holding margin and multiple) at which the
+    mode path lands exactly on the current price. What the market is pricing.
+    """
+    spot = a.current_price
+    m_star = _bisect(lambda m: mode_path_price(a, m=m), -0.5, 0.9, spot)
+    g_star = _bisect(lambda g: mode_path_price(a, g=g), -0.6, 1.5, spot)
+    mult_star = _bisect(lambda x: mode_path_price(a, mult=x), 0.1, 200.0, spot)
+    return {
+        "spot": spot,
+        "implied_margin_at_mode_growth_and_multiple": m_star,
+        "implied_growth_at_mode_margin_and_multiple": g_star,
+        "implied_multiple_at_mode_growth_and_margin": mult_star,
+    }
+
+
+def dcf_path_percentile(engine: MonteCarloEngine, dcf: dict) -> Optional[dict]:
+    """Where the analyst's three-statement path sits inside the simulated distribution."""
+    a = engine.a
+    try:
+        price = mode_path_price(a, g=float(dcf["rev_cagr"]), m=float(dcf["ebitda_margin"]),
+                                mult=float(dcf["ev_ebitda_multiple"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+    prices = engine.terminal_prices
+    pct = float((prices <= price).mean())
+    return {"price": price, "percentile": pct, "p_at_least": 1 - pct,
+            "drivers": {k: float(dcf[k]) for k in ("rev_cagr", "ebitda_margin", "ev_ebitda_multiple")}}
 
 
 def reconcile(engine: MonteCarloEngine) -> dict:
@@ -243,6 +410,8 @@ def summarize(engine: MonteCarloEngine) -> dict:
         "tornado": engine.tornado(),
         "sensitivity": sensitivity,
         "reconciliation": reconcile(engine),
+        "price_implied": price_implied(a),
+        "fcf_bridge": _fcf_stats(engine),
         "meta": {
             "ticker": a.ticker,
             "company_name": a.company_name,
@@ -253,6 +422,9 @@ def summarize(engine: MonteCarloEngine) -> dict:
             "n_simulations": a.n_simulations,
             "horizon_years": a.horizon_years,
             "random_seed": a.random_seed,
+            "copula": a.copula,
+            "copula_df": a.copula_df if a.copula == "t" else None,
+            "driver_quantiles": _driver_quantiles(a),
         },
     }
 
@@ -263,5 +435,9 @@ def run_simulation(payload: dict) -> dict:
     engine = MonteCarloEngine(assumptions)
     engine.run()
     result = summarize(engine)
+    if isinstance(payload.get("dcf_path"), dict):
+        result["dcf_path"] = dcf_path_percentile(engine, payload["dcf_path"])
+    result["meta"]["mechanisms"] = {k: bool(getattr(assumptions, k)) for k in
+                                    ("cost_model", "backlog", "fcf_bridge", "justified_multiple")}
     result["meta"]["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 1)
     return result

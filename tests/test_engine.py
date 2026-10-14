@@ -210,3 +210,147 @@ class ResponseShape(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class Phase2Options(unittest.TestCase):
+    """Quantile-parameterised drivers and the t-copula, behind flags."""
+
+    def test_legacy_defaults_unchanged(self):
+        a = PitchAssumptions(**MYRG)
+        self.assertIsNone(a.driver_specs)
+        self.assertEqual(a.copula, "gaussian")
+
+    def test_metalog_driver_hits_its_quantiles(self):
+        specs = {"ebitda_margin": {"type": "metalog", "p10": 0.04, "p50": 0.065, "p90": 0.09}}
+        a = PitchAssumptions(**dict(MYRG, n_simulations=200_000), driver_specs=specs)
+        e = MonteCarloEngine(a); e.run()
+        m = e.driver_samples["EBITDA Margin"]
+        q = np.percentile(m, [10, 50, 90])
+        np.testing.assert_allclose(q, [0.04, 0.065, 0.09], atol=0.002)
+
+    def test_t_copula_keeps_correlation_and_fattens_joint_tail(self):
+        g = MonteCarloEngine(PitchAssumptions(**dict(MYRG, n_simulations=300_000)))
+        t = MonteCarloEngine(PitchAssumptions(**dict(MYRG, n_simulations=300_000), copula="t", copula_df=4.0))
+        ug, ut = g._generate_correlated_uniforms(300_000), t._generate_correlated_uniforms(300_000)
+        from scipy import stats as st
+        rg = st.spearmanr(ug[:, 0], ug[:, 1]).correlation
+        rt = st.spearmanr(ut[:, 0], ut[:, 1]).correlation
+        self.assertAlmostEqual(rg, rt, delta=0.03)       # same rank correlation
+        joint_g = np.mean((ug[:, 0] < 0.05) & (ug[:, 1] < 0.05))
+        joint_t = np.mean((ut[:, 0] < 0.05) & (ut[:, 1] < 0.05))
+        self.assertGreater(joint_t, joint_g * 1.3)       # but more joint downside
+
+    def test_service_validates_specs_and_copula(self):
+        payload = {k: (list(v) if isinstance(v, tuple) else v) for k, v in MYRG.items()}
+        payload["n_simulations"] = 2000
+        with self.assertRaises(ValidationError):
+            run_simulation(dict(payload, copula="clayton"))
+        with self.assertRaises(ValidationError):
+            run_simulation(dict(payload, driver_specs={"ebitda_margin": {"type": "metalog", "p10": 0.1, "p50": 0.05, "p90": 0.2}}))
+        ok = run_simulation(dict(payload, copula="t", copula_df=5,
+                                 driver_specs={"rev_cagr": {"type": "metalog", "p10": 0.0, "p50": 0.06, "p90": 0.15}}))
+        self.assertEqual(ok["meta"]["copula"], "t")
+        self.assertAlmostEqual(ok["meta"]["driver_quantiles"]["rev_cagr"]["p50"], 0.06, places=6)
+
+
+class Phase3Mechanisms(unittest.TestCase):
+    EPS = 1e-9
+
+    def _deg(self, **over):
+        """All drivers pinned so mechanisms can be checked by hand."""
+        e = self.EPS
+        base = dict(
+            ticker="T", company_name="T", current_price=100.0, bear_price=1.0, base_price=2.0, bull_price=3.0,
+            current_revenue=1000.0, current_ebitda_margin=0.10, current_ev=5000.0, current_net_debt=500.0,
+            shares_outstanding=100.0,
+            rev_cagr=(0.10 - e, 0.10, 0.10 + e), ebitda_margin=(0.20 - e, 0.20, 0.20 + e),
+            ev_ebitda_multiple=(10.0 - e, 10.0, 10.0 + e), net_debt_change_pct=(0.0, 1e-9),
+            share_dilution_pct=(0.0, 1e-9), correlation_matrix=np.eye(5), n_simulations=2000,
+            random_seed=3, horizon_years=2.0,
+        )
+        base.update(over)
+        return PitchAssumptions(**base)
+
+    def test_backlog_covers_year_one(self):
+        # backlog 660 at 100% conversion covers 60% of organic year-one revenue (1100)
+        a = self._deg(backlog={"backlog_m": 660.0, "conversion": {"type": "normal", "mean": 1.0, "std": 1e-9}})
+        e = MonteCarloEngine(a); e.run()
+        rev1 = 660.0 + 1100.0 * (1 - 0.66)      # coverage = 660/1000
+        self.assertAlmostEqual(float(np.median(e.terminal_revenue)), rev1 * 1.10, places=3)
+
+    def test_cost_structure_makes_margin_an_output(self):
+        a = self._deg(cost_model={"gross_margin": {"type": "normal", "mean": 0.40, "std": 1e-9},
+                                  "fixed_cost_m": 200.0,
+                                  "fixed_cost_growth": {"type": "normal", "mean": 0.0, "std": 1e-9}})
+        e = MonteCarloEngine(a); e.run()
+        rev = 1000 * 1.1 ** 2
+        self.assertAlmostEqual(float(np.median(e.driver_samples["EBITDA Margin"])), (rev * 0.4 - 200) / rev, places=6)
+        self.assertAlmostEqual(float(np.median(e.terminal_prices)), ((rev * 0.4 - 200) * 10 - 500) / 100, places=4)
+
+    def test_fcf_bridge_is_a_second_price(self):
+        a = self._deg(fcf_bridge={"fcf_margin": {"type": "normal", "mean": 0.08, "std": 1e-9},
+                                  "ev_fcf_multiple": {"type": "normal", "mean": 20.0, "std": 1e-9}})
+        e = MonteCarloEngine(a); e.run()
+        rev = 1000 * 1.1 ** 2
+        self.assertAlmostEqual(float(np.median(e.terminal_prices_fcf)), (rev * 0.08 * 20 - 500) / 100, places=4)
+        self.assertAlmostEqual(float(np.median(e.terminal_prices)), (rev * 0.2 * 10 - 500) / 100, places=4)
+
+    def test_justified_multiple_moves_with_growth(self):
+        jm = {"roic": 0.15, "wacc": 0.09, "tax_rate": 0.25, "da_share": 0.15, "long_run_growth": 0.03,
+              "fade": 0.5, "current_growth": 0.10, "current_multiple": 10.0, "premium_reversion": 1.0}
+        lo = MonteCarloEngine(self._deg(rev_cagr=(0.02 - 1e-9, 0.02, 0.02 + 1e-9), justified_multiple=jm)); lo.run()
+        hi = MonteCarloEngine(self._deg(rev_cagr=(0.10 - 1e-9, 0.10, 0.10 + 1e-9), justified_multiple=jm)); hi.run()
+        m_lo = float(np.median(lo.driver_samples["EV/EBITDA Multiple"]))
+        m_hi = float(np.median(hi.driver_samples["EV/EBITDA Multiple"]))
+        self.assertGreater(m_hi, m_lo)
+        # with full premium reversion the multiple is the justified one; check the formula at g = 10%
+        g_term = 0.03 + 0.5 * (0.10 - 0.03)
+        expect = (1 - g_term / 0.15) * 0.75 * 0.85 / (0.09 - g_term)
+        self.assertAlmostEqual(m_hi, expect, places=4)
+
+    def test_golden_path_untouched_by_new_fields(self):
+        a = PitchAssumptions(**MYRG)
+        self.assertIsNone(a.cost_model); self.assertIsNone(a.backlog)
+        self.assertIsNone(a.fcf_bridge); self.assertIsNone(a.justified_multiple)
+
+
+class Phase4Service(unittest.TestCase):
+    def _payload(self, **over):
+        p = {k: (list(v) if isinstance(v, tuple) else v) for k, v in MYRG.items()}
+        p["n_simulations"] = 20_000
+        p.update(over)
+        return p
+
+    def test_price_implied_margin_reproduces_spot_on_the_mode_path(self):
+        from montecarlo.service import mode_path_price, price_implied
+        a = PitchAssumptions(**MYRG)
+        pi = price_implied(a)
+        m = pi["implied_margin_at_mode_growth_and_multiple"]
+        self.assertAlmostEqual(mode_path_price(a, m=m), a.current_price, places=4)
+        g = pi["implied_growth_at_mode_margin_and_multiple"]
+        self.assertAlmostEqual(mode_path_price(a, g=g), a.current_price, places=4)
+
+    def test_dcf_path_percentile_is_consistent_with_distribution(self):
+        r = run_simulation(self._payload(dcf_path={"rev_cagr": 0.069, "ebitda_margin": 0.075, "ev_ebitda_multiple": 17.0}))
+        d = r["dcf_path"]
+        # the modes themselves: price equals the mode-path price from reconciliation
+        self.assertAlmostEqual(d["price"], r["reconciliation"]["mode_path_price"], places=6)
+        self.assertTrue(0 <= d["percentile"] <= 1)
+        self.assertAlmostEqual(d["percentile"] + d["p_at_least"], 1.0, places=9)
+
+    def test_fcf_bridge_reported_when_requested(self):
+        r = run_simulation(self._payload(fcf_bridge={"fcf_margin": {"type": "metalog", "p10": 0.04, "p50": 0.06, "p90": 0.08},
+                                                     "ev_fcf_multiple": {"type": "log_metalog", "p10": 14, "p50": 18, "p90": 24}}))
+        fb = r["fcf_bridge"]
+        self.assertIsNotNone(fb)
+        self.assertGreater(fb["median_price"], 0)
+        self.assertTrue(r["meta"]["mechanisms"]["fcf_bridge"])
+        self.assertIsNone(run_simulation(self._payload())["fcf_bridge"])
+
+    def test_mechanism_validation(self):
+        with self.assertRaises(ValidationError):
+            run_simulation(self._payload(backlog={"backlog_m": -5, "conversion": {"type": "normal", "mean": .7, "std": .1}}))
+        with self.assertRaises(ValidationError):
+            run_simulation(self._payload(justified_multiple={"roic": 0.1, "wacc": 0.02, "long_run_growth": 0.03}))
+        with self.assertRaises(ValidationError):
+            run_simulation(self._payload(cost_model={"gross_margin": {"type": "metalog", "p10": 0.3, "p50": 0.2, "p90": 0.4}, "fixed_cost_m": 10}))

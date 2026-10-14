@@ -9,6 +9,8 @@ Set IMA_LIVE_SEC=1 to additionally hit EDGAR for real.
 import os
 import unittest
 
+import numpy as np
+
 from montecarlo import marketdata as md
 
 
@@ -25,7 +27,7 @@ def facts(**tags):
 
 def _end(frame):
     if "Q" in frame:
-        year, q = frame[2:].split("Q")
+        year, q = frame[2:].rstrip("I").split("Q")
         return f"{year}-{int(q) * 3:02d}-28"
     return f"{frame[2:]}-12-31"
 
@@ -264,3 +266,116 @@ class LiveEdgar(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class CalibrationV2(unittest.TestCase):
+    PROFILE = {
+        "revenue_history_m": {str(2016 + i): 100.0 * 1.06 ** i for i in range(10)},
+        "margin_history": {str(2016 + i): m for i, m in enumerate([.05, .055, .06, .058, .062, .06, .064, .063, .065, .064])},
+        "ebitda_margin_fy": 0.064,
+        "current_ev_ebitda": 18.0, "current_ev_m": 1000.0, "ebitda_fy_m": 55.0,
+        "public_float_latest_m": None, "multiple_history": {}, "fcf_history_m": {"2023": 30.0, "2024": 35.0, "2025": 40.0},
+        "share_change_stats": None,
+    }
+    PANEL = {
+        "basis": "test panel", "peers_used": ["A", "B", "C", "D"], "as_of": None,
+        "margin": {"p10": 0.03, "p50": 0.09, "p90": 0.14, "n": 40},
+        "cagr": {"p10": -0.02, "p50": 0.05, "p90": 0.15, "n": 40},
+        "multiple": {"p10": 7.0, "p50": 11.0, "p90": 17.0, "n": 40},
+        "margin_reversion": {"lambda": 0.30, "n_pairs": 36},
+        "corr_changes": {"g_m": 0.25, "g_mult": -0.10, "m_mult": -0.30},
+    }
+
+    def test_margin_centre_reverts_toward_the_panel_median(self):
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        p50 = d["driver_specs"]["ebitda_margin"]["p50"]
+        m0 = 0.064
+        w_l = 36 / (36 + 60.0)                        # the panel's rate is shrunk toward Fama-French by pair count
+        lam = min(w_l * 0.30 + (1 - w_l) * 0.38, 0.5)
+        own_med = md._q_of(list(self.PROFILE["margin_history"].values()))["p50"]
+        w = 10 / (10 + 8.0)
+        m_bar = w * own_med + (1 - w) * 0.09          # target shrinks toward the company's own long-run median
+        self.assertAlmostEqual(p50, m0 + (1 - (1 - lam) ** 2) * (m_bar - m0), places=5)
+        self.assertGreater(p50, m0)       # a below-target margin is lifted
+
+    def test_growth_is_shrunk_toward_the_panel(self):
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        own = md._q_of(md.rolling_cagrs(self.PROFILE["revenue_history_m"], 2))
+        p50 = d["driver_specs"]["rev_cagr"]["p50"]
+        self.assertLess(min(own["p50"], 0.05) - 1e-9, p50)
+        self.assertLess(p50, max(own["p50"], 0.05) + 1e-9)   # between own and panel medians
+
+    def test_multiple_moves_toward_the_panel_median_and_is_log_bounded(self):
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        spec = d["driver_specs"]["ev_ebitda_multiple"]
+        self.assertEqual(spec["type"], "log_metalog")
+        self.assertLess(spec["p50"], 18.0); self.assertGreater(spec["p50"], 11.0)
+
+    def test_correlation_matrix_is_estimated_and_valid(self):
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        c = np.array(d["correlation_matrix"])
+        np.testing.assert_allclose(c, c.T)
+        np.linalg.cholesky(c)                                   # positive definite
+        self.assertAlmostEqual(c[0, 1], 0.25, delta=0.02)
+        self.assertEqual(d["copula"], "t")
+
+    def test_without_a_panel_it_falls_back_cleanly(self):
+        d = md.calibrate_drivers_v2(self.PROFILE, None, horizon_years=2.0)
+        self.assertAlmostEqual(d["driver_specs"]["ebitda_margin"]["p50"], 0.064, places=6)
+        self.assertIn("no peer panel", d["notes"]["ebitda_margin"])
+
+
+class Harness(unittest.TestCase):
+    def test_crps_of_a_point_mass_is_absolute_error(self):
+        from montecarlo.backtest import crps_from_samples
+        self.assertAlmostEqual(crps_from_samples(np.full(1000, 10.0), 13.0), 3.0, places=9)
+
+    def test_crps_rewards_sharpness_when_centred(self):
+        from montecarlo.backtest import crps_from_samples
+        rng = np.random.default_rng(0)
+        narrow = crps_from_samples(rng.normal(10, 1, 50_000), 10.0)
+        wide = crps_from_samples(rng.normal(10, 5, 50_000), 10.0)
+        self.assertLess(narrow, wide)
+
+    def test_pit_is_the_percentile_of_the_outcome(self):
+        from montecarlo.backtest import pit
+        self.assertAlmostEqual(pit(np.arange(1, 101, dtype=float), 50.0), 0.5)
+
+    def test_quarter_ends(self):
+        from montecarlo.backtest import quarter_ends
+        self.assertEqual(quarter_ends("2024-01-15", "2024-12-31"), ["2024-03-31", "2024-06-30", "2024-09-30", "2024-12-31"])
+
+    def test_facts_as_of_drops_later_filings(self):
+        f = {"facts": {"us-gaap": {"Revenues": {"units": {"USD": [
+            {"start": "2022-01-01", "end": "2022-12-31", "val": 100, "filed": "2023-02-20"},
+            {"start": "2023-01-01", "end": "2023-12-31", "val": 120, "filed": "2024-02-20"},
+        ]}}}}}
+        self.assertEqual(sorted(md.annual_series(md.facts_as_of(f, "2023-06-30"), ["Revenues"])), [2022])
+        self.assertEqual(sorted(md.annual_series(f, ["Revenues"])), [2022, 2023])
+
+    def test_derived_frames_match_edgar_alignment(self):
+        self.assertEqual(md._derive_frame({"start": "2024-01-28", "end": "2025-01-25"}), "CY2024")   # Dycom-style January FYE
+        self.assertEqual(md._derive_frame({"start": "2024-01-01", "end": "2024-12-31"}), "CY2024")
+        self.assertEqual(md._derive_frame({"start": "2024-04-01", "end": "2024-06-30"}), "CY2024Q2")
+        self.assertEqual(md._derive_frame({"end": "2024-06-30"}), "CY2024Q2I")
+
+
+class MultipleAnchorGuard(unittest.TestCase):
+    def test_transitional_ebitda_is_not_an_anchor(self):
+        prof = dict(CalibrationV2.PROFILE, current_ev_ebitda=330.0, ebitda_margin_fy=0.002,
+                    margin_history={str(2016 + i): 0.002 for i in range(10)})
+        d = md.calibrate_drivers_v2(prof, CalibrationV2.PANEL, horizon_years=2.0)
+        spec = d["driver_specs"]["ev_ebitda_multiple"]
+        self.assertLess(spec["p50"], 20.0)
+        self.assertIn("not used as the anchor", d["notes"]["ev_ebitda_multiple"])
+
+
+class ClaimsAheadOfCommon(unittest.TestCase):
+    def test_minority_interest_is_added_to_net_debt(self):
+        f = facts(LongTermDebtNoncurrent={"CY2024Q4I": 1000.0}, LongTermDebtCurrent={"CY2024Q4I": 0.0},
+                  CashAndCashEquivalentsAtCarryingValue={"CY2024Q4I": 300.0}, MinorityInterest={"CY2024Q4I": 250.0})
+        for tag in ("LongTermDebtNoncurrent", "LongTermDebtCurrent", "CashAndCashEquivalentsAtCarryingValue", "MinorityInterest"):
+            for r in f["facts"]["us-gaap"][tag]["units"]["USD"]:
+                r["end"] = "2024-12-31"; r.pop("frame", None)
+        debt = md._debt(f); cash = md._point_in_time(f, md.CASH_TAGS); nci = md._point_in_time(f, md.NCI_TAGS)
+        self.assertEqual(debt[0], 1000.0); self.assertEqual(cash[1], 300.0); self.assertEqual(nci[1], 250.0)

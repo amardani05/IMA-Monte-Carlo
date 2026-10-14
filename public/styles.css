@@ -300,3 +300,36 @@ td.flag { color: var(--red); font-weight: 600; }
 .muted { color: var(--faint); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Phase 2 to 4 additions */
+select {
+  display: block; width: 100%; margin-top: 4px; font-size: 13px; padding: 7px 9px;
+  border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); color: var(--text);
+}
+.calib-badge {
+  display: inline-flex; gap: 8px; align-items: center; margin: 0 0 10px;
+  font-family: var(--mono); font-size: 10.5px; padding: 4px 9px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid #b9cbe3;
+}
+.calib-badge.v1 { background: var(--amber-soft); color: var(--amber); border-color: #e6d3a3; }
+details.mech {
+  border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg);
+  margin: 0 0 8px; padding: 0 11px;
+}
+details.mech summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; font-weight: 600; color: var(--text); padding: 9px 0;
+}
+details.mech summary::-webkit-details-marker { display: none; }
+details.mech summary input { margin: 0; width: auto; }
+details.mech summary .hint { font-weight: 400; }
+details.mech.unavailable { opacity: .55; }
+details.mech.unavailable summary { cursor: not-allowed; }
+details.mech[open] summary { border-bottom: 1px solid var(--line-soft); margin-bottom: 8px; }
+details.mech .mech-body { padding-bottom: 6px; }
+details.mech .mech-body label { margin-bottom: 8px; }
+.mech-note { margin: 0 0 6px; }
+.mech-note:empty { display: none; }
+tr.hl td { background: var(--accent-soft); }
+.card.alt::before { background: var(--purple); opacity: .9; }
+.card.alt .v { color: var(--purple); }

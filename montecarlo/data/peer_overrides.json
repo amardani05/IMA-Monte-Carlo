@@ -1,0 +1,6 @@
+{
+  "_comment": "Hand-picked comparables where SIC grouping is too coarse. Keys are tickers; values replace the SIC-derived peer list.",
+  "QNST": ["MGNI", "PUBM", "TTD", "CRTO", "PERI", "TBLA", "DV", "IAS", "EVER", "ZD", "CARG"],
+  "TDS": ["SHEN", "ATNI", "LUMN", "FYBR", "CNSL", "CABO", "T", "VZ"],
+  "MYRG": ["PWR", "DY", "EME", "FIX", "MTZ", "STRL", "IESC", "PRIM", "ROAD", "GVA"]
+}
