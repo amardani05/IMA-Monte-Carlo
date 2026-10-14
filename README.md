@@ -89,8 +89,20 @@ For each name and past quarter-end the auto-fill is rebuilt from filings
 available on that date and the close that day, the model runs at the horizon,
 and the realised price is scored: PIT (uniform if the distributions are right)
 and CRPS in dollars. `montecarlo/variants.py` registers model variants; every
-modelling change is accepted or rejected on these numbers. Needs `yfinance`
-locally.
+modelling change is accepted or rejected on these numbers. `--gate` exits
+non-zero when a run fails the paired CRPS and coverage test against
+`--compare`, and each run writes `backtests/<label>.html` with the PIT
+histogram and per-name and per-year tables. `--names all` runs the whole
+universe. EDGAR documents are cached on disk under `~/.cache/ima-monte-carlo`.
+Needs `yfinance` locally.
+
+### Bundled prices
+
+`montecarlo/data/prices/` holds twelve years of daily closes for the universe
+and SPY, written by `tools/refresh_prices.py`. The deployed function reads
+these first, so it has multiple history and beta without a network call to
+Yahoo, which rate-limits Vercel's egress. Refresh weekly and commit; a series
+older than seven days is used only as a last resort and labelled with its date.
 
 ### Not every filer works
 

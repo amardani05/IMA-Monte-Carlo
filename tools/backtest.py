@@ -27,7 +27,12 @@ ap.add_argument("--horizon", type=float, default=2.0)
 ap.add_argument("--label", default="baseline")
 ap.add_argument("--model", default="default", help="model variant registered in montecarlo.variants")
 ap.add_argument("--compare", default=None, help="label of an earlier run to compare against")
+ap.add_argument("--gate", action="store_true", help="exit 1 if the run fails the gate against --compare")
+ap.add_argument("--n-sims", type=int, default=20000)
 args = ap.parse_args()
+if args.names.strip().lower() == "all":
+    from montecarlo import panel as _panel  # noqa: E402
+    args.names = ",".join(sorted(set(_panel.peers_map()) | set(backtest.DEFAULT_NAMES)))
 
 from montecarlo import variants  # noqa: E402
 model_fn, prefill_fn = variants.get(args.model)
@@ -36,6 +41,7 @@ res = backtest.run(names=[n.strip().upper() for n in args.names.split(",") if n.
                    start=args.start, end=args.end, horizon=args.horizon,
                    model_fn=model_fn, label=args.label, prefill_fn=prefill_fn)
 
+prev = None
 if args.compare:
     with open(os.path.join("backtests", f"{args.compare}.json")) as fh:
         prev = json.load(fh)
@@ -43,3 +49,14 @@ if args.compare:
     if c["n"]:
         print(f"\nPaired on {c['n']} snapshots: CRPS/spot {c['a']} {c['mean_crps_over_spot_a']:.4f} -> {c['b']} {c['mean_crps_over_spot_b']:.4f}")
         print(f"  delta {c['delta']:+.4f} (se {c['delta_se']:.4f}); {c['b']} better on {c['b_better_share']:.0%} of snapshots; cov90 {c['coverage_90_a']:.0%} -> {c['coverage_90_b']:.0%}")
+rb = backtest.robust_summary(res["rows"])
+if rb:
+    print(f"  median CRPS/spot {rb['median_crps']:.4f}, 10% trimmed mean {rb['trimmed_mean_crps']:.4f}")
+html_path = os.path.join("backtests", f"{args.label}.html")
+with open(html_path, "w") as fh:
+    fh.write(backtest.report_html(res, prev))
+print(f"  report: {html_path}")
+if args.gate and prev:
+    g = backtest.gate(prev, res)
+    print(f"  gate: {'PASS' if g['pass'] else 'FAIL'}")
+    sys.exit(0 if g["pass"] else 1)

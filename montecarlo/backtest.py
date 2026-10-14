@@ -232,3 +232,89 @@ def compare(a: dict, b: dict) -> dict:
         "coverage_90_a": float(np.mean([ka[k]["in_90"] for k in keys])),
         "coverage_90_b": float(np.mean([kb[k]["in_90"] for k in keys])),
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reporting and the regression gate
+# ─────────────────────────────────────────────────────────────────────────────
+def breakdown(rows: list, key) -> dict:
+    """Mean CRPS/spot, coverage and count per group, where key(row) names the group."""
+    groups: dict = {}
+    for r in rows:
+        if "error" in r:
+            continue
+        groups.setdefault(key(r), []).append(r)
+    out = {}
+    for g, rs in sorted(groups.items()):
+        c = np.array([r["crps_over_spot"] for r in rs])
+        out[g] = {"n": len(rs), "mean_crps": float(c.mean()), "median_crps": float(np.median(c)),
+                  "coverage_90": float(np.mean([r["in_90"] for r in rs])),
+                  "coverage_50": float(np.mean([r["in_50"] for r in rs])),
+                  "mean_log_error": float(np.mean([r["log_error_median"] for r in rs if r["log_error_median"] is not None]))}
+    return out
+
+
+def robust_summary(rows: list) -> dict:
+    """Outlier-aware companions to the mean CRPS: median and 10% trimmed mean."""
+    c = np.sort(np.array([r["crps_over_spot"] for r in rows if "error" not in r]))
+    if len(c) == 0:
+        return {}
+    k = int(len(c) * 0.1)
+    return {"median_crps": float(np.median(c)), "trimmed_mean_crps": float(c[k:len(c) - k].mean()) if len(c) > 2 * k else float(c.mean())}
+
+
+def gate(prev: dict, cur: dict, max_crps_worsening: float = 0.0, min_coverage_gain: float = -0.02) -> dict:
+    """
+    Accept `cur` over `prev` only if paired CRPS did not worsen beyond the
+    tolerance and 90% coverage did not fall by more than the tolerance. Both
+    conditions, because a model can win CRPS by being narrow and wrong less
+    often than it is right, and win coverage by being uselessly wide.
+    """
+    c = compare(prev, cur)
+    if not c.get("n"):
+        return {"pass": False, "reason": "no paired snapshots"}
+    crps_ok = c["delta"] <= max_crps_worsening
+    cov_ok = (c["coverage_90_b"] - c["coverage_90_a"]) >= min_coverage_gain
+    return {"pass": bool(crps_ok and cov_ok), "paired": c, "crps_ok": crps_ok, "coverage_ok": cov_ok}
+
+
+def report_html(result: dict, prev: Optional[dict] = None) -> str:
+    """A self-contained HTML report: summary, PIT histogram, per-name and per-year tables."""
+    s = result["summary"]; rows = result["rows"]
+    rb = robust_summary(rows)
+    by_name = breakdown(rows, lambda r: r["ticker"])
+    by_year = breakdown(rows, lambda r: r["as_of"][:4])
+    hist = s["pit_hist"]; hmax = max(hist) or 1
+    bars = "".join(
+        f'<rect x="{20 + i * 34}" y="{140 - 120 * h / hmax:.1f}" width="28" height="{120 * h / hmax:.1f}" fill="#2a63b0" opacity=".85"/>'
+        f'<text x="{34 + i * 34}" y="156" font-size="9" text-anchor="middle" fill="#64707e">{i / 10:.1f}</text>'
+        for i, h in enumerate(hist))
+    expected = 140 - 120 * (s["n"] / 10) / hmax
+    pit_svg = (f'<svg viewBox="0 0 380 170" width="380" height="170"><line x1="20" y1="{expected:.1f}" x2="360" y2="{expected:.1f}" '
+               f'stroke="#b1271f" stroke-dasharray="4 3"/>{bars}<text x="366" y="{expected:.1f}" font-size="9" fill="#b1271f">uniform</text></svg>')
+    def tbl(d, label):
+        head = f"<tr><th>{label}</th><th>n</th><th>mean CRPS/spot</th><th>median</th><th>cov 50</th><th>cov 90</th><th>mean log err</th></tr>"
+        body = "".join(f"<tr><td>{k}</td><td>{v['n']}</td><td>{v['mean_crps']:.3f}</td><td>{v['median_crps']:.3f}</td>"
+                       f"<td>{v['coverage_50']:.0%}</td><td>{v['coverage_90']:.0%}</td><td>{v['mean_log_error']:+.2f}</td></tr>" for k, v in d.items())
+        return f"<table>{head}{body}</table>"
+    cmp_html = ""
+    if prev:
+        g = gate(prev, result); c = g.get("paired", {})
+        if c.get("n"):
+            cmp_html = (f"<h2>Against {c['a']}</h2><p>Paired on {c['n']} snapshots. CRPS/spot {c['mean_crps_over_spot_a']:.4f} to "
+                        f"{c['mean_crps_over_spot_b']:.4f} (delta {c['delta']:+.4f}, se {c['delta_se']:.4f}); better on {c['b_better_share']:.0%}; "
+                        f"90% coverage {c['coverage_90_a']:.0%} to {c['coverage_90_b']:.0%}. Gate: <b>{'PASS' if g['pass'] else 'FAIL'}</b> "
+                        f"(CRPS {'ok' if g['crps_ok'] else 'worse'}, coverage {'ok' if g['coverage_ok'] else 'worse'}).</p>")
+    return f"""<!doctype html><meta charset="utf-8"><title>Backtest {result['label']}</title>
+<style>body{{font:14px/1.5 -apple-system,Segoe UI,sans-serif;color:#101820;max-width:980px;margin:32px auto;padding:0 20px}}
+table{{border-collapse:collapse;font-variant-numeric:tabular-nums;margin:8px 0 20px}}td,th{{padding:4px 10px;border-bottom:1px solid #e9edf2;text-align:right}}
+td:first-child,th:first-child{{text-align:left}}h1{{font-size:20px}}h2{{font-size:15px;margin-top:26px}}.k{{color:#64707e}}</style>
+<h1>Backtest: {result['label']}</h1>
+<p class="k">{s['n']} snapshots across {len(s['names'])} names, {result['horizon_years']:g}-year horizon, {result['start']} to {result['end']}, run {result['run_at']}. {s['errors']} skipped.</p>
+<table><tr><th>mean CRPS/spot</th><th>median</th><th>10% trimmed</th><th>cov 50</th><th>cov 80</th><th>cov 90</th><th>PIT tails</th><th>mean log err</th></tr>
+<tr><td>{s['mean_crps_over_spot']:.4f}</td><td>{rb.get('median_crps', float('nan')):.4f}</td><td>{rb.get('trimmed_mean_crps', float('nan')):.4f}</td>
+<td>{s['coverage_50']:.0%}</td><td>{s['coverage_80']:.0%}</td><td>{s['coverage_90']:.0%}</td><td>{s['pit_tail_share']:.0%}</td><td>{s['mean_log_error']:+.3f}</td></tr></table>
+<h2>PIT histogram</h2><p class="k">Uniform if the distributions are right. A U means too narrow; a hump, too wide; a slope, biased.</p>{pit_svg}
+{cmp_html}
+<h2>By name</h2>{tbl(by_name, 'name')}
+<h2>By snapshot year</h2>{tbl(by_year, 'year')}"""

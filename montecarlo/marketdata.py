@@ -102,10 +102,36 @@ class DataError(Exception):
 # ─────────────────────────────────────────────────────────────────────────────
 # HTTP
 # ─────────────────────────────────────────────────────────────────────────────
+DISK_CACHE_DIR = os.environ.get("IMA_CACHE_DIR", os.path.join(os.path.expanduser("~"), ".cache", "ima-monte-carlo"))
+DISK_CACHE_TTL = 24 * 3600
+
+
+def _disk_path(url: str) -> str:
+    import hashlib
+    return os.path.join(DISK_CACHE_DIR, hashlib.sha1(url.encode()).hexdigest() + ".json")
+
+
 def _get_json(url: str, ttl: float) -> dict:
+    """
+    Fetch JSON with an in-memory cache and, for long-lived documents, a disk
+    cache under IMA_CACHE_DIR (default ~/.cache/ima-monte-carlo). The disk
+    layer is what makes a 500-snapshot backtest re-runnable in minutes instead
+    of re-downloading 3 MB per name per process, and it is where EDGAR's
+    occasional read timeouts stop costing snapshots.
+    """
     hit = _CACHE.get(url)
     if hit and time.time() - hit[0] < ttl:
         return hit[1]
+    disk = _disk_path(url)
+    try:
+        st = os.stat(disk)
+        if time.time() - st.st_mtime < DISK_CACHE_TTL:
+            with open(disk) as fh:
+                data = json.load(fh)
+            _CACHE[url] = (time.time(), data)
+            return data
+    except (OSError, json.JSONDecodeError):
+        pass
 
     req = urllib.request.Request(
         url,
@@ -128,11 +154,26 @@ def _get_json(url: str, ttl: float) -> dict:
             raise DataError("SEC has no filings at that address")
         raise DataError(f"SEC request failed ({exc.code})")
     except (urllib.error.URLError, TimeoutError) as exc:
+        if not getattr(_get_json, "_retried", False):
+            _get_json._retried = True
+            try:
+                time.sleep(1.0)
+                return _get_json(url, ttl)
+            finally:
+                _get_json._retried = False
         raise DataError(f"Could not reach SEC EDGAR: {exc}")
     except json.JSONDecodeError:
         raise DataError("SEC returned a malformed response")
 
     _CACHE[url] = (time.time(), data)
+    try:
+        os.makedirs(DISK_CACHE_DIR, exist_ok=True)
+        tmp = disk + ".tmp"
+        with open(tmp, "w") as fh:
+            json.dump(data, fh)
+        os.replace(tmp, disk)
+    except OSError:
+        pass  # read-only filesystems (Vercel) simply skip the disk layer
     return data
 
 

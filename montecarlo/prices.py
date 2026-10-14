@@ -87,6 +87,33 @@ def _fetch_yfinance(symbol: str, years: int) -> Optional[list]:
     return [(idx.date().isoformat(), float(c)) for idx, c in h["Close"].items() if c == c]
 
 
+BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "data", "prices")
+BUNDLE_MAX_AGE_DAYS = 7
+
+
+def bundled_history(symbol: str) -> Optional[list]:
+    """
+    A price series shipped with the app (tools/refresh_prices.py). The deployed
+    function cannot rely on Yahoo, which rate-limits its egress; a weekly
+    refresh committed to the repository gives it year-end closes for the
+    multiple history and weekly closes for beta without a network call.
+    Returns None when absent or older than BUNDLE_MAX_AGE_DAYS; the caller then
+    tries the network and falls back to a stale bundle last.
+    """
+    path = os.path.join(BUNDLE_DIR, f"{symbol.upper()}.json")
+    try:
+        with open(path) as fh:
+            doc = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return None
+    series = [(d, float(c)) for d, c in doc.get("closes", [])]
+    if not series:
+        return None
+    age = (date.today() - date.fromisoformat(doc.get("as_of", "1970-01-01"))).days
+    bundled_history.last_age = age
+    return series
+
+
 def price_history(symbol: str, years: int = 10, prefer_yfinance: bool = True) -> list:
     """
     [(ISO date, close)], oldest first. Cached for six hours.
@@ -99,12 +126,19 @@ def price_history(symbol: str, years: int = 10, prefer_yfinance: bool = True) ->
     hit = _CACHE.get(key)
     if hit and time.time() - hit[0] < CACHE_TTL:
         return hit[1]
+    bundle = bundled_history(symbol)
+    if bundle and getattr(bundled_history, "last_age", 999) <= BUNDLE_MAX_AGE_DAYS:
+        _CACHE[key] = (time.time(), bundle)
+        return bundle
     series = _fetch_yfinance(symbol, years) if prefer_yfinance else None
     if not series:
-        # Without yfinance (the deployed function) a 429 is likely and a retry
-        # loop with sleeps turns one lookup into ten seconds. One attempt; the
-        # callers all degrade cleanly when no series comes back.
-        series = _fetch_chart(symbol, f"{years}y", retries=1 if not _HAS_YFINANCE else 3)
+        try:
+            series = _fetch_chart(symbol, f"{years}y", retries=1 if not _HAS_YFINANCE else 3)
+        except PriceError:
+            if bundle:
+                _CACHE[key] = (time.time(), bundle)
+                return bundle          # stale is better than nothing, and says so via as_of
+            raise
     if not series:
         raise PriceError(f"No price history returned for {symbol}")
     series.sort()
@@ -119,15 +153,19 @@ def latest_price(symbol: str) -> Optional[dict]:
     must cost milliseconds, not the nine seconds a backoff loop would.
     """
     series = _fetch_yfinance(symbol, 1)
+    source = "Yahoo Finance"
     if not series:
         try:
             series = _fetch_chart(symbol, "5d", retries=1)
         except PriceError:
-            return None
+            series = None
+    if not series:
+        series = bundled_history(symbol)
+        source = "bundled close (refresh with tools/refresh_prices.py)"
     if not series:
         return None
     d, c = series[-1]
-    return {"value": c, "source": "Yahoo Finance", "as_of": d}
+    return {"value": c, "source": source, "as_of": d}
 
 
 def close_on(series: list, as_of: str) -> Optional[tuple]:
