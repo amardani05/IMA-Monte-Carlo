@@ -1,148 +1,142 @@
 # Roadmap
 
-Status as of 2026-09-06. Live at **https://ima-monte-carlo.vercel.app**
+Status as of 2026-10-14. Live at **https://ima-monte-carlo.vercel.app**
 
-The build-out is complete. What remains needs a decision or a credential from
-the operator rather than code, and is listed at the end.
+The five phases of the October roadmap ("From Status Quo to Prediction") are
+built, and the harness has already changed the plan once: see "What the
+harness decided" below. Numbers quoted are from `tools/backtest.py`; the run
+files are in `backtests/` (ignored by git, reproducible).
 
 **Nothing in this project calls a model or inference service.** Every figure is
-a number filed with the SEC, arithmetic over those numbers, or output from the
-simulation engine. Each auto-filled field carries its source and as-of date.
+a number filed with the SEC, a Yahoo Finance close, arithmetic over those, or
+output from the simulation engine, and each auto-filled field carries its
+source and as-of date.
 
 ---
 
-## Why terminal prices sit near spot, and what to do about it
+## Phase 0, backtest harness: done
 
-This came up on TDS and QuinStreet and it is worth understanding rather than
-tuning away, because the behaviour is mostly correct.
+`montecarlo/backtest.py`, `tools/backtest.py`. Point-in-time auto-fill from
+EDGAR `filed` dates (frames derived from period dates, since EDGAR attaches its
+own frame label only to the latest filed copy of a fact), realised prices from
+Yahoo, PIT and CRPS per snapshot, paired comparison between runs, pluggable
+model and prefill variants.
 
-**1. The mode is held at today's value.** Auto-fill puts the historical width
-around margin and multiple but leaves the mode at the current figure. The median
-path is therefore "revenue grows at its historical median; margin and multiple
-stay put." That is the right null hypothesis. It is not a forecast, and a pitch
-has a thesis. The thesis enters through the mode. The chips under each driver
-now make that a one-click choice between the current value, the historical
-median, or a typed view, and the label on the middle input says whose number it is.
+Baseline, the model as it stood on 6 September, 462 snapshots across 15 names,
+two-year horizon, 2016 to 2024:
 
-**2. Triangular means sit below their modes when the range is left-skewed.**
-Ten filed years almost always carry more downside than upside: loss years,
-impairments, multiple compression in drawdowns. So even with every mode at
-current, the mean of each driver is below current and the simulated median lands
-below the mode path. The reconciliation panel shows both numbers together. For
-QuinStreet the mode path is $20.66 and the median $16.32; the 21% gap is skew,
-not a bug.
+| | Result | Target |
+| --- | --- | --- |
+| Coverage of the 50 / 80 / 90% bands | 27% / 44% / 53% | 50 / 80 / 90% |
+| PIT in the two outer deciles | 56% | 20% |
+| Mean log error of the median | +0.18 | 0 |
 
-**3. Single events were setting the tails.** TDS's 2023 impairment put a -34%
-margin into the range and the UScellular sale put a -53% two-year CAGR there,
-each dominating the triangular mean on its own. Bounds now trim one extreme per
-side once eight observations exist. The chips still show the full filed range so
-nothing is hidden.
+A deep U-shaped PIT histogram: the distributions were far too narrow, and on
+balance too low.
 
-**4. The multiple band was biased.** The old 0.70x to 1.15x anchor had a mean 5%
-below current, a systematic drag on every run. It is symmetric now, and where
-six or more years of filed public float exist the width comes from the company's
-own multiple history, bounded to half and one-and-a-half times today.
+## Phase 1, price history: done
 
-What "more accurate" means here: a Monte Carlo turns assumptions into a
-distribution. It cannot supply the view. With status-quo assumptions the honest
-answer is "status quo plus noise", and that answer near spot is correct.
-Accuracy comes from putting the thesis in the mode explicitly and keeping the
-width honest. The reconciliation table then states what each target implicitly
-assumes, which is exactly the thing that has to be defended out loud.
+`montecarlo/prices.py`. Daily closes via yfinance locally or the Yahoo chart
+endpoint on Vercel (one attempt, fails fast on a 429); year-end EV/EBITDA from
+closes, shares, net debt and FY EBITDA; five-year weekly beta against SPY and a
+CAPM cost of equity with stated defaults. The public-float multiple proxy is
+gone wherever a price series exists.
 
-**TDS specifically.** Net cash is 80% of market cap after the UScellular sale.
-An EV/EBITDA bridge values the operating business and carries the cash across
-unchanged, so what management does with $1.5B is most of the equity story and
-the model cannot see it. Run it, but read the warning it now raises and put a
-sum-of-parts beside it.
+## Phase 2, priors that move: done, and tuned on the harness
 
----
+- Metalog and log-metalog drivers specified as P10 / P50 / P90, sampled by
+  closed-form inverse CDF; the three-term metalog's logit tails are held flat
+  beyond P0.5 and P99.5 (`distributions.py`).
+- Student-t copula, 5 degrees of freedom, correlations estimated from pooled
+  year-over-year changes across the peer panel.
+- Sector panels (`panel.py`): a curated 102-name universe with SIC codes from
+  EDGAR, hand-picked comparables for MYRG, TDS and QuinStreet, cached by
+  `tools/build_panels.py`. Panel statistics: margin, growth and multiple
+  quantiles, a pooled partial-adjustment reversion rate, change correlations.
+- `calibrate_drivers_v2`: quantiles shrunk toward the panel, centres on a
+  reverting path, a multiple struck on sub-2% margins refused as an anchor.
 
-## Shipped
+### What the harness decided
 
-### Engine and API
-- Engine in `montecarlo/engine.py`, shared by the CLI and the web app
-- `POST /api/simulate` with full payload validation; 100k paths in ~180 ms
-- Response carries a histogram, a 400-point CDF, tornado bounds, summary
-  statistics, Monte Carlo standard errors on every probability, annualised
-  median and mean returns, and a reconciliation block. Never the raw price vector.
-- Horizon is a parameter, not a hardcoded exponent
+The first v2 as written in the roadmap (centres blended toward peer medians,
+multiple reverting toward the peer median, width inflated by the square root
+of the horizon) was **rejected**: calibration improved (90% coverage 53% to
+81%) but CRPS got worse, because it was wide and ran high. A parameter sweep on
+84 snapshots (MYRG, TDS, QuinStreet, 2017 to 2024) after the minority-interest
+correction:
 
-### Auto-fill from SEC EDGAR
-- `GET /api/company/<ticker>`: revenue, EBITDA margin, share count, cash and debt
-  from XBRL company facts, with provenance on every field
-- Ticker to CIK resolves against a bundled 10,391-entry map; no call to
-  `www.sec.gov` on the hot path. `tools/refresh_tickers.py` regenerates it.
-- Candidate XBRL tags are merged, not first-hit, so filers that changed tagging
-  keep their early years
-- TTM rolls four quarters, reconstructing the Q4 most filers leave untagged;
-  revenue and margin are then taken from the same fiscal year so their product
-  is an EBITDA the company actually filed
-- EBITDA falls back from operating income to gross profit less opex to pre-tax
-  plus interest, which is what makes Dycom resolve
-- Banks, brokers and insurers rejected by SIC; REITs warned; implausible margins
-  warned; net cash above half of market cap warned
+| Variant | CRPS / spot | 90% coverage | PIT tails |
+| --- | --- | --- | --- |
+| Own history only (baseline) | 0.590 | 71% | 37% |
+| v2, centres blended to peers | 0.617 | 96% | 12% |
+| v2, own target, tight widths | 0.569 | 83% | 26% |
+| **v2, own target, own growth centre, tight widths (adopted)** | **0.561** | **83%** | **25%** |
 
-### Calibration from filed history
-- Revenue CAGR width from every realised N-year CAGR in the record
-- Margin width from filed years; multiple width from public-float history where
-  six or more usable years exist; net-debt drift from filed free cash flow
-- One extreme trimmed per side at eight or more observations
-- Every driver returns current value, historical median and raw range; the UI
-  renders them as chips that set the mode
+The finding: the peer panel earns its keep through **width**, not by moving the
+centre. A company's own ten years understate what can happen to it, and the
+panel fixes that; but pulling its margin or growth toward the peer median made
+every variant worse. Centres now stay on the company's own record, reverting
+toward its own long-run median. These are the production defaults
+(`V2_DEFAULTS` in `marketdata.py`). The CRPS gain is inside one standard error
+on 84 snapshots; the coverage gain is not. The full-panel run is in progress.
 
-### Front end
-- Light institutional theme: cool off-white ground, deep navy accent, IBM Plex
-  Sans and Mono, tabular numerics. No em dashes anywhere in the UI.
-- Reconciliation panel: mode-path price against the simulated median, and for
-  each case target the multiple needed at the mode margin and the margin needed
-  at the mode multiple, flagged red when outside the range given
-- Share links: full payload including the correlation matrix encoded in the URL
-  fragment, restored with an auto-run on load
-- Correlation matrix editor, symmetric by construction, positive-definiteness
-  checked server-side
-- PNG export composites the four panels for decks; JSON export carries inputs
-  and results together
-- Pin-and-compare strip with deltas against a pinned run
-- aria-labels on every chart describing the numbers they show
+## Phase 3, mechanisms: done
 
-### Tests
-- 54 tests, offline by default; SEC parsing runs against a synthetic fixture
-- Golden-value regressions pin the published MYRG numbers
-- Reconciliation tests prove each implied driver reproduces its target exactly
-- `IMA_LIVE_SEC=1` additionally exercises EDGAR
+In `engine.py`, each switched on per name from the UI, proposed from filings by
+`marketdata.mechanisms`:
 
----
+- **Cost structure**: gross margin from CostOfRevenue, fixed cost defined so
+  that revenue x gross margin less fixed cost equals filed EBITDA, growing at
+  its own history's rate. EBITDA margin becomes an output; a COGS thesis is a
+  gross-margin P50.
+- **Backlog**: year-one revenue = backlog x conversion + the uncovered share at
+  the CAGR, from the remaining-performance-obligation tag (MYRG $2.8B, Quanta
+  $33.6B). The conversion rate is an assumption and says so.
+- **FCF-to-equity bridge**: FCF margin x EV/FCF, a second price reported beside
+  the EBITDA bridge; their disagreement is shown, not hidden.
+- **Justified multiple**: the drawn multiple becomes a function of drawn growth,
+  ROIC from NOPAT over invested capital, tax rate from the filing, D&A share and
+  a WACC; today's premium to the justified level halves over the horizon.
 
-## Needs the operator
+Stacking all four on MYRG widens P5 to P95 to $58 to $797, which is why the UI
+asks for one at a time.
 
-| Item | Why it needs you |
-| --- | --- |
-| `FINNHUB_API_KEY` | Sign up for the free tier and set it in Vercel. Removes the one remaining manual field. |
-| `SEC_USER_AGENT` | Set to `"Your Name you@example.com"`. Only needed for tickers missing from the bundled map, but SEC asks for it. |
-| Push to GitHub | Every commit is local. The repository remote exists and nothing has been pushed. |
-| Vercel GitHub app | Install on `amardani05/IMA-Monte-Carlo` so pushes to `main` deploy. The CLI link failed. |
-| Access control | The production URL is public. Nothing is persisted server-side, so the exposure is the tool, not the data. Decide before anything saves state. |
+## Phase 4, expectations: done
 
-## Deliberately not done
+- Market-implied margin, growth and multiple at spot (each holding the other
+  two at P50), shown beside the analyst's P10 / P50 / P90 and flagged when
+  outside them.
+- The analyst's three-statement path as a percentile of the distribution.
+- A calibration log endpoint and "Log this run" button recording every stated
+  P10 / P50 / P90 for later scoring. Ephemeral on Vercel until
+  `CALIBRATION_LOG_PATH` points somewhere durable.
 
-- **SciPy removal.** It is used for `norm.cdf` and `norm.ppf` only and adds
-  ~40 MB to the bundle. Replacing it with an `erf` approximation changes the
-  numerical core at the 1e-7 level for a cold-start gain. Not worth the risk for
-  a tool whose value is in its numbers agreeing with themselves.
-- **Estimating the correlation matrix.** It is editable now. Estimating it from
-  data needs return series the tool deliberately does not ingest.
-- **Present-value discounting.** Returns are annualised, which is the honest
-  comparable. A discounted variant needs a cost-of-equity input, which is a
-  DCF concern rather than a scenario-analysis one.
-- **Exxon and other custom-taxonomy filers.** Need per-filer tag overrides.
-  Fails with a clear message.
-- **Sector presets.** Superseded by auto-fill.
-- **Scheduled ticker-map refresh.** A GitHub Action, once the repository is pushed.
+## Data corrections the harness surfaced
 
-## Latent
+- Minority interest and preferred stock now come off enterprise value. TDS
+  carries $1.07B of preferred and $232M of minority interest; net debt moved
+  from -$1,507M to -$201M.
+- Filers without the dei share-count tag fall back to us-gaap counts.
+- Any multiple struck on a sub-2% margin is excluded from history and refused as
+  an anchor (QuinStreet 2017: 330x).
+- Margin reversion rates estimated from a thin panel are shrunk toward 0.38 and
+  capped at 0.5 (the telecom panel estimated 0.72 from 47 pairs).
 
-- The zero floor on terminal price never binds on current assumptions but will
-  once distributions are widened further.
-- Free-cash-flow drift is capped at 60% of EV and 15% standard deviation. On a
-  cash-dominated EV like TDS the cap binds and the note says so.
+## Open
+
+- **TDS remains a sum-of-parts story.** The bridge now takes preferred and
+  minority interest off, but an EV/EBITDA bridge on a holding company with a
+  tower business, a wireless stake and $2.2B of cash is the wrong instrument.
+  The FCF bridge and the warning are the mitigation; a sum-of-parts is not in
+  this tool.
+- **Yahoo from Vercel.** The chart endpoint rate-limits Vercel's egress, so the
+  deployed lookup usually has no quote and no price-based multiple history (it
+  falls back to the public-float proxy and the panel). `FINNHUB_API_KEY` fixes
+  the quote; history needs a keyed provider or a scheduled job that writes the
+  series into the repository.
+- **Panels are a snapshot.** `tools/build_panels.py` should run on a schedule
+  with the ticker-map refresh.
+- **Backlog conversion** is a hand-set 0.55 / 0.70 / 0.85 until the 10-K's
+  "expected within twelve months" figure is parsed.
+- **Scheduled refresh** of peers, panels and the ticker map once the repository
+  has a CI runner.

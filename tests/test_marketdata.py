@@ -286,8 +286,10 @@ class CalibrationV2(unittest.TestCase):
         "corr_changes": {"g_m": 0.25, "g_mult": -0.10, "m_mult": -0.30},
     }
 
+    BLEND = {"target": "blend", "k_shrink": 8.0, "lam_mult": 0.2, "growth_centre": "blend", "width_scale": None}
+
     def test_margin_centre_reverts_toward_the_panel_median(self):
-        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0, params=self.BLEND)
         p50 = d["driver_specs"]["ebitda_margin"]["p50"]
         m0 = 0.064
         w_l = 36 / (36 + 60.0)                        # the panel's rate is shrunk toward Fama-French by pair count
@@ -299,14 +301,14 @@ class CalibrationV2(unittest.TestCase):
         self.assertGreater(p50, m0)       # a below-target margin is lifted
 
     def test_growth_is_shrunk_toward_the_panel(self):
-        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0, params=self.BLEND)
         own = md._q_of(md.rolling_cagrs(self.PROFILE["revenue_history_m"], 2))
         p50 = d["driver_specs"]["rev_cagr"]["p50"]
         self.assertLess(min(own["p50"], 0.05) - 1e-9, p50)
         self.assertLess(p50, max(own["p50"], 0.05) + 1e-9)   # between own and panel medians
 
     def test_multiple_moves_toward_the_panel_median_and_is_log_bounded(self):
-        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0, params=self.BLEND)
         spec = d["driver_specs"]["ev_ebitda_multiple"]
         self.assertEqual(spec["type"], "log_metalog")
         self.assertLess(spec["p50"], 18.0); self.assertGreater(spec["p50"], 11.0)
@@ -318,6 +320,18 @@ class CalibrationV2(unittest.TestCase):
         np.linalg.cholesky(c)                                   # positive definite
         self.assertAlmostEqual(c[0, 1], 0.25, delta=0.02)
         self.assertEqual(d["copula"], "t")
+
+    def test_production_defaults_keep_centres_on_own_record(self):
+        """The harness decision: the panel sets width, the company's own record sets the centre."""
+        d = md.calibrate_drivers_v2(self.PROFILE, self.PANEL, horizon_years=2.0)
+        own_g = md._q_of(md.rolling_cagrs(self.PROFILE["revenue_history_m"], 2))["p50"]
+        self.assertAlmostEqual(d["driver_specs"]["rev_cagr"]["p50"], own_g, places=5)
+        self.assertAlmostEqual(d["driver_specs"]["ev_ebitda_multiple"]["p50"], 18.0, places=3)   # no reversion toward peers
+        own_m = md._q_of(list(self.PROFILE["margin_history"].values()))["p50"]
+        lam = min((36 / 96) * 0.30 + (1 - 36 / 96) * 0.38, 0.5)
+        self.assertAlmostEqual(d["driver_specs"]["ebitda_margin"]["p50"], 0.064 + (1 - (1 - lam) ** 2) * (own_m - 0.064), places=5)
+        # but the width still comes partly from the panel
+        self.assertLess(d["driver_specs"]["ebitda_margin"]["p10"], min(self.PROFILE["margin_history"].values()))
 
     def test_without_a_panel_it_falls_back_cleanly(self):
         d = md.calibrate_drivers_v2(self.PROFILE, None, horizon_years=2.0)

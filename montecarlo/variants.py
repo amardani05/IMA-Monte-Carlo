@@ -34,7 +34,8 @@ REGISTRY = {
     # name: (model_fn, prefill_fn or None)
     "default": (backtest.default_model, None),
     "t_copula_only": (lambda p: backtest.default_model(dict(p, copula="t", copula_df=5.0)), None),
-    "phase2": (backtest.default_model, phase2_prefill),
+    "phase2": (backtest.default_model, phase2_prefill),       # current V2_DEFAULTS
+    "v2_blend_all": (backtest.default_model, _v2({"k_shrink": 8.0, "lam_mult": 0.2, "width_scale": None, "growth_centre": "blend", "target": "blend"})),
     "phase2_gaussian": (lambda p: backtest.default_model(dict(p, copula="gaussian")), phase2_prefill),
     # sweep: trust own history more, no multiple reversion, no horizon width inflation, own growth centre
     "v2_k3": (backtest.default_model, _v2({"k_shrink": 3.0})),

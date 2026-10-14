@@ -21,6 +21,11 @@ from datetime import date, datetime, timedelta
 from typing import Optional
 
 CHART_URL = "https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?range={rng}&interval=1d&events=div"
+try:
+    import yfinance as _yf  # noqa: F401
+    _HAS_YFINANCE = True
+except ImportError:
+    _HAS_YFINANCE = False
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 HTTP_TIMEOUT = 12.0
 _CACHE: dict = {}
@@ -96,7 +101,10 @@ def price_history(symbol: str, years: int = 10, prefer_yfinance: bool = True) ->
         return hit[1]
     series = _fetch_yfinance(symbol, years) if prefer_yfinance else None
     if not series:
-        series = _fetch_chart(symbol, f"{years}y")
+        # Without yfinance (the deployed function) a 429 is likely and a retry
+        # loop with sleeps turns one lookup into ten seconds. One attempt; the
+        # callers all degrade cleanly when no series comes back.
+        series = _fetch_chart(symbol, f"{years}y", retries=1 if not _HAS_YFINANCE else 3)
     if not series:
         raise PriceError(f"No price history returned for {symbol}")
     series.sort()

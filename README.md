@@ -52,47 +52,45 @@ matrix and validates it is symmetric and positive definite before use.
 ## Auto-fill
 
 `GET /api/company/<ticker>` reads SEC EDGAR's XBRL company-facts API and returns
-a ready-to-run set of assumptions.
+a ready-to-run set of assumptions, each driver as a P10, P50 and P90.
 
 **Pulled from filings:** revenue, EBITDA margin (operating income + D&A, with
-fallbacks for filers that tag neither), share count, cash and debt.
+fallbacks for filers that tag neither), share count, cash, debt, minority
+interest and preferred stock. Year-end EV/EBITDA history comes from Yahoo
+Finance closes against the balance sheet.
 
-**Calibrated from filed history:** revenue CAGR from every realised N-year CAGR
-in the record, and the EBITDA margin range from the years actually filed. This
-matters, hand-set ranges tend to encode a directional view as though it were
-uncertainty. On MYRG the hand-typed 7.1–7.7% margin band sits entirely above a
-company that has ranged 3.55–6.82% over ten filed years.
+**Calibrated from filed history and a peer panel (calibration v2).** The
+company's own quantiles are shrunk toward its SIC peer group
+(`montecarlo/data/peers.json`, panels cached by `tools/build_panels.py`); the
+margin P50 follows a partial-adjustment path toward the company's own long-run
+median at a rate estimated from the panel and shrunk toward Fama-French's 0.38;
+the copula is Student-t with correlations estimated from pooled year-over-year
+changes. The defaults were chosen on the backtest harness, where the peer panel
+turned out to earn its keep through width rather than by moving the centre.
 
-**Left to you:** bear, base and bull targets are your DCF output, the thing the
-simulation exists to test. The driver modes are held at today's values, which
-makes the untouched model a status-quo projection; the chips under each driver
-set the mode to the current value or the historical median in one click, and
-the reconciliation panel shows what each target implicitly assumes.
+**Mechanisms** (`mechanisms` in the response, switched on per name in the UI):
+cost structure from CostOfRevenue and the implied fixed base, backlog from the
+remaining-performance-obligation tag, an FCF-to-equity second bridge, and a
+justified multiple from ROIC, a CAPM cost of equity and a stated WACC.
 
-### Reading the output
+**Left to you:** bear, base and bull targets, and the P50 of any driver you
+hold a view on. The results page shows what spot already implies for each
+driver, and where your three-statement path sits in the distribution.
 
-The **reconciliation panel** compares the mode-path price (every driver at its
-mode) with the simulated median, and for each case target shows the exit
-multiple it needs at your mode margin and the margin it needs at your mode
-multiple. Red cells fall outside the range you gave the model. See
-`ROADMAP.md` for why the untouched model lands near spot and what to do about it.
-
-Every probability carries its Monte Carlo standard error. Returns are shown
-total and annualised.
-
-### Sharing and export
-
-Each run writes the full set of inputs, correlation matrix included, into the
-URL fragment; copy the link and the recipient gets the same run. PNG export
-composites the four panels for a deck. JSON export carries inputs and results.
-Pin a result and the next run shows deltas against it.
-
-Ticker → CIK resolves against a map bundled at `montecarlo/data/sec_tickers.json`,
-so the common case costs no network call. Refresh it occasionally:
+### Backtest harness
 
 ```bash
-SEC_USER_AGENT="Your Name you@example.com" python tools/refresh_tickers.py
+python tools/backtest.py                                # default names, baseline
+python tools/backtest.py --model phase2 --label v2 --compare baseline
+python tools/backtest.py --names MYRG,TDS,QNST --start 2017-12-31 --model v2_tight
 ```
+
+For each name and past quarter-end the auto-fill is rebuilt from filings
+available on that date and the close that day, the model runs at the horizon,
+and the realised price is scored: PIT (uniform if the distributions are right)
+and CRPS in dollars. `montecarlo/variants.py` registers model variants; every
+modelling change is accepted or rejected on these numbers. Needs `yfinance`
+locally.
 
 ### Not every filer works
 
@@ -105,12 +103,10 @@ one) cannot be read generically and fail with a clear message.
 
 | Variable | Effect |
 | --- | --- |
-| `FINNHUB_API_KEY` | Fetches the share price too. Without it every other field still fills and you type the price; enterprise value recomputes as you do. |
-| `SEC_USER_AGENT` | `"Name email@domain"`. Only needed for tickers missing from the bundled map, `www.sec.gov` returns 403 without a contact. |
-
-No keyless quote feed proved reliable enough to ship: Stooq now sits behind a
-JavaScript proof-of-work wall and Yahoo's undocumented endpoints rate-limit
-datacenter IPs. Serving a stale price silently is worse than asking for one number.
+| `FINNHUB_API_KEY` | Quote provider. Without it Yahoo Finance is tried once; on a 429 the price is typed by hand and everything else still fills. |
+| `SEC_USER_AGENT` | `"Name email@domain"`. Only needed for tickers missing from the bundled map. |
+| `RISK_FREE`, `EQUITY_RISK_PREMIUM` | CAPM inputs for the cost of equity (defaults 4.2% and 4.5%). |
+| `CALIBRATION_LOG_PATH` | Where logged runs are appended. Ephemeral on Vercel unless pointed at a mounted store. |
 
 ## Tests
 
@@ -118,9 +114,9 @@ datacenter IPs. Serving a stale price silently is worse than asking for one numb
 python -m unittest discover -s tests -t .
 ```
 
-54 tests, no network needed. SEC parsing runs against a synthetic fixture and
-golden-value regressions pin the published MYRG numbers. Set `IMA_LIVE_SEC=1`
-to additionally exercise EDGAR for real.
+80 tests, no network needed. SEC parsing, calibration v2 and the harness math
+run against synthetic fixtures; golden-value regressions pin the published MYRG
+numbers. Set `IMA_LIVE_SEC=1` to additionally exercise EDGAR for real.
 
 ## Local development
 

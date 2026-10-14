@@ -1173,13 +1173,20 @@ def _ensure_order(p10, p50, p90, min_gap):
     return float(lo), float(p50), float(hi)
 
 
+# Defaults chosen on the backtest harness (tools/backtest.py, 84 snapshots on MYRG,
+# TDS and QuinStreet, 2017 to 2024, after the minority-interest fix). Against the
+# own-history baseline: CRPS/spot 0.590 -> 0.561, 90% coverage 71% -> 83%, PIT tails
+# 37% -> 25%. The finding behind the numbers: the peer panel earns its keep through
+# WIDTH (the company's own ten years understate what can happen), not by moving
+# the centre. Centres stay on the company's own record, reverting toward its own
+# long-run median; blending centres toward peer medians made every variant worse.
 V2_DEFAULTS = {
-    "k_shrink": 8.0,        # own-history weight is n / (n + k)
-    "lam_margin": None,     # None = panel estimate (Fama-French fallback); a number overrides
-    "lam_mult": 0.20,       # multiple reversion per year
-    "width_scale": None,    # None = sqrt(T); a number overrides
-    "growth_centre": "blend",  # "blend" | "own"
-    "target": "blend",         # margin reversion target: "blend" of own and peer medians, or "own"
+    "k_shrink": 3.0,        # own-history weight is n / (n + k); ten years -> 77%
+    "lam_margin": None,     # None = panel estimate shrunk toward Fama-French 0.38 and capped at 0.5
+    "lam_mult": 0.0,        # no multiple reversion toward peers; the anchor is the company's own level
+    "width_scale": 1.0,     # no horizon inflation of the cross-sectional width
+    "growth_centre": "own", # growth P50 is the company's own realised median
+    "target": "own",        # margin reverts toward the company's own long-run median
 }
 
 
