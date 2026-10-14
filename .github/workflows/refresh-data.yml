@@ -1,0 +1,38 @@
+name: refresh data
+# Weekly: bundled prices, sector panels and the SEC ticker map, committed back
+# so the deployed app reads fresh files instead of calling Yahoo or www.sec.gov.
+on:
+  schedule:
+    - cron: "0 11 * * 1"   # Mondays 11:00 UTC, after the prior week's closes
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt yfinance
+      - name: Prices
+        run: python tools/refresh_prices.py
+      - name: Ticker map (needs SEC_USER_AGENT secret, "Name email@domain")
+        if: ${{ secrets.SEC_USER_AGENT != '' }}
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: python tools/refresh_tickers.py
+      - name: Peer universe and panels
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: |
+          python tools/build_peers.py
+          python tools/build_panels.py MYRG TDS QNST
+      - name: Commit
+        run: |
+          git config user.name "data-refresh"
+          git config user.email "data-refresh@users.noreply.github.com"
+          git add montecarlo/data
+          git diff --cached --quiet || git commit -m "Weekly data refresh: prices, panels, ticker map"
+          git push

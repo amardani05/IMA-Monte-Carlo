@@ -1,0 +1,24 @@
+name: weekly backtest
+# Scores the deployed model on the default names and keeps the report as an
+# artifact. The gate compares against the last stored baseline when present.
+on:
+  schedule:
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt yfinance
+      - run: python tools/backtest.py --label weekly
+      - run: python tools/backtest.py --model phase2 --label weekly_v2 --compare weekly
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backtest-reports
+          path: |
+            backtests/*.html
+            backtests/*.json

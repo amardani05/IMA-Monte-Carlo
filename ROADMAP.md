@@ -97,9 +97,14 @@ standard error 0.012). The calibration gate is met clearly. v2 ships because it
 is as sharp as the baseline and much better calibrated, not because it is more
 accurate at the centre. Two things the numbers say about what is left:
 
-- Coverage at 65% is still well short of 90%. The distributions are still too
-  narrow, especially on the engineering and construction names, several of
-  which rose two to ten times over the window.
+- Coverage at 65% is still well short of 90%, and the by-year breakdown says
+  where: 90% coverage was 87 to 92% on snapshots taken in 2016, 2017 and 2019,
+  fell to the mid-60s in 2018 and 2020, and collapsed to about 50% for 2022 to
+  2024, with the median running 40 to 50% low. The model is calibrated in an
+  ordinary regime and badly too narrow in the 2022 to 2024 engineering and
+  construction re-rating, when several names rose two to ten times. That is the
+  regime risk a filings-only prior cannot see coming, and it argues for a
+  market-state input (sector multiple momentum, rate level) in a later phase.
 - The median still runs low (mean log error +0.18). Part of that is the sample:
   2017 to 2024 was an exceptional stretch for this sector list, and a model that
   would have called it from filings alone does not exist. Part is the model.
@@ -159,14 +164,15 @@ asks for one at a time.
   tower business, a wireless stake and $2.2B of cash is the wrong instrument.
   The FCF bridge and the warning are the mitigation; a sum-of-parts is not in
   this tool.
-- **Yahoo from Vercel.** The chart endpoint rate-limits Vercel's egress, so the
-  deployed lookup usually has no quote and no price-based multiple history (it
-  falls back to the public-float proxy and the panel). `FINNHUB_API_KEY` fixes
-  the quote; history needs a keyed provider or a scheduled job that writes the
-  series into the repository.
+- **Yahoo from Vercel** is now routed around: twelve years of daily closes for
+  the universe ship in `montecarlo/data/prices`, refreshed weekly by a workflow,
+  so the deployed lookup has multiple history, beta and a labelled last close
+  without a network call. `FINNHUB_API_KEY` adds a live quote on top.
 - **Panels are a snapshot.** `tools/build_panels.py` should run on a schedule
   with the ticker-map refresh.
 - **Backlog conversion** is a hand-set 0.55 / 0.70 / 0.85 until the 10-K's
   "expected within twelve months" figure is parsed.
-- **Scheduled refresh** of peers, panels and the ticker map once the repository
-  has a CI runner.
+- **Scheduled refresh** now exists as GitHub Actions: tests on every push,
+  prices, panels and the ticker map weekly (committed back), and a weekly
+  backtest whose report is kept as an artifact. The ticker-map step needs a
+  `SEC_USER_AGENT` repository secret.
