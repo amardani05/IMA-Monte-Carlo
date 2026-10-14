@@ -743,6 +743,8 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
             "note": "total debt (incl. finance leases) plus minority interest and preferred, less cash; operating leases excluded",
         }
 
+    if rev_annual[latest_fy] <= 0:
+        raise DataError(f"{ticker.upper()} filed no revenue for FY{latest_fy}; nothing to bridge from")
     margin_now = ebitda_annual[latest_fy] / rev_annual[latest_fy]
     if margin_now < 0.02:
         raise DataError(

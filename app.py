@@ -29,7 +29,14 @@ def index():
 
 @app.get("/api/health")
 def health():
-    return jsonify(ok=True, endpoint="POST /api/simulate")
+    """Also says which quote source is configured, so a freshly set key can be verified without a lookup."""
+    from montecarlo import prices
+    import glob
+    bundle_n = len(glob.glob(os.path.join(prices.BUNDLE_DIR, "*.json")))
+    return jsonify(ok=True, endpoint="POST /api/simulate",
+                   quote_provider="finnhub" if os.environ.get("FINNHUB_API_KEY") else "yahoo, then bundled close",
+                   bundled_price_series=bundle_n,
+                   sec_user_agent_set=bool(os.environ.get("SEC_USER_AGENT")))
 
 
 @app.get("/api/company/<ticker>")

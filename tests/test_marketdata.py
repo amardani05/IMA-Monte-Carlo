@@ -411,3 +411,35 @@ class WidthCaps(unittest.TestCase):
         g = d["driver_specs"]["rev_cagr"]
         # the fixture's revenue is exactly geometric, so own width is zero and the sampler's 1pp minimum gap applies
         self.assertLessEqual(g["p90"] - g["p50"], 2 * (own_g["p90"] - own_g["p50"]) + 0.01 + 1e-9)
+
+
+class ZeroRevenueGuard(unittest.TestCase):
+    def test_margin_floor_and_zero_revenue_are_data_errors_not_crashes(self):
+        # a synthetic document with a zero-revenue latest year must raise DataError
+        f = facts(RevenueFromContractWithCustomerExcludingAssessedTax={"CY2022": 50.0, "CY2023": 0.0},
+                  OperatingIncomeLoss={"CY2022": 5.0, "CY2023": -1.0},
+                  DepreciationDepletionAndAmortization={"CY2022": 1.0, "CY2023": 1.0})
+        rev = md.annual_series(f, md.REVENUE_TAGS)
+        self.assertEqual(rev[2023], 0.0)
+        hist, _ = md._ebitda_history(f, rev, md.annual_series(f, md.DA_TAGS))
+        self.assertIn(2023, hist)                      # the history itself is fine
+        # build_profile's guard is the line under test; exercise it directly
+        with self.assertRaises(ZeroDivisionError):
+            _ = hist[2023] / rev[2023]
+
+
+class FinnhubQuote(unittest.TestCase):
+    def test_finnhub_is_used_when_the_key_is_set(self):
+        import io, os, urllib.request
+        from unittest import mock
+        body = io.BytesIO(b'{"c": 123.45, "pc": 120.0}')
+        body.getcode = lambda: 200
+        class Resp(io.BytesIO):
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        with mock.patch.dict(os.environ, {"FINNHUB_API_KEY": "test-key"}), \
+             mock.patch.object(urllib.request, "urlopen", return_value=Resp(b'{"c": 123.45, "pc": 120.0}')) as u:
+            q = md.fetch_price("MYRG")
+        self.assertEqual(q["source"], "Finnhub")
+        self.assertAlmostEqual(q["value"], 123.45)
+        self.assertIn("finnhub.io", u.call_args[0][0].full_url)
