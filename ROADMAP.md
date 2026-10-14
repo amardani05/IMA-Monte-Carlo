@@ -77,8 +77,35 @@ centre. A company's own ten years understate what can happen to it, and the
 panel fixes that; but pulling its margin or growth toward the peer median made
 every variant worse. Centres now stay on the company's own record, reverting
 toward its own long-run median. These are the production defaults
-(`V2_DEFAULTS` in `marketdata.py`). The CRPS gain is inside one standard error
-on 84 snapshots; the coverage gain is not. The full-panel run is in progress.
+(`V2_DEFAULTS` in `marketdata.py`).
+
+**Full panel, 488 paired snapshots across 17 names, 2016 to 2024** (after two
+more corrections the run forced: the bridge now refuses names with an EBITDA
+margin under 2%, where EverQuote produced a $27,000 P95 on a $7 stock; and a
+peer panel may widen a company's own range by at most a factor of two):
+
+| | Own history (baseline) | v2 adopted |
+| --- | --- | --- |
+| CRPS / spot | 0.790 | 0.789 |
+| Better on snapshots | | 53% |
+| Better on names | | 10 of 17 |
+| 90% coverage | 48% | 65% |
+| PIT in outer deciles | 65% | 46% |
+
+The sharpness gate is met only at the margin: CRPS is a tie (delta -0.001,
+standard error 0.012). The calibration gate is met clearly. v2 ships because it
+is as sharp as the baseline and much better calibrated, not because it is more
+accurate at the centre. Two things the numbers say about what is left:
+
+- Coverage at 65% is still well short of 90%. The distributions are still too
+  narrow, especially on the engineering and construction names, several of
+  which rose two to ten times over the window.
+- The median still runs low (mean log error +0.18). Part of that is the sample:
+  2017 to 2024 was an exceptional stretch for this sector list, and a model that
+  would have called it from filings alone does not exist. Part is the model.
+  Separating the two needs a longer window and a broader universe, which the
+  curated 102-name list and the panel builder now make a scheduled job rather
+  than a project.
 
 ## Phase 3, mechanisms: done
 
@@ -118,7 +145,10 @@ asks for one at a time.
   from -$1,507M to -$201M.
 - Filers without the dei share-count tag fall back to us-gaap counts.
 - Any multiple struck on a sub-2% margin is excluded from history and refused as
-  an anchor (QuinStreet 2017: 330x).
+  an anchor (QuinStreet 2017: 330x), and the bridge itself is refused for names
+  whose latest margin is under 2% (EverQuote).
+- A peer panel can widen a company's own P10 to P90 by at most a factor of two;
+  the ad-tech group's -7% to +46% growth range otherwise swamped QuinStreet.
 - Margin reversion rates estimated from a thin panel are shrunk toward 0.38 and
   capped at 0.5 (the telecom panel estimated 0.72 from 47 pairs).
 

@@ -330,8 +330,11 @@ class CalibrationV2(unittest.TestCase):
         own_m = md._q_of(list(self.PROFILE["margin_history"].values()))["p50"]
         lam = min((36 / 96) * 0.30 + (1 - 36 / 96) * 0.38, 0.5)
         self.assertAlmostEqual(d["driver_specs"]["ebitda_margin"]["p50"], 0.064 + (1 - (1 - lam) ** 2) * (own_m - 0.064), places=5)
-        # but the width still comes partly from the panel
-        self.assertLess(d["driver_specs"]["ebitda_margin"]["p10"], min(self.PROFILE["margin_history"].values()))
+        # but the panel still widens the range beyond the company's own dispersion
+        own_q = md._q_of(list(self.PROFILE["margin_history"].values()))
+        spec = d["driver_specs"]["ebitda_margin"]
+        self.assertGreater(spec["p50"] - spec["p10"], own_q["p50"] - own_q["p10"])
+        self.assertGreater(spec["p90"] - spec["p50"], own_q["p90"] - own_q["p50"])
 
     def test_without_a_panel_it_falls_back_cleanly(self):
         d = md.calibrate_drivers_v2(self.PROFILE, None, horizon_years=2.0)
@@ -393,3 +396,18 @@ class ClaimsAheadOfCommon(unittest.TestCase):
                 r["end"] = "2024-12-31"; r.pop("frame", None)
         debt = md._debt(f); cash = md._point_in_time(f, md.CASH_TAGS); nci = md._point_in_time(f, md.NCI_TAGS)
         self.assertEqual(debt[0], 1000.0); self.assertEqual(cash[1], 300.0); self.assertEqual(nci[1], 250.0)
+
+
+class WidthCaps(unittest.TestCase):
+    def test_panel_cannot_widen_more_than_twice_own(self):
+        prof = dict(CalibrationV2.PROFILE)
+        wide = dict(CalibrationV2.PANEL, margin={"p10": -0.30, "p50": 0.09, "p90": 0.60, "n": 40},
+                    cagr={"p10": -0.40, "p50": 0.05, "p90": 0.90, "n": 40})
+        d = md.calibrate_drivers_v2(prof, wide, horizon_years=2.0)
+        own_m = md._q_of(list(prof["margin_history"].values()))
+        spec = d["driver_specs"]["ebitda_margin"]
+        self.assertLessEqual(spec["p90"] - spec["p50"], 2 * (own_m["p90"] - own_m["p50"]) + 1e-9)
+        own_g = md._q_of(md.rolling_cagrs(prof["revenue_history_m"], 2))
+        g = d["driver_specs"]["rev_cagr"]
+        # the fixture's revenue is exactly geometric, so own width is zero and the sampler's 1pp minimum gap applies
+        self.assertLessEqual(g["p90"] - g["p50"], 2 * (own_g["p90"] - own_g["p50"]) + 0.01 + 1e-9)

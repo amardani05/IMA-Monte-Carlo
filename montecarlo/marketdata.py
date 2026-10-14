@@ -703,7 +703,13 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
         }
 
     margin_now = ebitda_annual[latest_fy] / rev_annual[latest_fy]
-    if not -0.5 < margin_now < 0.75:
+    if margin_now < 0.02:
+        raise DataError(
+            f"{ticker.upper()}'s latest fiscal-year EBITDA margin is {margin_now*100:.1f}%. An EV/EBITDA bridge "
+            "multiplies a number near zero by a multiple and returns noise (the harness saw a $27,000 P95 on a $7 "
+            "stock). Value this name on revenue or free cash flow instead; the bridge is not the right instrument."
+        )
+    if not margin_now < 0.75:
         warnings.append(
             f"Derived EBITDA margin of {margin_now * 100:.1f}% is outside the range "
             "this bridge normally sees. Check it against the filing before relying on it."
@@ -1220,6 +1226,12 @@ def calibrate_drivers_v2(profile: dict, panel: Optional[dict], horizon_years: fl
     cagrs = rolling_cagrs(profile["revenue_history_m"], span)
     own = _q_of(cagrs) if len(cagrs) >= 3 else None
     ref = pn.get("cagr")
+    if own and ref:
+        # the panel may be far more dispersed than this company (ad-tech: -7% to +46%);
+        # let it widen the company's own range by at most a factor of two
+        ref = {"p50": ref["p50"], "n": ref["n"],
+               "p10": max(ref["p10"], ref["p50"] - 2 * (own["p50"] - own["p10"])),
+               "p90": min(ref["p90"], ref["p50"] + 2 * (own["p90"] - own["p50"]))}
     blended = _blend_quantiles(own, ref, len(cagrs), k=K)
     if blended:
         p10, p50, p90, w = blended
@@ -1275,6 +1287,8 @@ def calibrate_drivers_v2(profile: dict, panel: Optional[dict], horizon_years: fl
         own_w = None
     if ref_m:
         ref_w = {"lo": ref_m["p50"] - ref_m["p10"], "hi": ref_m["p90"] - ref_m["p50"]}
+        if own_w:
+            ref_w = {"lo": min(ref_w["lo"], 2 * own_w["lo"]), "hi": min(ref_w["hi"], 2 * own_w["hi"])}
     else:
         ref_w = None
     n_m = len(margins)
