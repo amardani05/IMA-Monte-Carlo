@@ -133,6 +133,23 @@ In `engine.py`, each switched on per name from the UI, proposed from filings by
 Stacking all four on MYRG widens P5 to P95 to $58 to $797, which is why the UI
 asks for one at a time.
 
+## Phase 3, continued on 15 October
+
+- **Justified multiple on names with negative filed ROIC.** TDS FY2025: EBITDA
+  $206M but D&A $303M, so operating income is -$97M, ROIC -2.0% and EVA -$487M
+  on $4.6B of invested capital. A justified multiple needs a positive return,
+  so the block used to be withheld. It is now offered with those figures in the
+  note and the ROIC field left for the analyst to underwrite (normalised EBIT,
+  or the FCF bridge instead). EVA is reported wherever invested capital exists.
+- **Pitch assessor.** One PNG per run for the deck or the Excel model: verdict,
+  targets, distribution, probabilities with sampling error, driver quantiles,
+  market-implied values, the FCF bridge and the three-statement percentile,
+  with the histogram and CDF. The same figures are copied to the clipboard as a
+  tab-separated block for pasting into a sheet.
+- **Auto-fill price.** A price left in the field from the previous name was
+  sent along with the lookup and echoed back as the new name's price. The quote
+  now always wins, with a badge naming its source.
+
 ## Phase 4, expectations: done
 
 - Market-implied margin, growth and multiple at spot (each holding the other
@@ -142,6 +159,21 @@ asks for one at a time.
 - A calibration log endpoint and "Log this run" button recording every stated
   P10 / P50 / P90 for later scoring. Ephemeral on Vercel until
   `CALIBRATION_LOG_PATH` points somewhere durable.
+
+## Phase 3 and Phase 5 on the harness
+
+Queued on 15 October, 2012 onward, two-year horizon, default names, each
+compared with v2 on the same snapshots: every mechanism switched on where
+filings support it (`phase3_jm`, `phase3_cost`, `phase3_backlog`), the FCF
+bridge scored as the price (`phase3_fcf`), and a Phase 5 prototype that carries
+sector multiple momentum into the multiple centre (`p5_mom05`, `p5_mom10`),
+built on per-year peer multiple medians the panels now record. The full
+universe at one- and two-year horizons runs after them. Results go here when
+they land.
+
+On the same 2012-onward default-name set, v2 against the own-history baseline:
+588 paired snapshots, CRPS/spot a tie (delta -0.001, se 0.011), 90% coverage
+52% to 71%, median CRPS/spot 0.43.
 
 ## Data corrections the harness surfaced
 
