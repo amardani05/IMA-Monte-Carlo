@@ -109,7 +109,7 @@ DISK_CACHE_TTL = 24 * 3600
 
 def _disk_path(url: str) -> str:
     import hashlib
-    return os.path.join(DISK_CACHE_DIR, hashlib.sha1(url.encode()).hexdigest() + ".json")
+    return os.path.join(DISK_CACHE_DIR, hashlib.sha1(url.encode()).hexdigest() + ".json.gz")
 
 
 def _get_json(url: str, ttl: float) -> dict:
@@ -127,11 +127,12 @@ def _get_json(url: str, ttl: float) -> dict:
     try:
         st = os.stat(disk)
         if time.time() - st.st_mtime < DISK_CACHE_TTL:
-            with open(disk) as fh:
+            import gzip
+            with gzip.open(disk, "rt", encoding="utf-8") as fh:
                 data = json.load(fh)
             _CACHE[url] = (time.time(), data)
             return data
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError, EOFError):
         pass
 
     req = urllib.request.Request(
@@ -168,10 +169,13 @@ def _get_json(url: str, ttl: float) -> dict:
 
     _CACHE[url] = (time.time(), data)
     try:
+        # gzip: a 3 MB company-facts document stores in about 300 KB, so the
+        # whole S&P 600 fits in a few hundred megabytes rather than two gigabytes
+        import gzip
         os.makedirs(DISK_CACHE_DIR, exist_ok=True)
         tmp = disk + ".tmp"
-        with open(tmp, "w") as fh:
-            json.dump(data, fh)
+        with gzip.open(tmp, "wt", encoding="utf-8", compresslevel=6) as fh:
+            json.dump(data, fh, separators=(",", ":"))
         os.replace(tmp, disk)
     except OSError:
         pass  # read-only filesystems (Vercel) simply skip the disk layer
