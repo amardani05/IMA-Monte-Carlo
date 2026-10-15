@@ -189,6 +189,18 @@ spread came from a noisy implied series (std 16% on MYRG, P5 to P95 at eleven
 times spot) and is now shrunk and capped at 5%; the justified multiple's
 premium reversion of 0.5 over two years is more than the market gives back and
 is now 0.25. The UI defaults stay off; auto-fill proposes, the analyst decides.
+With the tightened default the cost model lands at +0.113 (se 0.036), still
+behind plain v2, with 90% coverage 71% to 74%.
+
+**Phase 5 prototype, rejected.** Carrying sector multiple momentum (the
+change in the peer median multiple over the prior year, from per-year peer
+medians the panels now record) into the multiple centre: half the move,
+CRPS/spot +0.015 (se 0.008), better on 38% of snapshots; the full move, +0.074
+(se 0.016). Momentum in peer multiples does not predict the next two years
+well enough to shift the centre; the 2022 to 2024 miss is not fixed this way.
+A market-state input, if one exists, will have to work through width or the
+rate level rather than through momentum in the centre, and that is the next
+hypothesis to put through the harness, not a change to ship.
 
 On the same 2012-onward default-name set, v2 against the own-history baseline:
 588 paired snapshots, CRPS/spot a tie (delta -0.001, se 0.011), 90% coverage
