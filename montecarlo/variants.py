@@ -105,11 +105,11 @@ REGISTRY = {
     "p5_mom05": (backtest.default_model, _v2({"mult_momentum": 0.5})),
     "p5_mom10": (backtest.default_model, _v2({"mult_momentum": 1.0})),
     # Horizon term structure: level widths full at 1 or 2 years and narrower under it;
-    # dilution scaled to the horizon like net debt; both together
+    # dilution scaled to the horizon like net debt; the one-year widths and dilution together
     "phase2_lw1": (_level_width(1.0), phase2_prefill),
     "phase2_lw2": (_level_width(2.0), phase2_prefill),
     "phase2_dilT": (backtest.default_model, _dilution_over_horizon),
-    "phase2_term": (_level_width(2.0), _dilution_over_horizon),
+    "phase2_term": (_level_width(1.0), _dilution_over_horizon),
 }
 
 

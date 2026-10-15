@@ -147,6 +147,64 @@ in v2 of the kind v1 has, and it goes through the harness like anything else.
 2022 to 2024 coverage is 79%, 75% and 74% under v2 against 58%, 58% and 56%:
 better, still short.
 
+**Horizon term structure (15 October; S&P 600, 2012 onward, paired).** Under
+two years the price distribution did not open out from spot. MYRG at $291.17
+(v2, backlog on, seed 42): six months and one year gave the same distribution
+(P5 198.7, median 308.2, P95 507.0), and at 0.05 years P5 to P95 was still
+$308 wide. Three causes:
+
+- Backlog booked a full year of revenue at any horizon under one. A part year
+  now books that share of year one, which is what trailing revenue at T is.
+  A bug fix, on; no one- or two-year number moves.
+- Margins and exit multiples are levels, and both calibrations give them a
+  width with no horizon in it (v2's `width_scale` is 1.0), so their full width
+  applies at any T.
+- Dilution is calibrated as one year's share-count change (MYRG: -1.6%, std
+  6.0%) and applied as the change over the whole horizon. Net debt is scaled
+  (drift x T, std x sqrt T); dilution is not.
+
+The engine now has `level_width_horizon` H: under H, each margin and multiple
+draw is pulled toward its median by sqrt(T / H). Medians do not move, and at or
+beyond H prices are bit-identical. Dilution over the horizon was scored as a
+calibration variant (mean x T, std x sqrt T), not changed in the engine, since
+the service's mode path and implied values read the same field.
+
+| Change | Horizon | CRPS/spot delta (se) | Median delta | 90% coverage | Gate |
+| --- | --- | --- | --- | --- | --- |
+| Level widths full at two years (H = 2) | 1 year | -0.187 (0.051) | -0.005 | 86% to 77% | FAIL |
+| Dilution stated over the horizon | 2 years | -0.016 (0.003) | -0.001 | 79% to 79% | PASS |
+| Level widths full at one year (H = 1) | 0.5 year | -0.020 (0.002) | -0.011 | 90% to 84% | FAIL |
+| H = 1 and dilution over the horizon | 0.5 year | -0.020 (0.002) | -0.012 | 90% to 84% | FAIL |
+
+What it says: **v2's stated widths are one-year widths.** At one year v2 is
+nearly calibrated (50 / 80 / 90% coverage 51% / 77% / 86%, PIT tails 23%), at
+two years too narrow (42% / 69% / 79%, 31%). Pulling the one-year distribution
+in toward a two-year reference costs nine points of 90% coverage in every
+snapshot year; its mean CRPS gain is a few extreme-width names (TGTX, SUPN),
+and the median paired delta is -0.005. At half a year the stated widths are
+too wide in the body (50% coverage 62%, PIT tails 15%: a hump) and on target
+in the 90% band. H = 1 sharpens it on two snapshots in three (ten standard
+errors on the mean, median delta -0.011) and puts the 50% band on target, but
+root-T narrows the tails as much as the body, and 90% coverage falls six
+points: a fail on coverage. Dilution over the horizon makes no difference at
+half a year.
+
+**Defaults unchanged.** `level_width_horizon` stays off; the backlog fix is
+on. Dilution over the horizon, the one change that passed, belongs in
+`calibrate_drivers` (the variant is `phase2_dilT`) and goes in there next. For
+the short end the next hypothesis is a width that narrows the body but keeps
+the tails, which root-T scaling of a level distribution cannot do; an H
+between half a year and one year would only trade the CRPS gain against the
+coverage tolerance. Run files: `backtests/h05_*`, `h1_*`, `h2_*`.
+
+The chain as in the handoff, rerun on today's data: v2 against the own-history
+baseline at one year (14,464 snapshots) fails on the mean (+0.366, se 0.170;
+TGTX's 2024 snapshots alone are +1,000 to +1,500 each) and wins on the median
+(-0.009) and the 5% trimmed mean (-0.036), with 90% coverage 64% to 86%. At
+two years it fails the same way (+0.539, se 0.282; VCEL), median -0.012,
+coverage 55% to 79%. COLL's 2022 snapshots are the same margin-history
+pathology as VCEL: median $0 and P95 $62,000 to $119,000 on a $20 stock.
+
 ## Phase 3, mechanisms: done
 
 In `engine.py`, each switched on per name from the UI, proposed from filings by
