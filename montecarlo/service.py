@@ -335,14 +335,23 @@ def _log_kde_per_dollar(x: np.ndarray, grid: np.ndarray) -> np.ndarray:
     return np.interp(g, centres, smooth) / grid
 
 
-def horizon_densities(engine: MonteCarloEngine, fractions=DENSITY_FRACTIONS, points: int = DENSITY_POINTS) -> Optional[dict]:
+def _month_fractions(T: float) -> tuple:
+    """Quarters of the horizon snapped to whole months, so a 2.25-year run reads 7m, 14m, 20m, 27m."""
+    months = T * 12
+    picks = sorted({int(np.floor(months * f + 0.5)) for f in DENSITY_FRACTIONS[:-1]})
+    return tuple(m / months for m in picks if 0 < m < months) + (1.0,)
+
+
+def horizon_densities(engine: MonteCarloEngine, fractions=None, points: int = DENSITY_POINTS) -> Optional[dict]:
     """
-    Smoothed price densities at fractions of the horizon on one price grid and
-    one per-dollar scale, with each horizon's median and P(at least) each target.
-    The intermediate horizons are interpolated from the terminal run (see
+    Smoothed price densities at fractions of the horizon (by default its
+    quarters, snapped to whole months) on one price grid and one per-dollar
+    scale, with each horizon's median and P(at least) each target. The
+    intermediate horizons are interpolated from the terminal run (see
     `_interpolated_prices`), and the result says so.
     """
     a, T = engine.a, engine.a.horizon_years
+    fractions = fractions or _month_fractions(T)
     samples = [(u, _interpolated_prices(engine, u)) for u in fractions]
     if any(x is None for _, x in samples):
         return None

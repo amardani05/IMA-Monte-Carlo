@@ -94,6 +94,14 @@ class HorizonDensities(unittest.TestCase):
         hd = horizon_densities(_engine(horizon_years=1.0))
         self.assertEqual(hd["note"], "3m to 9m interpolated from the 1-year run")
 
+    def test_odd_horizons_snap_to_whole_months(self):
+        hd = horizon_densities(_engine(horizon_years=2.25))
+        self.assertEqual([h["label"] for h in hd["horizons"]], ["7m", "14m", "20m", "27m"])
+        self.assertEqual([round(h["fraction"] * 27, 9) for h in hd["horizons"]], [7, 14, 20, 27])
+        self.assertEqual(hd["note"], "7m to 20m interpolated from the 2.25-year run")
+        hd = horizon_densities(_engine(horizon_years=1.75))
+        self.assertEqual([h["label"] for h in hd["horizons"]], ["5m", "11m", "16m", "21m"])
+
     def test_log_kde_matches_a_lognormal(self):
         rng = np.random.default_rng(7)
         mu, sigma = np.log(100.0), 0.3

@@ -399,21 +399,91 @@ function recomputeEV() {
   }
 }
 
-async function autofill() {
+async function autofill({ price } = {}) {
   const ticker = form.ticker.value.trim().toUpperCase();
-  if (!ticker) { showLookup("err", "Enter a ticker first."); return; }
+  if (!ticker) { showLookup("err", "Enter a ticker first."); return false; }
   const btn = $("autofillBtn"); btn.disabled = true; btn.textContent = "Loading";
   showLookup("busy", `Reading ${esc(ticker)} filings from SEC EDGAR and the peer panel.`);
   try {
     // The quote wins. A price left in the field from the previous name used to be sent
     // along and echoed back as this name's price, which is how TDS showed MYRG's $287.
+    // An example pitch passes its report's price explicitly; that one wins over the quote.
     const params = new URLSearchParams({ horizon: form.horizon_years.value || "2" });
+    if (price) params.set("price", String(price));
     const res = await fetch(`/api/company/${encodeURIComponent(ticker)}?${params}`);
     const data = await res.json().catch(() => ({ error: `Server returned ${res.status}` }));
     if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
     fillFromPrefill(data);
-  } catch (err) { showLookup("err", esc(err.message)); }
+    return true;
+  } catch (err) { showLookup("err", esc(err.message)); return false; }
   finally { btn.disabled = false; btn.textContent = "Auto-fill from SEC"; }
+}
+
+/* Example pitches: the built-in MYRG preset plus the research-report pitches in examples.json.
+   An example sets what its report states (price, targets, horizon, backlog, the base-case path);
+   every driver still comes from the filings through auto-fill. */
+let EXAMPLES = [];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const fmtDay = (iso) => { const [y, mo, d] = String(iso).split("-").map(Number); return `${d} ${MONTHS[mo - 1]} ${y}`; };
+const reportName = (ex) => `${String(ex.source || ex.ticker).split(" equity research report")[0]} report`;
+async function loadExamples() {
+  try { const res = await fetch("/examples.json"); EXAMPLES = res.ok ? ((await res.json()).examples || []) : []; }
+  catch (_) { EXAMPLES = []; }
+  $("exampleMenu").innerHTML = [["preset", "MYRG: built-in illustration"], ...EXAMPLES.map((ex) => [ex.id, ex.label])]
+    .map(([id, label]) => `<button type="button" role="menuitem" data-example="${esc(id)}">${esc(label)}</button>`).join("");
+}
+function toggleExampleMenu(open) {
+  const menu = $("exampleMenu"), on = open === undefined ? menu.hidden : open;
+  menu.hidden = !on; $("loadPreset").setAttribute("aria-expanded", String(on));
+  if (on) menu.querySelector("button")?.focus();
+}
+function showExampleStrip(ex) {
+  const cm = ex.case_multiples || {};
+  let line = `From the ${reportName(ex)}, ${fmtDay(ex.pitch_date)}, ${ex.rating}.`;
+  if (cm.base !== undefined) line += ` Report multiples: bear ${mult(cm.bear)}, base ${mult(cm.base)}, bull ${mult(cm.bull)}.`;
+  $("exampleLine").textContent = line;
+  const items = [...(ex.notes || [])];
+  if (ex.horizon_basis) items.push(`Horizon ${ex.horizon_years} years. ${ex.horizon_basis}`);
+  if (cm.basis) items.push(`Multiples are ${cm.basis}.`);
+  if (ex.dcf_path) items.push(`Three-statement path: ${ex.dcf_path.basis}`);
+  if (ex.source) items.push(`Source: ${ex.source}`);
+  $("exampleNotes").innerHTML = items.map((t) => `<li>${esc(t)}</li>`).join("");
+  $("exampleStrip").hidden = false;
+}
+async function loadExample(ex) {
+  clearProvenance(); applyExtraDrivers(null); $("formError").hidden = true; $("exampleStrip").hidden = true;
+  ["dcf_g", "dcf_m", "dcf_mult"].forEach((k) => { form[k].value = ""; });
+  form.ticker.value = ex.ticker; form.horizon_years.value = ex.horizon_years;
+  await autofill({ price: ex.current_price });
+  const src = `${reportName(ex)}, ${fmtDay(ex.pitch_date)}`;
+  form.company_name.value = ex.company_name;
+  form.current_price.value = ex.current_price;
+  form.horizon_years.value = ex.horizon_years;
+  const priceLabel = document.querySelector('label[data-field="current_price"]');
+  priceLabel.querySelectorAll(".src-badge").forEach((b) => b.remove());
+  priceLabel.classList.remove("needs-input");
+  priceLabel.prepend(badge("report", `price in the ${src}`, "derived"));
+  recomputeEV();
+  [["bear_price", "bear"], ["base_price", "base"], ["bull_price", "bull"]].forEach(([k, c]) => {
+    form[k].value = ex.targets[c]; form[k].closest("label").classList.remove("needs-input");
+  });
+  Object.entries(ex.mechanisms || {}).forEach(([m, block]) => {
+    if (!MECHS.includes(m)) return;
+    setMech(m, block, true);
+    const d = mechEl(m), note = d.querySelector(".mech-note[data-note]");
+    d.querySelectorAll(".src-badge").forEach((b) => b.remove());
+    d.querySelectorAll("label.needs-input").forEach((l) => { if (l.querySelector("input")?.value !== "") l.classList.remove("needs-input"); });
+    if (m === "backlog") {
+      document.querySelector('label[data-field="bl_m"]').prepend(badge("report", `backlog in the ${src}`, "derived"));
+      note.textContent = `From the ${src}: backlog ${money0(block.backlog_m)}M, conversion P50 ${block.conversion.p50}. Filings: ${note.textContent}`;
+      note.classList.remove("weak");
+    }
+  });
+  document.querySelectorAll("#lookupMsg .warn").forEach((w) => {
+    if (w.textContent.startsWith("Bear, base and bull")) w.textContent = `Bear, base and bull are the targets in the ${reportName(ex)}; change them to test your own.`;
+  });
+  if (ex.dcf_path) { form.dcf_g.value = ex.dcf_path.rev_cagr; form.dcf_m.value = ex.dcf_path.ebitda_margin; form.dcf_mult.value = ex.dcf_path.ev_ebitda_multiple; }
+  showExampleStrip(ex);
 }
 
 /* SVG helpers */
@@ -1098,8 +1168,8 @@ async function run() {
   finally { btn.disabled = false; btn.classList.remove("busy"); btn.textContent = "Run simulation"; }
 }
 form.addEventListener("submit", (e) => { e.preventDefault(); run(); });
-$("autofillBtn").addEventListener("click", autofill);
-form.ticker.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); autofill(); } });
+$("autofillBtn").addEventListener("click", () => { $("exampleStrip").hidden = true; autofill(); });
+form.ticker.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("exampleStrip").hidden = true; autofill(); } });
 form.current_price.addEventListener("input", recomputeEV);
 ["p10", "p50", "p90"].forEach((p) => form[`ev_ebitda_multiple_${p}`].addEventListener("input", () => { multipleEdited = true; }));
 TRI.forEach((d) => form[`${d}_p50`].addEventListener("input", () => refreshChipState(d)));
@@ -1111,7 +1181,25 @@ MECHS.forEach((m) => {
   d.addEventListener("input", (e) => { e.target.closest("label")?.classList.remove("needs-input"); if (m === "justified_multiple") updateEva(); });
 });
 $("corrReset").addEventListener("click", () => { buildCorrGrid(DEFAULT_CORR); $("corrStatus").textContent = "Reset."; $("corrStatus").className = "hint"; });
-$("loadPreset").addEventListener("click", () => { clearProvenance(); applyExtraDrivers(null); fillForm(PRESET); $("lookupMsg").hidden = true; $("formError").hidden = true; });
+$("loadPreset").addEventListener("click", (e) => { e.stopPropagation(); toggleExampleMenu(); });
+$("exampleMenu").addEventListener("click", (e) => {
+  const id = e.target.closest("[data-example]")?.dataset.example; if (!id) return;
+  toggleExampleMenu(false);
+  if (id === "preset") {
+    clearProvenance(); applyExtraDrivers(null); fillForm(PRESET);
+    $("lookupMsg").hidden = true; $("formError").hidden = true; $("exampleStrip").hidden = true;
+  } else {
+    const ex = EXAMPLES.find((x) => x.id === id);
+    if (ex) loadExample(ex).catch((err) => showError(err.message));
+  }
+});
+$("exampleMenu").addEventListener("keydown", (e) => {
+  const items = [...$("exampleMenu").querySelectorAll("button")], i = items.indexOf(document.activeElement);
+  if (e.key === "Escape") { toggleExampleMenu(false); $("loadPreset").focus(); }
+  else if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+});
+document.addEventListener("click", (e) => { if (!e.target.closest(".menu-wrap")) toggleExampleMenu(false); });
 $("shareBtn").addEventListener("click", async () => {
   if (lastPayload) writeUrl(lastPayload);
   try { await navigator.clipboard.writeText(location.href); $("shareBtn").textContent = "Link copied"; } catch (_) { $("shareBtn").textContent = "Copy from address bar"; }
@@ -1152,7 +1240,7 @@ $("logRun").addEventListener("click", async () => {
 });
 
 /* Boot */
-buildCorrGrid(DEFAULT_CORR); applyExtraDrivers(null);
+buildCorrGrid(DEFAULT_CORR); applyExtraDrivers(null); loadExamples();
 const fromUrl = readUrl();
 if (fromUrl) { fillForm(fromUrl); run(); }
 else { form.n_simulations.value = PRESET.n_simulations; form.horizon_years.value = PRESET.horizon_years; form.random_seed.value = PRESET.random_seed; form.copula.value = "t"; form.ticker.focus(); }
