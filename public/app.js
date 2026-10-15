@@ -561,87 +561,18 @@ function panel(w, h, title, right) {
   if (right) g += tx(w - 9, 14.5, right, { size: 9.5, fill: C.muted, anchor: "end" });
   return g;
 }
-const tickDigits = (ticks) => (ticks.length > 1 && ticks[1] - ticks[0] < 0.01 ? 1 : 0);
+const tickDigits = (ticks) => {
+  // as many decimals as the step needs in percent: 2.5% steps read 2.5%, not 3%
+  if (ticks.length < 2) return 0;
+  const st = (ticks[1] - ticks[0]) * 100;
+  return [0, 1, 2].find((d) => Math.abs(st * 10 ** d - Math.round(st * 10 ** d)) < 1e-6) ?? 2;
+};
 /* Ticks on a 1, 2, 2.5, 5 ladder, as many as fit under `count`: denser than niceTicks */
 function denseTicks(min, max, count = 6) {
   const span = max - min || 1, mag = 10 ** Math.floor(Math.log10(span / count));
   const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((st) => span / st <= count) || 10 * mag, out = [];
   for (let v = Math.ceil(min / step - 1e-9) * step; v <= max + 1e-9; v += step) out.push(Math.round(v / step) * step || 0);
   return out;
-}
-
-/* Probability per bin, coloured by scenario band, with the cumulative line on the right axis */
-function histPanel(r, w, h) {
-  const m = r.meta, s = r.stats, e = r.histogram.edges, dens = r.histogram.density, dfcf = r.histogram.density_fcf;
-  // the axis runs to P98 so a long right tail does not squeeze the body; what lies beyond is stated
-  const i98 = r.cdf.y.findIndex((y) => y >= 0.98), x98 = i98 >= 0 ? r.cdf.x[i98] : e[e.length - 1];
-  const bw0 = e[1] - e[0], nVis = Math.min(dens.length, Math.ceil((x98 - e[0]) / bw0));
-  const k = nVis > 64 ? 2 : 1, nb = Math.ceil(nVis / k), bins = [];
-  for (let i = 0; i < nb && (i + 1) * k < e.length; i++) {
-    let p = 0, q = 0;
-    for (let j = 0; j < k; j++) { p += dens[i * k + j] * bw0; if (dfcf) q += dfcf[i * k + j] * bw0; }
-    bins.push({ lo: e[i * k], hi: e[(i + 1) * k], p, q });
-  }
-  const xMin = e[0], xMax = e[Math.min(bins.length * k, e.length - 1)];
-  const beyond = 1 - (r.cdf.y[r.cdf.x.findIndex((x) => x > xMax)] ?? 1);
-  const L = { l: 48, r: 44, t: HEAD + 30, b: 30 }, iw = w - L.l - L.r, ih = h - L.t - L.b;
-  const sx = (v) => L.l + ((v - xMin) / (xMax - xMin)) * iw;
-  const yMax = Math.max(...bins.map((b) => Math.max(b.p, b.q))) * 1.12 || 0.01;
-  const sy = (v) => L.t + ih - (v / yMax) * ih, sc = (v) => L.t + ih - v * ih;
-  const bandOf = (v) => (v < m.bear_price ? C.red : v < m.base_price ? C.amber : v < m.bull_price ? C.blue : C.green);
-  let g = panel(w, h, "Terminal price probability", `${m.horizon_years}-year horizon, ${m.n_simulations.toLocaleString()} paths, ${money(bw0 * k, bw0 * k < 10 ? 2 : 0)} bins`);
-  const yt = denseTicks(0, yMax, 5), yd = tickDigits(yt);
-  yt.forEach((v) => { g += hl(L.l, L.l + iw, sy(v), C.grid) + tx(L.l - 6, sy(v) + 3.5, pct(v, yd), { size: 9.5, fill: C.muted, anchor: "end" }); });
-  [0, 0.25, 0.5, 0.75, 1].forEach((v) => { g += tx(L.l + iw + 6, sc(v) + 3.5, pct(v, 0), { size: 9.5, fill: C.faint }); });
-  denseTicks(xMin, xMax, 10).forEach((v) => { g += vl(sx(v), L.t, L.t + ih, "#f1f3f7") + tx(sx(v), L.t + ih + 13, money0(v), { size: 9.5, fill: C.muted, anchor: "middle" }); });
-  bins.forEach((b) => {
-    if (b.p <= 0) return;
-    const x = sx(b.lo) + 0.4, bw = Math.max(sx(b.hi) - sx(b.lo) - 0.8, 0.6);
-    g += box(x, sy(b.p), bw, L.t + ih - sy(b.p), bandOf((b.lo + b.hi) / 2), ' opacity="0.82"');
-  });
-  if (dfcf) {
-    let d = `M${fx(sx(bins[0].lo))},${fx(sy(0))}`;
-    bins.forEach((b) => { d += ` V${fx(sy(b.q))} H${fx(sx(b.hi))}`; });
-    g += `<path d="${d} V${fx(sy(0))}" fill="none" stroke="${C.purple}" stroke-width="1.3"/>`;
-  }
-  const pts = r.cdf.x.map((v, i) => (v <= xMax ? `${fx(sx(v))},${fx(sc(r.cdf.y[i]))}` : null)).filter(Boolean).join(" ");
-  g += `<polyline points="${pts}" fill="none" stroke="${C.text}" stroke-width="1.1" opacity="0.75"/>`;
-  g += hl(L.l, L.l + iw, L.t + ih, C.axis) + vl(L.l, L.t, L.t + ih, C.axis) + vl(L.l + iw, L.t, L.t + ih, C.axis);
-  // the four scenario bands as a ruler above the plot, each with its probability
-  const bands = [["below bear", 0, m.bear_price, C.red, s.below_bear], ["bear to base", m.bear_price, m.base_price, C.amber, s.bear_to_base],
-    ["base to bull", m.base_price, m.bull_price, C.blue, s.base_to_bull], ["above bull", m.bull_price, Infinity, C.green, s.above_bull]];
-  bands.forEach(([label, lo, hi, color, p]) => {
-    const a = Math.max(lo, xMin), b = Math.min(hi, xMax);
-    const x1 = b > a ? sx(a) : (lo >= xMax ? L.l + iw - 2 : L.l), x2 = b > a ? sx(b) : x1 + 2;
-    g += box(x1, HEAD + 22, x2 - x1, 3, color);
-    const full = `${label} ${pct(p, 1)}`, short = pct(p, 0), room = x2 - x1;
-    const txt = room > full.length * 5.7 + 6 ? full : room > short.length * 5.7 + 2 ? short : "";
-    if (txt) g += tx((x1 + x2) / 2, HEAD + 17, txt, { size: 9.5, fill: color, anchor: "middle", weight: 600 });
-  });
-  // targets, spot and medians; labels staggered so close marks stay legible
-  const marks = [["BEAR", m.bear_price, C.red, "4 3"], ["BASE", m.base_price, C.amber, "4 3"], ["BULL", m.bull_price, C.green, "4 3"],
-    ["SPOT", m.current_price, C.text, ""], ["MEDIAN", s.median_price, C.purple, "1.5 2"]];
-  if (r.fcf_bridge) marks.push(["FCF MED", r.fcf_bridge.median_price, C.purple, "6 2"]);
-  const rows = [], shown = marks.filter(([, v]) => v >= xMin && v <= xMax).sort((a, b) => a[1] - b[1]);
-  shown.forEach(([, v, color, dash]) => { g += vl(sx(v), L.t, L.t + ih, color, ` stroke-width="1.2"${dash ? ` stroke-dasharray="${dash}"` : ""}`); });
-  shown.forEach(([label, v, color]) => {
-    const x = sx(v), txt = `${label} ${money0(v)}`, wTxt = txt.length * 5.45 + 8;
-    const x0 = x + wTxt > L.l + iw ? x - wTxt : x;                  // near the right edge the tag sits left of its line
-    let row = rows.findIndex((end) => end < x0 - 1); if (row < 0) { row = rows.length; rows.push(0); }
-    rows[row] = x0 + wTxt;
-    const y = L.t + 11 + row * 12;
-    g += box(x0 + 1, y - 9, wTxt - 1, 12, "#ffffff", ` stroke="${color}" stroke-width="0.6"`) + tx(x0 + 4, y, txt, { size: 9, fill: color, weight: 600 });
-  });
-  // legend
-  let lx = L.l;
-  const ly = h - 8;
-  g += tx(lx, ly, beyond > 0.0005 ? `TERMINAL PRICE ($); ${pct(beyond, 1)} OF PATHS ABOVE ${money0(xMax)}` : "TERMINAL PRICE ($)", { size: 9, fill: C.faint, ls: 0.4 });
-  lx = L.l + iw;
-  const leg = [["cumulative, right axis", (x) => hl(x, x + 14, ly - 3, C.text, ' stroke-width="1.2"')]];
-  if (dfcf) leg.unshift(["FCF bridge", (x) => hl(x, x + 14, ly - 3, C.purple, ' stroke-width="1.4"')]);
-  leg.unshift(["share of paths per bin, left axis", (x) => box(x, ly - 7, 9, 8, C.blue, ' opacity="0.82"')]);
-  leg.reverse().forEach(([label, mark]) => { const tw = label.length * 5.4; g += tx(lx, ly, label, { size: 9, fill: C.muted, anchor: "end" }); lx -= tw + 4; g += mark(lx - 14); lx -= 26; });
-  return g;
 }
 
 /* Each driver held at its P10, then its P90, on the same paths; bars from the run's own median (and P(base)) */
@@ -755,91 +686,6 @@ async function fetchPath(ticker) {
     pathCache[ticker] = data ? { ...data, closes: weeklyCloses(data.closes || []) } : null;
   } catch (_) { pathCache[ticker] = null; }
   return pathCache[ticker];
-}
-function pathPanel(r, path, PW, PH) {
-  const m = r.meta, s = r.stats, hd = r.horizon_densities, closes = (path && path.closes) || [];
-  const legendW = 262, densW = 210;
-  const L = { t: HEAD + 16, r: legendW + densW, b: 26, l: 58 }, ih = PH - L.t - L.b;
-  const xb = PW - L.r;                                              // the baseline: last close
-  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now() - 2 * 365.25 * 864e5;
-  const tLast = closes.length ? Date.parse(closes[closes.length - 1][0]) : Date.now();
-  const lastClose = closes.length ? closes[closes.length - 1][1] : m.current_price;
-  // price range: the history, the targets and the bulk of the horizon distribution
-  const lo = Math.min(s.p5 * 0.92, m.bear_price * 0.92, ...closes.map((c) => c[1]));
-  const hi = Math.max(s.p95 * 1.04, m.bull_price * 1.04, ...closes.map((c) => c[1]));
-  const yMin = Math.max(0, lo), yMax = hi;
-  const sx = (t) => L.l + ((t - t0) / Math.max(tLast - t0, 1)) * (xb - L.l), sy = (v) => L.t + ih - ((v - yMin) / (yMax - yMin)) * ih;
-  const labels = hd ? hd.horizons.map((h) => h.label) : [];
-  let g = panel(PW, PH, `${m.ticker} price history and the simulated distribution at ${labels.join(", ") || `${m.horizon_years} years`}`,
-    closes.length ? `weekly closes to ${closes[closes.length - 1][0]}; curves on one probability-per-dollar scale` : "no price history available; curves on one probability-per-dollar scale");
-  const clip = `ppclip-${String(m.ticker).replace(/[^A-Za-z0-9]/g, "")}`;
-  g += `<defs><clipPath id="${clip}"><rect x="${L.l}" y="${L.t}" width="${fx(xb + densW - L.l)}" height="${fx(ih)}"/></clipPath></defs>`;
-  g += box(L.l, L.t, xb - L.l, ih, "#fbfcfe", ` stroke="${C.grid}" shape-rendering="crispEdges"`);
-  denseTicks(yMin, yMax, 7).forEach((v) => {
-    g += hl(L.l, xb + densW, sy(v), C.grid) + tx(L.l - 7, sy(v) + 3.5, money0(v), { size: 10, fill: C.muted, anchor: "end" });
-  });
-  // history time axis: quarters, labelled by year
-  for (let y = new Date(t0).getFullYear(); y <= new Date(tLast).getFullYear(); y++) {
-    [0, 3, 6, 9].forEach((mo) => {
-      const t = Date.UTC(y, mo, 1); if (t <= t0 || t >= tLast) return;
-      const x = sx(t);
-      g += vl(x, L.t, L.t + ih, mo ? "#f0f2f6" : C.grid, mo ? "" : ' stroke-dasharray="2 4"');
-      if (!mo && x < xb - 70) g += tx(x, L.t + ih + 14, String(y), { size: 10, fill: C.muted, anchor: "middle" });
-    });
-  }
-  // the curves, longest horizon first so the near ones sit on top
-  let dMax = 1;
-  if (hd) {
-    const grid = hd.grid;
-    dMax = Math.max(...hd.horizons.map((h) => Math.max(...h.density))) || 1;
-    let curves = "";
-    hd.horizons.map((h, i) => [h, RAMP[Math.min(i, RAMP.length - 1)]]).reverse().forEach(([h, color]) => {
-      const pts = [];
-      grid.forEach((v, j) => { if (v >= yMin - (yMax - yMin) * 0.02 && v <= yMax + (yMax - yMin) * 0.02) pts.push([xb + (h.density[j] / dMax) * densW, sy(v)]); });
-      if (pts.length < 2) return;
-      const d = `M${fx(xb)},${fx(pts[0][1])} L${pts.map(([x, y]) => `${fx(x)},${fx(y)}`).join(" L")} L${fx(xb)},${fx(pts[pts.length - 1][1])} Z`;
-      curves += `<path d="${d}" fill="${color}" fill-opacity="0.16" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
-    });
-    g += `<g clip-path="url(#${clip})">${curves}</g>`;
-  }
-  // targets across the history and the curves, labelled on the left
-  const targets = [["Bull", m.bull_price, C.green], ["Base", m.base_price, C.amber], ["Bear", m.bear_price, C.red]].filter(([, v]) => v >= yMin && v <= yMax);
-  targets.forEach(([, v, col]) => { g += `<line x1="${fx(L.l)}" y1="${fx(sy(v))}" x2="${fx(xb + densW)}" y2="${fx(sy(v))}" stroke="${col}" stroke-width="1.1" stroke-dasharray="6 4"/>`; });
-  // history and the last close, then the target labels on top of both
-  if (closes.length) g += `<polyline points="${closes.map((c) => `${fx(sx(Date.parse(c[0])))},${fx(sy(c[1]))}`).join(" ")}" fill="none" stroke="${C.text}" stroke-width="1.4" stroke-linejoin="round"/>`;
-  targets.forEach(([lbl, v, col]) => {
-    const t = `${lbl} ${money0(v)}`;
-    g += box(L.l + 3, sy(v) - 14, t.length * 6.1 + 8, 13, "#fbfcfe", ` stroke="${col}" stroke-width="0.6"`) + tx(L.l + 7, sy(v) - 4.5, t, { size: 10, fill: col, weight: 600 });
-  });
-  g += vl(xb, L.t, L.t + ih, C.text, ' stroke-width="1"');
-  g += `<circle cx="${fx(xb)}" cy="${fx(sy(lastClose))}" r="3.6" fill="${C.text}"/>`;
-  g += tx(xb, L.t + ih + 14, `last close ${money(lastClose)}`, { size: 10, fill: C.text, anchor: "middle", weight: 600 });
-  if (Math.abs(lastClose - m.current_price) / m.current_price > 0.002) g += tx(xb + 6, L.t + ih - 6, `run spot ${money(m.current_price)}`, { size: 9, fill: C.muted });
-  // each horizon's median as a tick just left of the baseline
-  if (hd) hd.horizons.forEach((h, i) => {
-    if (h.median < yMin || h.median > yMax) return;
-    g += `<line x1="${fx(xb - 16)}" y1="${fx(sy(h.median))}" x2="${fx(xb - 2)}" y2="${fx(sy(h.median))}" stroke="${RAMP[Math.min(i, RAMP.length - 1)]}" stroke-width="2.2"/>`;
-  });
-  // legend in the gutter: horizon, median, P(at least base)
-  const gx = xb + densW + 18, gw = PW - gx - 10;
-  let ly = L.t + 6;
-  g += tx(gx, ly + 8, "HORIZON", { size: 9, fill: C.faint, ls: 0.4 }) + tx(gx + gw * 0.6, ly + 8, "MEDIAN", { size: 9, fill: C.faint, anchor: "end", ls: 0.4 })
-    + tx(gx + gw, ly + 8, "P(BASE)", { size: 9, fill: C.faint, anchor: "end", ls: 0.4 });
-  ly += 14; g += hl(gx, gx + gw, ly, C.axis);
-  if (hd) hd.horizons.forEach((h, i) => {
-    const color = RAMP[Math.min(i, RAMP.length - 1)], y = ly + 18 + i * 20;
-    g += box(gx, y - 9, 12, 11, color, ' fill-opacity="0.16"') + `<rect x="${fx(gx)}" y="${fx(y - 9)}" width="12" height="11" fill="none" stroke="${color}" stroke-width="1.5"/>`;
-    g += tx(gx + 19, y, h.label, { size: 11, fill: C.text, weight: 600 });
-    g += tx(gx + gw * 0.6, y, money0(h.median), { size: 11, fill: C.text, anchor: "end" });
-    g += tx(gx + gw, y, pct(h.p_at_least_base, 0), { size: 11, fill: C.text, anchor: "end" });
-  });
-  const ny = ly + 18 + (hd ? hd.horizons.length : 0) * 20 + 6;
-  g += hl(gx, gx + gw, ny - 8, C.grid);
-  const notes = [`base target ${money0(m.base_price)}; ticks at the baseline are the medians`];
-  if (hd && hd.note) notes.unshift(hd.note);
-  else if (!hd) notes.unshift("no distribution to draw: the median price is zero");
-  notes.flatMap((n) => [...wrapText(n, `9.5px ${MONO}`, gw), ""]).forEach((line, j) => { if (line) g += tx(gx, ny + 6 + j * 13, line, { size: 9.5, fill: C.muted }); });
-  return g;
 }
 function svgStringToImage(svg) {
   return new Promise((resolve, reject) => {
@@ -1032,19 +878,6 @@ function assessorRows(r) {
   });
   return rows;
 }
-function figuresPanel(r, w, h) {
-  const items = assessorFigures(r), nh = items.filter((i) => i.h).length, nr = items.length - nh;
-  const headH = 17, rowH = Math.min(16.5, (h - HEAD - 6 - nh * headH) / nr), fs = Math.min(11, rowH * 0.74);
-  let g = panel(w, h, "Key figures", ""), y = HEAD + 4, zebra = 0;
-  items.forEach((it) => {
-    if (it.h) { g += tx(9, y + 12.5, it.h.toUpperCase(), { size: 9, weight: 600, fill: C.muted, ls: 0.6 }) + hl(9, w - 9, y + headH - 1.5, C.grid); y += headH; zebra = 0; return; }
-    if (zebra++ % 2 === 1) g += box(1, y, w - 2, rowH, "#f8fafc");
-    g += tx(9, y + rowH * 0.7, it.k, { size: fs, fill: it.c || C.text2, font: SANS, weight: it.c ? 600 : 400 });
-    g += tx(w - 9, y + rowH * 0.7, it.v, { size: fs, weight: 500, anchor: "end" });
-    y += rowH;
-  });
-  return g;
-}
 function assessorVerdict(r) {
   const s = r.stats, rc = r.reconciliation, sw = r.swing && r.swing.ebitda;
   const pb = s.p_at_least_base;
@@ -1070,32 +903,302 @@ function wrapText(text, font, maxW) {
   if (line) lines.push(line);
   return lines;
 }
-const AW = 1600, AH = 1200;
+/* The assessor is read at slide size. A 4:3 slide is 10 x 7.5 in, so on this 1200 x 900 canvas
+   12 px is about 8.6 pt on the slide and 13.5 px about 9.7 pt; nothing is drawn smaller than 12 px.
+   The same image pasted into a sheet at 10 in wide reads the same way. */
+const AW = 1200, AH = 900, SH = 27;
+const SF = { title: 25, verdict: 15, head: 12.5, body: 13.5, small: 12 };
+function spanel(w, h, title, right) {
+  let g = box(0, 0, w, h, "#ffffff", ` stroke="${C.axis}" shape-rendering="crispEdges"`);
+  g += box(0.5, 0.5, w - 1, SH - 1, "#f1f4f8") + hl(0, w, SH - 0.5, C.axis);
+  g += tx(10, 18, title.toUpperCase(), { size: SF.head, weight: 600, ls: 0.5, fill: "#1b4b8a" });
+  if (right) g += tx(w - 10, 18, right, { size: SF.small, fill: C.muted, anchor: "end" });
+  return g;
+}
+
+/* Key figures as three small tables: targets, distribution, what the price implies */
+function slideFigures(r, w, h) {
+  const s = r.stats, m = r.meta, rc = r.reconciliation, pi = r.price_implied, dq = m.driver_quantiles;
+  const na = (v, f) => (v === null || v === undefined ? "none" : f(v));
+  const rows = [{ h: "Targets" }, { cols: ["", "Target", "vs spot", "P(at least)"], head: true }];
+  [["Bear", m.bear_price, s.p_at_least_bear, C.red], ["Base", m.base_price, s.p_at_least_base, C.amber], ["Bull", m.bull_price, s.p_at_least_bull, C.green]]
+    .forEach(([k, v, p, c]) => rows.push({ cols: [k, money(v), spct(v / m.current_price - 1, 0), pct(p)], c }));
+  rows.push({ h: "Distribution" },
+    { k: "Median", v: `${money(s.median_price)} (${spct(s.median_return)})` },
+    { k: "Median return a year", v: spct(s.median_return_annualized) },
+    { k: "P5 to P95", v: `${money0(s.p5)} to ${money0(s.p95)}` },
+    { k: "P25 to P75", v: `${money0(s.p25)} to ${money0(s.p75)}`, opt: true },
+    { k: "Below bear", v: pct(s.below_bear) },
+    { h: "What the price implies" }, { cols: ["", "At spot", "Your P50"], head: true },
+    { cols: ["Revenue CAGR", na(pi.implied_growth_at_mode_margin_and_multiple, (v) => pct(v, 1)), pct(dq.rev_cagr.p50, 1)] },
+    { cols: ["EBITDA margin", na(pi.implied_margin_at_mode_growth_and_multiple, (v) => pct(v, 2)), pct(dq.ebitda_margin.p50, 2)] },
+    { cols: ["Exit multiple", na(pi.implied_multiple_at_mode_growth_and_margin, (v) => mult(v)), mult(dq.ev_ebitda_multiple.p50)] },
+    { k: "Base needs", v: `${na(rc.cases.base.implied_multiple_at_mode_margin, (v) => mult(v))} or a ${na(rc.cases.base.implied_margin_at_mode_multiple, (v) => pct(v, 2))} margin` });
+  const extra = [];
+  if (r.fcf_bridge) extra.push({ k: "FCF bridge median", v: `${money(r.fcf_bridge.median_price)} (${spct(r.fcf_bridge.gap_to_ebitda_bridge, 0)})`, c: C.purple });
+  if (r.dcf_path) extra.push({ k: "Your path", v: `${money(r.dcf_path.price)}, ${Math.round(r.dcf_path.percentile * 100)}th pctile` });
+  if (m.eva) extra.push({ k: "EVA at P50", v: m.eva.eva_m !== null ? `${smoney0(m.eva.eva_m)}M (${spct(m.eva.spread, 1)})` : `spread ${spct(m.eva.spread, 1)}`, c: m.eva.spread < 0 ? C.red : undefined });
+  if (extra.length) rows.push({ h: "Beside the bridge" }, ...extra);
+  // fit: rows shrink to 17 px, then optional rows go
+  const headH = 23, avail = h - SH - 6;
+  let list = rows;
+  const fit = (l) => (avail - l.filter((x) => x.h).length * headH) / l.filter((x) => !x.h).length;
+  if (fit(list) < 17) list = list.filter((x) => !x.opt);
+  const rowH = Math.min(21, fit(list)), fs = rowH >= 19 ? SF.body : 13;
+  const colX = (n) => (n === 4 ? [0, w * 0.53, w * 0.73, w - 10] : [0, w * 0.70, w - 10]);
+  let g = spanel(w, h, "Key figures", ""), y = SH + 4, zebra = 0;
+  list.forEach((it) => {
+    if (it.h) { g += tx(10, y + 16, it.h.toUpperCase(), { size: SF.small, weight: 600, fill: C.muted, ls: 0.5 }) + hl(10, w - 10, y + headH - 2, C.grid); y += headH; zebra = 0; return; }
+    const by = y + rowH * 0.7;
+    if (!it.head && zebra++ % 2 === 1) g += box(1, y, w - 2, rowH, "#f6f8fb");
+    if (it.cols) {
+      const xs = colX(it.cols.length);
+      it.cols.forEach((c, i) => {
+        if (i === 0) g += tx(10, by, c, { size: it.head ? SF.small : fs, fill: it.c || (it.head ? C.faint : C.text2), font: it.head ? MONO : SANS, weight: it.c ? 600 : 400 });
+        else g += tx(xs[i], by, c, { size: it.head ? SF.small : fs, fill: it.head ? C.faint : C.text, anchor: "end", weight: it.head ? 400 : 500 });
+      });
+    } else {
+      g += tx(10, by, it.k, { size: fs, fill: it.c || C.text2, font: SANS, weight: it.c ? 600 : 400 });
+      g += tx(w - 10, by, it.v, { size: fs, weight: 500, anchor: "end" });
+    }
+    y += rowH;
+  });
+  return g;
+}
+
+/* Probability per bin, coloured by scenario band, cumulative on the right axis, axis to P98 */
+function slideHist(r, w, h) {
+  const m = r.meta, s = r.stats, e = r.histogram.edges, dens = r.histogram.density, dfcf = r.histogram.density_fcf;
+  const i98 = r.cdf.y.findIndex((y) => y >= 0.98), x98 = i98 >= 0 ? r.cdf.x[i98] : e[e.length - 1];
+  const bw0 = e[1] - e[0], nVis = Math.min(dens.length, Math.ceil((x98 - e[0]) / bw0));
+  const k = nVis > 60 ? 2 : 1, nb = Math.ceil(nVis / k), bins = [];
+  for (let i = 0; i < nb && (i + 1) * k < e.length; i++) {
+    let p = 0, q = 0;
+    for (let j = 0; j < k; j++) { p += dens[i * k + j] * bw0; if (dfcf) q += dfcf[i * k + j] * bw0; }
+    bins.push({ lo: e[i * k], hi: e[(i + 1) * k], p, q });
+  }
+  const xMin = e[0], xMax = e[Math.min(bins.length * k, e.length - 1)];
+  const beyond = 1 - (r.cdf.y[r.cdf.x.findIndex((x) => x > xMax)] ?? 1);
+  const L = { l: 50, r: 46, t: SH + 40, b: 42 }, iw = w - L.l - L.r, ih = h - L.t - L.b;
+  const sx = (v) => L.l + ((v - xMin) / (xMax - xMin)) * iw;
+  const yMax = Math.max(...bins.map((b) => Math.max(b.p, b.q))) * 1.12 || 0.01;
+  const sy = (v) => L.t + ih - (v / yMax) * ih, sc = (v) => L.t + ih - v * ih;
+  const bandOf = (v) => (v < m.bear_price ? C.red : v < m.base_price ? C.amber : v < m.bull_price ? C.blue : C.green);
+  let g = spanel(w, h, "Terminal price probability", `${m.horizon_years}-year horizon, ${m.n_simulations.toLocaleString()} paths`);
+  const yt = denseTicks(0, yMax, 4), yd = tickDigits(yt);
+  yt.forEach((v) => { g += hl(L.l, L.l + iw, sy(v), C.grid) + tx(L.l - 7, sy(v) + 4, pct(v, yd), { size: SF.small, fill: C.muted, anchor: "end" }); });
+  [0, 0.5, 1].forEach((v) => { g += tx(L.l + iw + 6, sc(v) + 4, pct(v, 0), { size: SF.small, fill: C.faint }); });
+  denseTicks(xMin, xMax, 7).forEach((v) => { g += vl(sx(v), L.t, L.t + ih, "#f1f3f7") + tx(sx(v), L.t + ih + 17, money0(v), { size: SF.small, fill: C.muted, anchor: "middle" }); });
+  bins.forEach((b) => {
+    if (b.p <= 0) return;
+    g += box(sx(b.lo) + 0.5, sy(b.p), Math.max(sx(b.hi) - sx(b.lo) - 1, 0.8), L.t + ih - sy(b.p), bandOf((b.lo + b.hi) / 2), ' opacity="0.82"');
+  });
+  if (dfcf) {
+    let d = `M${fx(sx(bins[0].lo))},${fx(sy(0))}`;
+    bins.forEach((b) => { d += ` V${fx(sy(b.q))} H${fx(sx(b.hi))}`; });
+    g += `<path d="${d} V${fx(sy(0))}" fill="none" stroke="${C.purple}" stroke-width="1.6"/>`;
+  }
+  const pts = r.cdf.x.map((v, i) => (v <= xMax ? `${fx(sx(v))},${fx(sc(r.cdf.y[i]))}` : null)).filter(Boolean).join(" ");
+  g += `<polyline points="${pts}" fill="none" stroke="${C.text}" stroke-width="1.3" opacity="0.75"/>`;
+  g += hl(L.l, L.l + iw, L.t + ih, C.axis) + vl(L.l, L.t, L.t + ih, C.axis) + vl(L.l + iw, L.t, L.t + ih, C.axis);
+  // scenario bands as a ruler over the plot, each with its probability
+  const bands = [["below bear", 0, m.bear_price, C.red, s.below_bear], ["bear to base", m.bear_price, m.base_price, C.amber, s.bear_to_base],
+    ["base to bull", m.base_price, m.bull_price, C.blue, s.base_to_bull], ["above bull", m.bull_price, Infinity, C.green, s.above_bull]];
+  bands.forEach(([label, lo, hi, color, p]) => {
+    const a = Math.max(lo, xMin), b = Math.min(hi, xMax);
+    const x1 = b > a ? sx(a) : (lo >= xMax ? L.l + iw - 3 : L.l), x2 = b > a ? sx(b) : x1 + 3;
+    g += box(x1, SH + 27, x2 - x1, 4, color);
+    const full = `${label} ${pct(p, 1)}`, short = pct(p, 0), room = x2 - x1;
+    const txt = room > full.length * 7.8 + 6 ? full : room > short.length * 7.8 + 2 ? short : "";
+    if (txt) g += tx((x1 + x2) / 2, SH + 21, txt, { size: 13, fill: color, anchor: "middle", weight: 600 });
+  });
+  // targets, spot and medians: lines first, then tags, staggered so close marks stay legible
+  const marks = [["BEAR", m.bear_price, C.red, "5 3"], ["BASE", m.base_price, C.amber, "5 3"], ["BULL", m.bull_price, C.green, "5 3"],
+    ["SPOT", m.current_price, C.text, ""], ["MEDIAN", s.median_price, C.purple, "1.5 2.5"]];
+  if (r.fcf_bridge) marks.push(["FCF MED", r.fcf_bridge.median_price, C.purple, "7 3"]);
+  const shown = marks.filter(([, v]) => v >= xMin && v <= xMax).sort((a, b) => a[1] - b[1]), rowsEnd = [];
+  shown.forEach(([, v, color, dash]) => { g += vl(sx(v), L.t, L.t + ih, color, ` stroke-width="1.4"${dash ? ` stroke-dasharray="${dash}"` : ""}`); });
+  shown.forEach(([label, v, color]) => {
+    const x = sx(v), t = `${label} ${money0(v)}`, wT = t.length * 7.25 + 10;
+    const x0 = x + wT > L.l + iw ? x - wT : x;
+    let row = rowsEnd.findIndex((end) => end < x0 - 2); if (row < 0) { row = rowsEnd.length; rowsEnd.push(0); }
+    rowsEnd[row] = x0 + wT;
+    const y = L.t + 14 + row * 17;
+    g += box(x0 + 1, y - 12, wT - 1, 16, "#ffffff", ` stroke="${color}" stroke-width="0.8"`) + tx(x0 + 5, y, t, { size: SF.small, fill: color, weight: 600 });
+  });
+  const ly = h - 10;
+  g += tx(L.l, ly, beyond > 0.0005 ? `price ($); ${pct(beyond, 1)} of paths above ${money0(xMax)}` : "price ($)", { size: SF.small, fill: C.muted });
+  let lx = L.l + iw;
+  const leg = [["paths per bin", (x) => box(x, ly - 9, 11, 10, C.blue, ' opacity="0.82"')], ["cumulative, right", (x) => hl(x, x + 16, ly - 4, C.text, ' stroke-width="1.4"')]];
+  if (dfcf) leg.push(["FCF bridge", (x) => hl(x, x + 16, ly - 4, C.purple, ' stroke-width="1.6"')]);
+  leg.reverse().forEach(([label, mark]) => { g += tx(lx, ly, label, { size: SF.small, fill: C.muted, anchor: "end" }); lx -= label.length * 7.2 + 6; g += mark(lx - 16); lx -= 30; });
+  return g;
+}
+
+/* Each driver at its own P10, then its P90, the rest as drawn: the median as bars, P(at least base) as numbers.
+   EBITDA-bridge drivers, then the two drivers that only move the FCF bridge, measured on that price. */
+const SHORT = { rev_cagr: "Revenue CAGR", ebitda_margin: "EBITDA margin", ev_ebitda: "Exit multiple", net_debt_chg: "Net debt chg",
+  dilution: "Dilution", backlog_conv: "Backlog conv.", gross_margin: "Gross margin", fc_growth: "Fixed cost g", roic: "ROIC",
+  wacc: "WACC", fade: "Growth fade", fcf_margin: "FCF margin", ev_fcf: "EV/FCF" };
+function slideTornado(r, w, h) {
+  const sw = r.swing || {}, eb = sw.ebitda, fc = sw.fcf;
+  if (!eb) return spanel(w, h, "Driver sensitivity", "");
+  const jm = r.meta.mechanisms?.justified_multiple;
+  let rows = eb.rows.map((row) => ({ ...row, centre: eb.median }));
+  const fcfRows = fc ? fc.rows.filter((row) => row.key === "fcf_margin" || row.key === "ev_fcf").map((row) => ({ ...row, centre: fc.median })) : [];
+  const top = SH + 26, bottom = 30, sep = fcfRows.length ? 1 : 0;
+  const maxRows = Math.floor((h - top - bottom) / 19) - sep;
+  let hidden = 0;
+  if (rows.length + fcfRows.length > maxRows) { const keep = Math.max(maxRows - fcfRows.length, 1); hidden = rows.length - keep; rows = rows.slice(0, keep); }
+  const n = rows.length + fcfRows.length + sep, rowH = Math.min(30, (h - top - bottom) / n), fs = rowH >= 21 ? SF.body : 13;
+  const cx = { name: 10, q: 242, a: 256, b: w - 132, pb: w - 10 };
+  const all = [...rows, ...fcfRows], vals = all.flatMap((row) => [row.median_lo, row.median_hi, row.centre]);
+  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.3 || 1; lo -= pad; hi += pad;
+  const sx = (v) => cx.a + ((v - lo) / (hi - lo)) * (cx.b - cx.a);
+  let g = spanel(w, h, "Driver sensitivity", hidden ? `${hidden} smaller in the copied table` : "each at its P10, then P90; rest as drawn");
+  const hy = top - 7;
+  g += tx(cx.name, hy, "DRIVER", { size: SF.small, fill: C.faint }) + tx(cx.q, hy, "P10 / P90", { size: SF.small, fill: C.faint, anchor: "end" })
+    + tx((cx.a + cx.b) / 2, hy, "MEDIAN AT P10 | P90", { size: SF.small, fill: C.faint, anchor: "middle" }) + tx(cx.pb, hy, "P(BASE)", { size: SF.small, fill: C.faint, anchor: "end" });
+  g += hl(4, w - 4, top - 0.5, C.axis) + hl(4, w - 4, h - bottom + 0.5, C.axis);
+  denseTicks(lo, hi, 3).forEach((v) => { if (sx(v) >= cx.a && sx(v) <= cx.b) g += vl(sx(v), top, h - bottom, "#eef1f5") + tx(sx(v), h - bottom + 16, money0(v), { size: SF.small, fill: C.muted, anchor: "middle" }); });
+  let y = top;
+  const drawRows = (list) => {
+    const y0 = y;
+    list.forEach((row, i) => {
+      const cy = y + rowH / 2, bh = Math.min(rowH * 0.58, 14), c = sx(row.centre), xl = sx(row.median_lo), xh = sx(row.median_hi);
+      if (i % 2 === 1) g += box(1, y, w - 2, rowH, "#f8fafc");
+      const name = row.key === "ev_ebitda" && jm ? "Rel. multiple" : SHORT[row.key] || row.name;
+      const f = (v) => (row.key === "ebitda_margin" || row.key === "gross_margin" ? pct(v, 1) : fmtDrv(row, v));
+      g += `<g><title>${esc(`${row.name} at P10 ${fmtDrv(row, row.lo)}: median ${money(row.median_lo)}, P(base) ${pct(row.p_base_lo)}. At P90 ${fmtDrv(row, row.hi)}: median ${money(row.median_hi)}, P(base) ${pct(row.p_base_hi)}.`)}</title>`;
+      g += tx(cx.name, cy + fs * 0.36, name, { size: fs, fill: C.text });
+      g += tx(cx.q, cy + fs * 0.36, `${f(row.lo)} / ${f(row.hi)}`, { size: SF.small, fill: C.muted, anchor: "end" });
+      g += box(Math.min(c, xl), cy - bh / 2, Math.abs(xl - c), bh, T_LO) + box(Math.min(c, xh), cy - bh / 2, Math.abs(xh - c), bh, T_HI, ' opacity="0.92"');
+      const lab = (x, v) => (x < c ? tx(x - 4, cy + 4, money0(v), { size: SF.small, fill: C.text2, anchor: "end" }) : tx(x + 4, cy + 4, money0(v), { size: SF.small, fill: C.text2 }));
+      g += lab(xl, row.median_lo) + lab(xh, row.median_hi);
+      g += tx(cx.pb, cy + fs * 0.36, `${pct(row.p_base_lo, 0)} to ${pct(row.p_base_hi, 0)}`, { size: fs, fill: C.text, anchor: "end", weight: 500 });
+      g += "</g>";
+      y += rowH;
+    });
+    if (list.length) g += vl(sx(list[0].centre), y0, y, C.text, ' stroke-width="1.2"');
+  };
+  drawRows(rows);
+  if (fcfRows.length) {
+    g += box(1, y, w - 2, rowH, "#eef2f8") + tx(cx.name, y + rowH * 0.68, `ON THE FCF PRICE, MEDIAN ${money0(fc.median)}`, { size: SF.small, weight: 600, fill: C.text2 });
+    y += rowH;
+    drawRows(fcfRows);
+  }
+  const ly = h - 10;
+  g += box(cx.name, ly - 9, 11, 10, T_LO) + tx(cx.name + 15, ly, "at P10", { size: SF.small, fill: C.muted });
+  g += box(cx.name + 72, ly - 9, 11, 10, T_HI) + tx(cx.name + 87, ly, "at P90", { size: SF.small, fill: C.muted });
+  return g;
+}
+
+/* Price history and the simulated distribution ahead (the pressed chart), at slide size */
+function slidePath(r, path, PW, PH) {
+  const m = r.meta, s = r.stats, hd = r.horizon_densities, closes = (path && path.closes) || [];
+  const legendW = 172, densW = 116;
+  const L = { t: SH + 12, r: legendW + densW, b: 30, l: 50 }, ih = PH - L.t - L.b, xb = PW - L.r;
+  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now() - 2 * 365.25 * 864e5;
+  const tLast = closes.length ? Date.parse(closes[closes.length - 1][0]) : Date.now();
+  const lastClose = closes.length ? closes[closes.length - 1][1] : m.current_price;
+  const lo = Math.min(s.p5 * 0.92, m.bear_price * 0.92, ...closes.map((c) => c[1]));
+  const hi = Math.max(s.p95 * 1.04, m.bull_price * 1.04, ...closes.map((c) => c[1]));
+  const yMin = Math.max(0, lo), yMax = hi;
+  const sx = (t) => L.l + ((t - t0) / Math.max(tLast - t0, 1)) * (xb - L.l), sy = (v) => L.t + ih - ((v - yMin) / (yMax - yMin)) * ih;
+  let g = spanel(PW, PH, `${m.ticker} price and the distribution ahead`, closes.length ? "weekly closes" : "no price history");
+  const clip = `spclip-${String(m.ticker).replace(/[^A-Za-z0-9]/g, "")}`;
+  g += `<defs><clipPath id="${clip}"><rect x="${L.l}" y="${L.t}" width="${fx(xb + densW - L.l)}" height="${fx(ih)}"/></clipPath></defs>`;
+  g += box(L.l, L.t, xb - L.l, ih, "#fbfcfe", ` stroke="${C.grid}" shape-rendering="crispEdges"`);
+  denseTicks(yMin, yMax, 5).forEach((v) => { g += hl(L.l, xb + densW, sy(v), C.grid) + tx(L.l - 7, sy(v) + 4, money0(v), { size: SF.small, fill: C.muted, anchor: "end" }); });
+  for (let y = new Date(t0).getFullYear(); y <= new Date(tLast).getFullYear(); y++) {
+    const t = Date.UTC(y, 0, 1); if (t <= t0 || t >= tLast) continue;
+    g += vl(sx(t), L.t, L.t + ih, C.grid, ' stroke-dasharray="2 4"');
+    if (sx(t) < xb - 80) g += tx(sx(t), L.t + ih + 17, String(y), { size: SF.small, fill: C.muted, anchor: "middle" });
+  }
+  if (hd) {
+    const dMax = Math.max(...hd.horizons.map((h) => Math.max(...h.density))) || 1;
+    let curves = "";
+    hd.horizons.map((h, i) => [h, RAMP[Math.min(i, RAMP.length - 1)]]).reverse().forEach(([h, color]) => {
+      const pts = [];
+      hd.grid.forEach((v, j) => { if (v >= yMin - (yMax - yMin) * 0.02 && v <= yMax + (yMax - yMin) * 0.02) pts.push([xb + (h.density[j] / dMax) * densW, sy(v)]); });
+      if (pts.length < 2) return;
+      curves += `<path d="M${fx(xb)},${fx(pts[0][1])} L${pts.map(([x, y]) => `${fx(x)},${fx(y)}`).join(" L")} L${fx(xb)},${fx(pts[pts.length - 1][1])} Z" fill="${color}" fill-opacity="0.16" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    });
+    g += `<g clip-path="url(#${clip})">${curves}</g>`;
+  }
+  const targets = [["Bull", m.bull_price, C.green], ["Base", m.base_price, C.amber], ["Bear", m.bear_price, C.red]].filter(([, v]) => v >= yMin && v <= yMax);
+  targets.forEach(([, v, col]) => { g += `<line x1="${fx(L.l)}" y1="${fx(sy(v))}" x2="${fx(xb + densW)}" y2="${fx(sy(v))}" stroke="${col}" stroke-width="1.2" stroke-dasharray="6 4"/>`; });
+  if (closes.length) g += `<polyline points="${closes.map((c) => `${fx(sx(Date.parse(c[0])))},${fx(sy(c[1]))}`).join(" ")}" fill="none" stroke="${C.text}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  targets.forEach(([lbl, v, col]) => {
+    const t = `${lbl} ${money0(v)}`;
+    g += box(L.l + 3, sy(v) - 17, t.length * 7.3 + 10, 15, "#fbfcfe", ` stroke="${col}" stroke-width="0.8"`) + tx(L.l + 8, sy(v) - 5.5, t, { size: SF.small, fill: col, weight: 600 });
+  });
+  g += vl(xb, L.t, L.t + ih, C.text, ' stroke-width="1.1"');
+  g += `<circle cx="${fx(xb)}" cy="${fx(sy(lastClose))}" r="4" fill="${C.text}"/>`;
+  g += tx(xb, L.t + ih + 17, `last ${money(lastClose)}`, { size: SF.small, fill: C.text, anchor: "middle", weight: 600 });
+  if (hd) hd.horizons.forEach((h, i) => {
+    if (h.median >= yMin && h.median <= yMax) g += `<line x1="${fx(xb - 16)}" y1="${fx(sy(h.median))}" x2="${fx(xb - 2)}" y2="${fx(sy(h.median))}" stroke="${RAMP[Math.min(i, RAMP.length - 1)]}" stroke-width="2.6"/>`;
+  });
+  // legend in the gutter: horizon, median, P(at least base)
+  const gx = xb + densW + 14, gw = PW - gx - 10;
+  let ly = L.t + 14;
+  g += tx(gx + gw - 60, ly, "MEDIAN", { size: SF.small, fill: C.faint, anchor: "end" }) + tx(gx + gw, ly, "P(BASE)", { size: SF.small, fill: C.faint, anchor: "end" });
+  ly += 7; g += hl(gx, gx + gw, ly, C.axis);
+  if (hd) hd.horizons.forEach((h, i) => {
+    const color = RAMP[Math.min(i, RAMP.length - 1)], y = ly + 21 + i * 22;
+    g += `<rect x="${fx(gx)}" y="${fx(y - 11)}" width="12" height="12" fill="${color}" fill-opacity="0.16" stroke="${color}" stroke-width="1.6"/>`;
+    g += tx(gx + 17, y, h.label, { size: SF.body, fill: C.text, weight: 600 });
+    g += tx(gx + gw - 60, y, money0(h.median), { size: SF.body, fill: C.text, anchor: "end" });
+    g += tx(gx + gw, y, pct(h.p_at_least_base, 0), { size: SF.body, fill: C.text, anchor: "end" });
+  });
+  const ny = ly + 21 + (hd ? hd.horizons.length : 0) * 22 + 2;
+  g += hl(gx, gx + gw, ny - 10, C.grid);
+  const notes = [hd ? hd.note : "no distribution: the median price is zero", "ticks at the baseline are the medians"].filter(Boolean);
+  notes.flatMap((n) => [...wrapText(n, `${SF.small}px ${MONO}`, gw), ""]).forEach((line, j) => { if (line) g += tx(gx, ny + 8 + j * 15, line, { size: SF.small, fill: C.muted }); });
+  return g;
+}
+
 function assessorSvg(r, path, fontCss = "") {
-  const m = r.meta, left = 48, inner = AW - 2 * left;
-  const verdict = wrapText(assessorVerdict(r), "500 14px IBM Plex Sans, Helvetica Neue, Arial, sans-serif", inner - 28);
-  const vH = 16 + verdict.length * 19;
-  const top = 72 + vH + 14, bottomEdge = AH - 34, gap = 14;
-  // the middle band grows with the figures table, the path chart keeps at least 380
-  const items = assessorFigures(r), nh = items.filter((i) => i.h).length, nr = items.length - nh;
-  const mid = Math.min(Math.max(HEAD + 6 + nh * 17 + nr * 15, 520), bottomEdge - top - gap - 380);
-  const pathH = bottomEdge - top - mid - gap;
-  const figW = 452, rx = left + figW + gap, rw = AW - left - rx;
-  const swRows = Object.values(r.swing || {}).reduce((a, b) => a + b.rows.length, 0) + (Object.keys(r.swing || {}).length > 1 ? 2 : 0);
-  const tornH = Math.min(Math.max(HEAD + 40 + swRows * 18, 220), mid - 230 - gap);
-  const histH = mid - tornH - gap;
+  const m = r.meta, left = 28, inner = AW - 2 * left, gap = 12;
+  const verdict = wrapText(assessorVerdict(r), `500 ${SF.verdict}px IBM Plex Sans, Helvetica Neue, Arial, sans-serif`, inner - 30).slice(0, 3);
+  const vH = 14 + verdict.length * 20;
+  const top = 52 + vH + 12, bottomEdge = AH - 30;
+  const avail = bottomEdge - top - gap, rowC = Math.round(avail * 0.53), rowD = avail - rowC;
+  const figW = 372, histW = inner - figW - gap, tornW = 560, pathW = inner - tornW - gap;
   const at = (x, y, body) => `<g transform="translate(${x},${y})">${body}</g>`;
-  let g = box(0, 0, AW, AH, "#ffffff") + box(0, 0, AW, 6, "#1b4b8a");
-  g += tx(left, 50, `${m.company_name} (${m.ticker}): pitch assessment`, { size: 26, weight: 600, font: SANS });
-  g += box(left, 70, inner, vH, "#e8eff8") + box(left, 70, 3, vH, "#1b4b8a");
-  verdict.forEach((line, i) => { g += tx(left + 16, 70 + 22 + i * 19, line, { size: 14, weight: 500, font: SANS }); });
-  g += at(left, top, figuresPanel(r, figW, mid));
-  g += at(rx, top, histPanel(r, rw, histH));
-  g += at(rx, top + histH + gap, tornadoPanel(r, rw, tornH));
-  g += at(left, top + mid + gap, pathPanel(r, path, inner, pathH));
-  g += tx(left, AH - 14, `Model output, not investment advice. ${new Date().toISOString().slice(0, 10)}. Every figure is filed with the SEC, a closing price, arithmetic over those, or simulation output.`, { size: 10.5, fill: C.faint });
+  let g = box(0, 0, AW, AH, "#ffffff") + box(0, 0, AW, 5, "#1b4b8a");
+  g += tx(left, 38, `${m.company_name} (${m.ticker}): pitch assessment`, { size: SF.title, weight: 600, font: SANS });
+  g += box(left, 50, inner, vH, "#e8eff8") + box(left, 50, 3, vH, "#1b4b8a");
+  verdict.forEach((line, i) => { g += tx(left + 14, 50 + 21 + i * 20, line, { size: SF.verdict, weight: 500, font: SANS }); });
+  g += at(left, top, slideFigures(r, figW, rowC));
+  g += at(left + figW + gap, top, slideHist(r, histW, rowC));
+  g += at(left, top + rowC + gap, slideTornado(r, tornW, rowD));
+  g += at(left + tornW + gap, top + rowC + gap, slidePath(r, path, pathW, rowD));
+  const added = Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => MECH_LABEL[k] || k);
+  g += tx(left, AH - 11, `Run ${new Date().toISOString().slice(0, 10)}: spot ${money(m.current_price)}, ${m.horizon_years}-year horizon, ${m.n_simulations.toLocaleString()} paths${added.length ? `, added drivers: ${added.join(", ")}` : ""}. Model output, not investment advice.`, { size: SF.small, fill: C.faint });
   const style = fontCss ? `<defs><style>${fontCss}</style></defs>` : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${AW} ${AH}" width="${AW}" height="${AH}" role="img" aria-label="${esc(`${m.company_name} pitch assessment`)}">${style}${g}</svg>`;
+}
+
+/* PNG with a pHYs chunk, so Insert Picture in PowerPoint, Word or Excel lands it at 10 x 7.5 in */
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = (bytes) => { let c = 0xffffffff; for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+function withDpi(pngBytes, dpi) {
+  const ppm = Math.round(dpi / 0.0254), chunk = new Uint8Array(21), dv = new DataView(chunk.buffer);
+  dv.setUint32(0, 9); chunk.set([0x70, 0x48, 0x59, 0x73], 4); dv.setUint32(8, ppm); dv.setUint32(12, ppm); chunk[16] = 1;
+  dv.setUint32(17, crc32(chunk.subarray(4, 17)));
+  const out = new Uint8Array(pngBytes.length + 21);
+  out.set(pngBytes.subarray(0, 33)); out.set(chunk, 33); out.set(pngBytes.subarray(33), 54);   // after the signature and IHDR
+  return out;
+}
+const SLIDE_SCALE = 2;      // 2400 x 1800 pixels; at 240 dpi that is a full 10 x 7.5 in slide
+async function assessorPngBlob() {
+  const r = lastResult, path = await fetchPath(r.meta.ticker), css = await embeddedFontCss();
+  const img = await svgStringToImage(assessorSvg(r, path, css));
+  const canvas = document.createElement("canvas"); canvas.width = AW * SLIDE_SCALE; canvas.height = AH * SLIDE_SCALE;
+  const ctx = canvas.getContext("2d"); ctx.scale(SLIDE_SCALE, SLIDE_SCALE); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, AW, AH); ctx.drawImage(img, 0, 0, AW, AH);
+  const raw = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  return new Blob([withDpi(new Uint8Array(await raw.arrayBuffer()), 240)], { type: "image/png" });
 }
 
 /* The PNG carries the page's own fonts: an SVG drawn as an image cannot reach web fonts, so the
@@ -1132,11 +1235,19 @@ async function renderAssessor() {
 }
 async function saveAssessorPng() {
   if (!lastResult) return;
-  const r = lastResult, path = await fetchPath(r.meta.ticker), css = await embeddedFontCss();
-  const img = await svgStringToImage(assessorSvg(r, path, css));
-  const scale = 2, canvas = document.createElement("canvas"); canvas.width = AW * scale; canvas.height = AH * scale;
-  const ctx = canvas.getContext("2d"); ctx.scale(scale, scale); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, AW, AH); ctx.drawImage(img, 0, 0, AW, AH);
-  const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${r.meta.ticker}_pitch_assessment.png`; a.click();
+  const blob = await assessorPngBlob(), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `${lastResult.meta.ticker}_pitch_assessment.png`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+async function copyAssessorImage() {
+  if (!lastResult) return;
+  const btn = $("assessCopyImg");
+  try {
+    // the promise form keeps Safari's user-gesture window open while the image renders
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": assessorPngBlob() })]);
+    btn.textContent = "Image copied";
+  } catch (_) { btn.textContent = "Clipboard blocked; use Save PNG"; }
+  setTimeout(() => { btn.textContent = "Copy image"; }, 2400);
 }
 async function copyAssessorTable() {
   if (!lastResult) return;
@@ -1215,9 +1326,10 @@ $("assessBtn").addEventListener("click", () => { selectTab("assessor"); $("resul
 document.querySelectorAll(".tabs .tab").forEach((t) => t.addEventListener("click", () => selectTab(t.dataset.tab)));
 $("assessPng").addEventListener("click", () => saveAssessorPng().catch((e) => showError(e.message)));
 $("assessCopy").addEventListener("click", () => copyAssessorTable());
+$("assessCopyImg").addEventListener("click", () => copyAssessorImage());
 $("assessZoom").addEventListener("click", () => {
   assessorZoom = !assessorZoom; $("assessFrame").classList.toggle("actual", assessorZoom);
-  $("assessZoom").textContent = assessorZoom ? "Fit to width" : "Actual size";
+  $("assessZoom").textContent = assessorZoom ? "Fit to width" : "Slide size";
 });
 $("tornadoMetric").addEventListener("change", () => { if (lastResult) $("chartTornado").innerHTML = swingChart(lastResult, $("tornadoMetric").value); });
 $("exportJson").addEventListener("click", () => {
