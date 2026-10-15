@@ -354,3 +354,92 @@ class Phase4Service(unittest.TestCase):
             run_simulation(self._payload(justified_multiple={"roic": 0.1, "wacc": 0.02, "long_run_growth": 0.03}))
         with self.assertRaises(ValidationError):
             run_simulation(self._payload(cost_model={"gross_margin": {"type": "metalog", "p10": 0.3, "p50": 0.2, "p90": 0.4}, "fixed_cost_m": 10}))
+
+
+class HorizonTermStructure(unittest.TestCase):
+    """
+    The distribution must open out from spot as the horizon grows. A status-quo
+    pitch (centres at today's margin and multiple, EV / EBITDA = 1,200 / 100,
+    spot 100) with the flows stated over the horizon, as calibration states
+    net debt.
+    """
+    SPOT = 100.0
+
+    def _pitch(self, T, **over):
+        base = dict(
+            ticker="T", company_name="T", current_price=self.SPOT, bear_price=80.0, base_price=115.0, bull_price=140.0,
+            current_revenue=1000.0, current_ebitda_margin=0.10, current_ev=1200.0, current_net_debt=200.0,
+            shares_outstanding=10.0,
+            rev_cagr=(0.0, 0.06, 0.12), ebitda_margin=(0.07, 0.10, 0.13), ev_ebitda_multiple=(8.0, 12.0, 17.0),
+            net_debt_change_pct=(-0.03 * T, 0.03 * T ** 0.5), share_dilution_pct=(0.01 * T, 0.01 * T ** 0.5),
+            driver_specs={"rev_cagr": {"type": "metalog", "p10": 0.0, "p50": 0.06, "p90": 0.12},
+                          "ebitda_margin": {"type": "metalog", "p10": 0.08, "p50": 0.10, "p90": 0.12},
+                          "ev_ebitda_multiple": {"type": "log_metalog", "p10": 9.0, "p50": 12.0, "p90": 16.0, "lower": 0.0}},
+            copula="t", n_simulations=50_000, random_seed=7, horizon_years=T, level_width_horizon=2.0,
+        )
+        base.update(over)
+        return PitchAssumptions(**base)
+
+    def _run(self, T, **over):
+        e = MonteCarloEngine(self._pitch(T, **over))
+        e.run()
+        return e
+
+    def test_width_grows_with_horizon(self):
+        backlog = {"backlog_m": 600.0, "conversion": {"type": "metalog", "p10": 0.55, "p50": 0.70, "p90": 0.85}}
+        for over in ({}, {"backlog": backlog}):
+            widths = []
+            for T in (0.05, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0):
+                p5, p95 = np.percentile(self._run(T, **over).terminal_prices, [5, 95])
+                widths.append(p95 - p5)
+            self.assertTrue(all(b > a for a, b in zip(widths, widths[1:])), (over.keys(), widths))
+
+    def test_short_horizon_collapses_to_spot(self):
+        # T -> 0 is the limit: at 1e-4 years root-T leaves 0.7% of the level width
+        p5, p50, p95 = np.percentile(self._run(1e-4).terminal_prices, [5, 50, 95])
+        # (the median of a product of skewed draws sits off the product of medians by O(s) too)
+        self.assertAlmostEqual(p50 / self.SPOT, 1.0, delta=0.005)
+        self.assertGreater(p5, 0.99 * self.SPOT)
+        self.assertLess(p95, 1.01 * self.SPOT)
+        # the stated width at every horizon (legacy) does not close on spot at all
+        l5, l95 = np.percentile(self._run(1e-4, level_width_horizon=None).terminal_prices, [5, 95])
+        self.assertGreater(l95 - l5, 50 * (p95 - p5))
+        # and on the way down it closes at the root-T rate: 0.01 years is about a tenth of 1 year
+        w = {T: np.subtract(*np.percentile(self._run(T).terminal_prices, [95, 5])) for T in (0.01, 1.0)}
+        self.assertLess(w[0.01] / w[1.0], 0.15)
+
+    def test_stated_width_holds_at_and_beyond_the_reference(self):
+        for T in (2.0, 3.0):
+            self.assertTrue(np.array_equal(self._run(T).terminal_prices,
+                                           self._run(T, level_width_horizon=None).terminal_prices))
+
+    def test_level_drivers_keep_their_medians_and_shrink_by_root_t(self):
+        short, legacy = self._run(0.5), self._run(0.5, level_width_horizon=None)
+        for name in ("EBITDA Margin", "EV/EBITDA Multiple"):
+            s, l = short.driver_samples[name], legacy.driver_samples[name]
+            self.assertAlmostEqual(float(np.median(s)), float(np.median(l)), places=10)
+            ws, wl = np.subtract(*np.percentile(s, [90, 10])), np.subtract(*np.percentile(l, [90, 10]))
+            self.assertAlmostEqual(ws / wl, 0.5, places=9)       # sqrt(0.5 / 2)
+        # revenue already compounds over T and is left alone
+        self.assertTrue(np.array_equal(short.terminal_revenue, legacy.terminal_revenue))
+
+    def test_mechanisms_scale_and_stay_finite(self):
+        over = dict(cost_model={"gross_margin": {"type": "metalog", "p10": 0.35, "p50": 0.40, "p90": 0.45},
+                                "fixed_cost_m": 300.0},
+                    fcf_bridge={"fcf_margin": {"type": "metalog", "p10": 0.04, "p50": 0.06, "p90": 0.08},
+                                "ev_fcf_multiple": {"type": "log_metalog", "p10": 14.0, "p50": 20.0, "p90": 28.0, "lower": 0.0}})
+        short, legacy = self._run(0.25, **over), self._run(0.25, level_width_horizon=None, **over)
+        for attr in ("terminal_prices", "terminal_prices_fcf"):
+            s, l = getattr(short, attr), getattr(legacy, attr)
+            self.assertTrue(np.isfinite(s).all())
+            self.assertLess(np.subtract(*np.percentile(s, [95, 5])), 0.5 * np.subtract(*np.percentile(l, [95, 5])))
+
+    def test_backlog_books_a_share_of_year_one(self):
+        backlog = {"backlog_m": 600.0, "conversion": {"type": "metalog", "p10": 0.55, "p50": 0.70, "p90": 0.85}}
+        flows = dict(net_debt_change_pct=(0.0, 0.01), share_dilution_pct=(0.0, 0.01))   # a zero std at T = 0 is not a distribution
+        rev = {T: self._run(T, backlog=backlog, **flows).terminal_revenue for T in (0.0, 0.25, 0.5, 1.0)}
+        # same seed, same draws: a part year is that share of the way to year one, path by path
+        for T in (0.25, 0.5):
+            np.testing.assert_allclose(rev[T] - 1000.0, T * (rev[1.0] - 1000.0), rtol=1e-12, atol=1e-9)
+        np.testing.assert_allclose(rev[0.0], 1000.0)
+        self.assertLess(np.median(rev[0.5]), np.median(rev[1.0]))     # it used to be the full year at any T < 1

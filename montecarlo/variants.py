@@ -42,6 +42,28 @@ def _with_mechanism(kind, params=None):
     return f
 
 
+def _dilution_over_horizon(t, p, h, a, hy=10):
+    """
+    v2 prefill with dilution stated over the horizon, the way net debt already
+    is: calibration hands over one year's share-count change (mean, std) and
+    the engine applies it as the change over the whole horizon. Mean x T, std
+    x sqrt(T), the same scaling the net-debt drift gets.
+    """
+    pre = phase2_prefill(t, p, h, a, hy)
+    mean, std = pre["fields"]["share_dilution_pct"]
+    mean, std = mean * h, std * h ** 0.5
+    pre["fields"]["share_dilution_pct"] = [mean, std]
+    spec = (pre.get("driver_specs") or {}).get("share_dilution_pct")
+    if spec:
+        pre["driver_specs"]["share_dilution_pct"] = dict(spec, mean=mean, std=std)
+    return pre
+
+
+def _level_width(horizon):
+    """Engine with level-driver width scaled by sqrt(T / horizon) under that horizon."""
+    return lambda p: backtest.default_model(dict(p, level_width_horizon=horizon))
+
+
 def _fcf_scored(payload):
     """Score the FCF bridge's price where the payload carries one, else the EBITDA bridge."""
     from .engine import MonteCarloEngine, PitchAssumptions
@@ -82,6 +104,12 @@ REGISTRY = {
     # Phase 5 prototype: sector multiple momentum carried into the multiple centre
     "p5_mom05": (backtest.default_model, _v2({"mult_momentum": 0.5})),
     "p5_mom10": (backtest.default_model, _v2({"mult_momentum": 1.0})),
+    # Horizon term structure: level widths full at 1 or 2 years and narrower under it;
+    # dilution scaled to the horizon like net debt; both together
+    "phase2_lw1": (_level_width(1.0), phase2_prefill),
+    "phase2_lw2": (_level_width(2.0), phase2_prefill),
+    "phase2_dilT": (backtest.default_model, _dilution_over_horizon),
+    "phase2_term": (_level_width(2.0), _dilution_over_horizon),
 }
 
 
