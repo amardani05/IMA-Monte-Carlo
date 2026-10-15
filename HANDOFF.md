@@ -54,8 +54,10 @@ Production calibration defaults are `V2_DEFAULTS` in `marketdata.py`.
 
 ## Running right now
 
-The S&P 600 backtest chain, launched 15 October: baseline done (603 members,
-2012 onward, two-year horizon), v2 running with `--gate` against it. Logs in
+The S&P 600 backtest chain, relaunched late on 15 October after the first
+attempt filled the disk (the EDGAR cache is gzip now, about 300 KB a name):
+baseline over the 603 members from 2012 at a two-year horizon, then v2 with
+`--gate` against it. Several hours each. Logs in
 `backtests/sp600_*.log`, run files and HTML reports in `backtests/`
 (git-ignored). Read `backtests/sp600_v2.log` when it finishes; the paired line
 at the end and the `gate:` line are the verdict. If the gate fails, do not
