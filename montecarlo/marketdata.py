@@ -1604,8 +1604,13 @@ def mechanisms(profile: dict, fields: dict, drivers: dict, horizon_years: float)
         q = _q_of(gm) or {"p10": g0 - 0.02, "p50": g0, "p90": g0 + 0.02}
         lo_w, hi_w = max(q["p50"] - q["p10"], 0.005), max(q["p90"] - q["p50"], 0.005)
         fg = cs["fixed_cost_growth"]
-        fg_mean = float(np.median(fg)) if fg else 0.03
-        fg_std = float(np.std(fg)) if len(fg) >= 3 else 0.05
+        # The implied fixed base is noisy year to year (it absorbs every mix
+        # effect), so its own history overstates how much it will drift. The
+        # harness run with the raw history (std 16% on MYRG) widened P5-P95 to
+        # eleven times spot; the centre is held in a 0 to 6% band and the
+        # spread capped at 5% a year.
+        fg_mean = float(np.clip(np.median(fg), 0.0, 0.06)) if fg else 0.03
+        fg_std = float(np.clip(np.std(fg) / 2, 0.01, 0.05)) if len(fg) >= 3 else 0.03
         out["cost_model"] = {
             "gross_margin": {"type": "metalog", "p10": round(g0 - lo_w, 5), "p50": round(g0, 5), "p90": round(g0 + hi_w, 5)},
             "fixed_cost_m": round(cs["fixed_cost_m"], 1),
@@ -1691,7 +1696,7 @@ def mechanisms(profile: dict, fields: dict, drivers: dict, horizon_years: float)
             "wacc": round(rc["wacc"], 4), "tax_rate": round(rc["tax_rate"], 3),
             "da_share": round(rc["da_share"], 3), "long_run_growth": 0.03, "fade": 0.5,
             "current_growth": round(float(g_mode), 4), "current_multiple": round(profile["current_ev_ebitda"], 3),
-            "premium_reversion": 0.5,
+            "premium_reversion": 0.25,   # the harness penalised 0.5: markets keep more of a premium over two years than that
         }
         out["available"]["justified_multiple"] = True
         base_note = (
@@ -1704,7 +1709,7 @@ def mechanisms(profile: dict, fields: dict, drivers: dict, horizon_years: float)
                 f"ROIC {roic*100:.1f}% (NOPAT ${rc['nopat_m']:,.0f}M over invested capital ${rc['invested_capital_m']:,.0f}M, FY{latest}). "
                 + (f"EVA ${eva:,.0f}M (NOPAT less WACC x invested capital). " if eva is not None else "")
                 + base_note
-                + "The exit multiple becomes a function of drawn growth and these returns; today's premium to the justified multiple halves over the horizon."
+                + "The exit multiple becomes a function of drawn growth and these returns; a quarter of today's premium to the justified multiple fades over the horizon."
             )
         else:
             out["notes"]["justified_multiple"] = (

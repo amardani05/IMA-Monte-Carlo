@@ -77,6 +77,8 @@ REGISTRY = {
     "phase3_cost": (backtest.default_model, _with_mechanism("cost_model")),
     "phase3_backlog": (backtest.default_model, _with_mechanism("backlog")),
     "phase3_fcf": (_fcf_scored, _with_mechanism("fcf_bridge")),
+    "phase3_cost2": (backtest.default_model, _with_mechanism("cost_model")),     # tightened fixed-cost growth
+    "phase3_jm2": (backtest.default_model, _with_mechanism("justified_multiple")),  # premium reversion 0.25
     # Phase 5 prototype: sector multiple momentum carried into the multiple centre
     "p5_mom05": (backtest.default_model, _v2({"mult_momentum": 0.5})),
     "p5_mom10": (backtest.default_model, _v2({"mult_momentum": 1.0})),

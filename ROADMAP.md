@@ -168,8 +168,27 @@ filings support it (`phase3_jm`, `phase3_cost`, `phase3_backlog`), the FCF
 bridge scored as the price (`phase3_fcf`), and a Phase 5 prototype that carries
 sector multiple momentum into the multiple centre (`p5_mom05`, `p5_mom10`),
 built on per-year peer multiple medians the panels now record. The full
-universe at one- and two-year horizons runs after them. Results go here when
-they land.
+universe at one- and two-year horizons runs after them.
+
+**Phase 3 results, 2012 onward, default names, paired against v2:**
+
+| Variant | CRPS/spot delta | Better on | 90% coverage |
+| --- | --- | --- | --- |
+| Justified multiple on, as proposed | +0.085 (se 0.023) | 32% | 71% to 69% |
+| Cost structure on, as proposed | +2.12 (se 0.42) | 35% | 71% to 77% |
+| Backlog on, as proposed | +0.005 (se 0.002) | 24% | 71% to 70% |
+| FCF bridge scored as the price | +0.119 (se 0.026) | 52% | 71% to 73% |
+
+None of the mechanisms improves the forecast when switched on with the values
+proposed from filings and no analyst view. That is the expected result for
+backlog (its conversion rate is an assumption) and for the FCF bridge (a
+different valuation, not a sharper one), and it is the point of the
+mechanisms: they are where a thesis enters, not an automatic improvement. Two
+were mis-defaulted and are being rerun: the cost model's fixed-cost growth
+spread came from a noisy implied series (std 16% on MYRG, P5 to P95 at eleven
+times spot) and is now shrunk and capped at 5%; the justified multiple's
+premium reversion of 0.5 over two years is more than the market gives back and
+is now 0.25. The UI defaults stay off; auto-fill proposes, the analyst decides.
 
 On the same 2012-onward default-name set, v2 against the own-history baseline:
 588 paired snapshots, CRPS/spot a tie (delta -0.001, se 0.011), 90% coverage
