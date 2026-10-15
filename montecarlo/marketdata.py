@@ -62,6 +62,8 @@ REVENUE_TAGS = [
 # the gap is a tax basis or restatement (Altria's excise-excluded is about 82%)
 REVENUE_SUB_LINE_RATIO = 0.5
 OPERATING_INCOME_TAGS = ["OperatingIncomeLoss"]
+IMPAIRMENT_TAGS = ["GoodwillImpairmentLoss", "ImpairmentOfIntangibleAssetsExcludingGoodwill"]
+IMPAIRMENT_COMBINED_TAGS = ["GoodwillAndIntangibleAssetImpairment"]
 GROSS_PROFIT_TAGS = ["GrossProfit"]
 OPERATING_EXPENSE_TAGS = ["OperatingExpenses", "CostsAndExpenses"]
 PRETAX_INCOME_TAGS = [
@@ -80,6 +82,8 @@ CASH_TAGS = [
     "CashAndCashEquivalentsAtCarryingValue",
     "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
 ]
+SHORT_TERM_INVESTMENT_TAGS = ["ShortTermInvestments", "MarketableSecuritiesCurrent",
+                              "AvailableForSaleSecuritiesDebtSecuritiesCurrent"]
 DEBT_COMPONENT_TAGS = [
     ["LongTermDebtNoncurrent", "LongTermDebtCurrent"],
     ["LongTermDebtNoncurrent", "ShortTermBorrowings"],
@@ -706,7 +710,45 @@ def _ebitda_history(facts: dict, rev_annual: dict, da_annual: dict) -> tuple:
     Not every filer tags operating income (Dycom, for one, does not), so fall
     back to gross profit less operating expenses, and then to pre-tax income
     plus interest. Returns ({year: ebitda}, description of the basis used).
+
+    Goodwill and intangible impairments are added back on every basis: they
+    are non-cash and sit inside operating income. Ralliant's $1.44B FY2025
+    goodwill write-down otherwise reads as a -51.6% EBITDA margin and the
+    bridge refuses the name.
     """
+    impairment = _impairments(facts)
+    ebitda, basis = _ebitda_before_impairments(facts, rev_annual, da_annual)
+    if any(impairment.get(y) for y in ebitda):
+        return {y: v + impairment.get(y, 0.0) for y, v in ebitda.items()}, basis + " + impairments"
+    return ebitda, basis
+
+
+def _short_term_investments(facts: dict, cash_date: str) -> float:
+    """
+    Short-term investments on the same balance sheet as the cash figure.
+
+    Cal-Maine holds $817M of available-for-sale debt securities beside $114M
+    of cash; leaving them out put its EV at $3.3B against $2.5B. The tags can
+    nest, so the largest one on that date is taken rather than their sum.
+    """
+    vals = [p[1] for p in (_point_in_time(facts, [t]) for t in SHORT_TERM_INVESTMENT_TAGS)
+            if p and p[0] == cash_date and p[1] > 0]
+    return max(vals, default=0.0)
+
+
+def _impairments(facts: dict) -> dict:
+    """{year: goodwill plus intangible impairment}, from the separate tags or, failing those, the combined one."""
+    separate = [annual_series(facts, [t]) for t in IMPAIRMENT_TAGS]
+    combined = annual_series(facts, IMPAIRMENT_COMBINED_TAGS)
+    years = set(combined).union(*separate)
+    out = {}
+    for y in years:
+        parts = [s[y] for s in separate if y in s]
+        out[y] = sum(parts) if parts else combined[y]
+    return {y: v for y, v in out.items() if v > 0}
+
+
+def _ebitda_before_impairments(facts: dict, rev_annual: dict, da_annual: dict) -> tuple:
     oi = annual_series(facts, OPERATING_INCOME_TAGS)
     if oi:
         years = set(oi) & set(da_annual) & set(rev_annual)
@@ -818,6 +860,7 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
 
     shares = _share_count(facts, ticker, latest_fy)
     cash = _point_in_time(facts, CASH_TAGS)
+    investments = _short_term_investments(facts, cash[0]) if cash else 0.0
     debt = _debt(facts)
 
     net_debt_m = None
@@ -829,15 +872,17 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
         nci = _point_in_time(facts, NCI_TAGS)
         pref = _point_in_time(facts, PREFERRED_TAGS)
         other_claims = (nci[1] if nci else 0.0) + (pref[1] if pref else 0.0)
-        net_debt_m = (debt[0] - cash[1] + other_claims) / 1e6
+        net_debt_m = (debt[0] - cash[1] - investments + other_claims) / 1e6
         net_debt_meta = {
             "total_debt_m": debt[0] / 1e6,
             "cash_m": cash[1] / 1e6,
+            "short_term_investments_m": investments / 1e6,
             "minority_interest_m": (nci[1] / 1e6) if nci else 0.0,
             "preferred_m": (pref[1] / 1e6) if pref else 0.0,
             "as_of": max(debt[1], cash[0]),
             "components": debt[2],
-            "note": "total debt (incl. finance leases) plus minority interest and preferred, less cash; operating leases excluded",
+            "note": "total debt (incl. finance leases) plus minority interest and preferred, less cash and short-term "
+                    "investments; operating leases excluded",
         }
 
     if rev_annual[latest_fy] <= 0:
@@ -1215,6 +1260,8 @@ def build_prefill(ticker: str, price: Optional[float] = None,
             + (f" plus minority interest ${nd['minority_interest_m']:,.1f}M" if nd.get("minority_interest_m") else "")
             + (f" plus preferred ${nd['preferred_m']:,.1f}M" if nd.get("preferred_m") else "")
             + f" less cash ${nd.get('cash_m', 0):,.1f}M"
+            + (f" and short-term investments ${nd['short_term_investments_m']:,.1f}M"
+               if nd.get("short_term_investments_m") else "")
             if nd else "not tagged in filings. Set by hand"
         ),
         "shares_outstanding": (

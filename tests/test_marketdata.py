@@ -99,6 +99,25 @@ class EbitdaFallbacks(unittest.TestCase):
         self.assertEqual(hist, {})
         self.assertEqual(basis, "unavailable")
 
+    def test_goodwill_impairment_is_added_back(self):
+        # RAL FY2025: operating income -$1,183M after a $1,441.7M goodwill write-down
+        f = facts(OperatingIncomeLoss={"CY2023": 100.0, "CY2024": -300.0},
+                  GoodwillImpairmentLoss={"CY2023": 0.0, "CY2024": 420.0})
+        hist, basis = md._ebitda_history(f, self.REV, self.DA)
+        self.assertEqual(hist, {2023: 150.0, 2024: -300.0 + 55.0 + 420.0})
+        self.assertIn("impairments", basis)
+
+    def test_combined_impairment_tag_is_not_double_counted(self):
+        f = facts(OperatingIncomeLoss={"CY2024": -300.0}, GoodwillImpairmentLoss={"CY2024": 400.0},
+                  ImpairmentOfIntangibleAssetsExcludingGoodwill={"CY2024": 20.0},
+                  GoodwillAndIntangibleAssetImpairment={"CY2024": 420.0})
+        hist, _ = md._ebitda_history(f, self.REV, self.DA)
+        self.assertEqual(hist[2024], -300.0 + 55.0 + 420.0)
+
+    def test_no_impairment_leaves_the_basis_unchanged(self):
+        f = facts(OperatingIncomeLoss={"CY2024": 120.0})
+        self.assertEqual(md._ebitda_history(f, self.REV, self.DA)[1], "operating income + D&A")
+
 
 class Calibration(unittest.TestCase):
     def test_rolling_cagrs_span_the_requested_window(self):
@@ -426,6 +445,26 @@ class ZeroRevenueGuard(unittest.TestCase):
         # build_profile's guard is the line under test; exercise it directly
         with self.assertRaises(ZeroDivisionError):
             _ = hist[2023] / rev[2023]
+
+
+class ShortTermInvestments(unittest.TestCase):
+    @staticmethod
+    def _bs(**tags):
+        return {"facts": {"us-gaap": {t: {"units": {"USD": [{"end": d, "val": v}]}} for t, (d, v) in tags.items()}}}
+
+    def test_investments_on_the_cash_date_count(self):
+        # CALM FY2026: $114M cash, $817M available-for-sale debt securities
+        f = self._bs(AvailableForSaleSecuritiesDebtSecuritiesCurrent=("2026-05-30", 816.8e6))
+        self.assertEqual(md._short_term_investments(f, "2026-05-30"), 816.8e6)
+
+    def test_nested_tags_are_not_summed(self):
+        f = self._bs(ShortTermInvestments=("2026-05-30", 900e6),
+                     AvailableForSaleSecuritiesDebtSecuritiesCurrent=("2026-05-30", 816.8e6))
+        self.assertEqual(md._short_term_investments(f, "2026-05-30"), 900e6)
+
+    def test_a_different_balance_sheet_date_is_ignored(self):
+        f = self._bs(ShortTermInvestments=("2025-05-31", 500e6))
+        self.assertEqual(md._short_term_investments(f, "2026-05-30"), 0.0)
 
 
 class RevenueSubLines(unittest.TestCase):

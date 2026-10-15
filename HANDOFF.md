@@ -67,6 +67,12 @@ including the tool's own output.
 
 ## Open
 
+- Two data fixes landed after the last S&P 600 run and are not in its
+  numbers: goodwill and intangible impairments are added back to EBITDA
+  (RAL's FY2025 margin was -51.6% from a $1.44B write-down), and short-term
+  investments count against debt (Cal-Maine's EV was $3.3B against $2.5B).
+  Rerun the chain to record what they do to CRPS and coverage. The historical
+  multiple's EV proxy still uses cash alone.
 - v2 carries extreme margin-history years straight into its margin metalog
   (VCEL, -1,416x from pre-launch revenue); the baseline trims them. A guard
   there is the likeliest way to pass the S&P 600 gate.
