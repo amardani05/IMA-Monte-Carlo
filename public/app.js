@@ -406,67 +406,90 @@ function tornadoChart(r) {
   return frame(g, `Driver sensitivity. Widest swing: ${top.name}, ${money0(top.lo)} to ${money0(top.hi)}.`);
 }
 
-/* Price path with the forecast fan and the terminal distribution drawn vertically */
+/* Price path with the terminal distribution: assessor only.
+   History on the left; from today, log-space cones whose width grows with the square
+   root of time to the P5/P95 and P25/P75 of the simulated horizon; at the horizon the
+   terminal density drawn as a profile, coloured by scenario band with each band's
+   probability beside it. Y-range is the central mass, not the tails. */
 let lastPath = null;
 async function fetchPath(ticker) {
-  try {
-    const res = await fetch(`/api/prices/${encodeURIComponent(ticker)}?years=3`);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (_) { return null; }
+  try { const res = await fetch(`/api/prices/${encodeURIComponent(ticker)}?years=3`); return res.ok ? await res.json() : null; }
+  catch (_) { return null; }
 }
 function pathChart(r, path) {
   const m = r.meta, s = r.stats, closes = (path && path.closes) || [];
-  const PW = 1120, PH = 420, L = { t: 18, r: 150, b: 36, l: 56 }, iw = PW - L.l - L.r, ih = PH - L.t - L.b;
-  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now(), tSpot = Date.now();
+  const PW = 1120, PH = 560, L = { t: 36, r: 230, b: 40, l: 64 }, iw = PW - L.l - L.r, ih = PH - L.t - L.b;
+  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now() - 365 * 864e5, tSpot = Date.now();
   const tEnd = tSpot + m.horizon_years * 365.25 * 864e5;
-  const hist = r.histogram, edges = hist.edges, dens = hist.density;
-  const prices = closes.map((c) => c[1]).concat([m.current_price, s.p5, s.p95, m.bear_price, m.bull_price, m.base_price]);
-  let yMin = Math.min(...prices), yMax = Math.max(...prices); const padY = (yMax - yMin) * 0.06; yMin = Math.max(0, yMin - padY); yMax += padY;
+  const spot = m.current_price, med = s.median_price;
+  // y-range: the central mass and the history, not the tails
+  const lo = Math.min(s.p5 * 0.92, m.bear_price * 0.92, ...closes.map((c) => c[1]));
+  const hi = Math.max(s.p95 * 1.04, m.bull_price * 1.04, ...closes.map((c) => c[1]));
+  const yMin = Math.max(0, lo), yMax = hi;
   const sx = (t) => L.l + ((t - t0) / (tEnd - t0)) * iw, sy = (v) => L.t + ih - ((v - yMin) / (yMax - yMin)) * ih;
+  const xs = sx(tSpot), xe = sx(tEnd);
   let g = "";
-  // grid and axes
-  niceTicks(yMin, yMax, 6).forEach((v) => { g += `<line x1="${L.l}" y1="${sy(v).toFixed(1)}" x2="${L.l + iw}" y2="${sy(v).toFixed(1)}" stroke="${C.grid}"/><text x="${L.l - 8}" y="${(sy(v) + 3.5).toFixed(1)}" fill="${C.muted}" font-size="10.5" text-anchor="end">${money0(v)}</text>`; });
-  const yearStart = new Date(t0).getFullYear(), yearEnd = new Date(tEnd).getFullYear();
-  for (let y = yearStart; y <= yearEnd; y++) { const t = Date.parse(`${y}-01-01`); if (t > t0 && t < tEnd) g += `<line x1="${sx(t).toFixed(1)}" y1="${L.t}" x2="${sx(t).toFixed(1)}" y2="${L.t + ih}" stroke="${C.grid}"/><text x="${sx(t).toFixed(1)}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="10.5" text-anchor="middle">${y}</text>`; }
-  // forecast fan: P5-P95 light, P25-P75 darker, from spot to the horizon
-  const xs = sx(tSpot), xe = sx(tEnd), ys = sy(m.current_price);
-  g += `<polygon points="${xs},${ys} ${xe},${sy(s.p95)} ${xe},${sy(s.p5)}" fill="${C.blue}" opacity="0.10"/>`;
-  g += `<polygon points="${xs},${ys} ${xe},${sy(s.p75)} ${xe},${sy(s.p25)}" fill="${C.blue}" opacity="0.16"/>`;
-  g += `<line x1="${xs}" y1="${ys}" x2="${xe}" y2="${sy(s.median_price)}" stroke="${C.purple}" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  // frame, grid, axes
+  g += `<rect x="${L.l}" y="${L.t}" width="${iw}" height="${ih}" fill="#fbfcfe" stroke="${C.grid}"/>`;
+  niceTicks(yMin, yMax, 6).forEach((v) => { g += `<line x1="${L.l}" y1="${sy(v).toFixed(1)}" x2="${L.l + iw}" y2="${sy(v).toFixed(1)}" stroke="${C.grid}"/><text x="${L.l - 8}" y="${(sy(v) + 3.5).toFixed(1)}" fill="${C.muted}" font-size="11" text-anchor="end">${money0(v)}</text>`; });
+  for (let y = new Date(t0).getFullYear(); y <= new Date(tEnd).getFullYear(); y++) {
+    const t = Date.parse(`${y}-01-01`); if (t > t0 && t < tEnd) g += `<line x1="${sx(t).toFixed(1)}" y1="${L.t}" x2="${sx(t).toFixed(1)}" y2="${L.t + ih}" stroke="${C.grid}" stroke-dasharray="2 4"/><text x="${sx(t).toFixed(1)}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="11" text-anchor="middle">${y}</text>`;
+  }
+  // cones in log space: median drifts linearly, dispersion grows with sqrt(time)
+  const q = (v, u) => Math.exp(Math.log(spot) + u * Math.log(med / spot) + Math.sqrt(u) * Math.log(v / med));
+  const cone = (loQ, hiQ, color, op) => {
+    const up = [], dn = [];
+    for (let i = 0; i <= 40; i++) { const u = i / 40, t = tSpot + u * (tEnd - tSpot); up.push(`${sx(t).toFixed(1)},${sy(q(hiQ, u)).toFixed(1)}`); dn.unshift(`${sx(t).toFixed(1)},${sy(q(loQ, u)).toFixed(1)}`); }
+    return `<polygon points="${up.join(" ")} ${dn.join(" ")}" fill="${color}" opacity="${op}"/>`;
+  };
+  g += cone(s.p5, s.p95, C.blue, 0.10) + cone(s.p25, s.p75, C.blue, 0.16);
+  const medPts = []; for (let i = 0; i <= 40; i++) { const u = i / 40, t = tSpot + u * (tEnd - tSpot); medPts.push(`${sx(t).toFixed(1)},${sy(q(med, u)).toFixed(1)}`); }
+  g += `<polyline points="${medPts.join(" ")}" fill="none" stroke="${C.purple}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
   // price history
-  if (closes.length) {
-    const pts = closes.map((c) => `${sx(Date.parse(c[0])).toFixed(1)},${sy(c[1]).toFixed(1)}`).join(" ");
-    g += `<polyline points="${pts}" fill="none" stroke="${C.text}" stroke-width="1.4"/>`;
-  }
-  g += `<line x1="${xs}" y1="${L.t}" x2="${xs}" y2="${L.t + ih}" stroke="${C.axis}" stroke-dasharray="2 3"/>`;
-  g += `<text x="${xs}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="10.5" text-anchor="middle">today</text>`;
-  // terminal distribution, drawn vertically at the horizon like a volume profile
-  const dMax = Math.max(...dens) || 1, profW = L.r - 24, x0 = L.l + iw;
-  g += `<line x1="${x0}" y1="${L.t}" x2="${x0}" y2="${L.t + ih}" stroke="${C.axis}"/>`;
-  for (let i = 0; i < dens.length; i++) {
-    if (dens[i] <= 0) continue;
-    const yTop = sy(edges[i + 1]), yBot = sy(edges[i]);
-    if (yBot < L.t || yTop > L.t + ih) continue;
-    const w = (dens[i] / dMax) * profW;
-    g += `<rect x="${x0}" y="${Math.max(yTop, L.t).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(Math.min(yBot, L.t + ih) - Math.max(yTop, L.t), 0.6).toFixed(1)}" fill="${C.blue}" opacity="0.72"/>`;
-  }
-  // targets and median across the profile
-  [["Bear", m.bear_price, C.red], ["Base", m.base_price, C.amber], ["Bull", m.bull_price, C.green], ["Median", s.median_price, C.purple]].forEach(([lbl, v, col]) => {
-    if (v < yMin || v > yMax) return;
-    g += `<line x1="${xs}" y1="${sy(v).toFixed(1)}" x2="${x0 + profW}" y2="${sy(v).toFixed(1)}" stroke="${col}" stroke-width="1.2" stroke-dasharray="4 3"/>`;
-    g += `<text x="${x0 + profW + 4}" y="${(sy(v) + 3.5).toFixed(1)}" fill="${col}" font-size="10" font-weight="600">${lbl} ${money0(v)}</text>`;
+  if (closes.length) g += `<polyline points="${closes.map((c) => `${sx(Date.parse(c[0])).toFixed(1)},${sy(c[1]).toFixed(1)}`).join(" ")}" fill="none" stroke="${C.text}" stroke-width="1.5"/>`;
+  g += `<circle cx="${xs}" cy="${sy(spot).toFixed(1)}" r="3.5" fill="${C.text}"/>`;
+  g += `<line x1="${xs}" y1="${L.t}" x2="${xs}" y2="${L.t + ih}" stroke="${C.axis}" stroke-dasharray="3 3"/>`;
+  g += `<text x="${xs}" y="${L.t + ih + 16}" fill="${C.text}" font-size="11" font-weight="600" text-anchor="middle">today ${money0(spot)}</text>`;
+  g += `<text x="${xe}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="11" text-anchor="middle">+${m.horizon_years}y</text>`;
+  // terminal density as a smoothed profile at the horizon, coloured by scenario band
+  const edges = r.histogram.edges, raw = r.histogram.density, n = raw.length;
+  const dens = raw.map((_, i) => { let a = 0, k = 0; for (let j = -2; j <= 2; j++) { if (raw[i + j] !== undefined) { a += raw[i + j]; k++; } } return a / k; });
+  const dMax = Math.max(...dens) || 1, profW = L.r - 88, x0 = xe;
+  const bands = [["below bear", 0, m.bear_price, C.red, s.below_bear], ["bear to base", m.bear_price, m.base_price, C.amber, s.bear_to_base],
+    ["base to bull", m.base_price, m.bull_price, C.blue, s.base_to_bull], ["above bull", m.bull_price, Infinity, C.green, s.above_bull]];
+  bands.forEach(([, bLo, bHi, color]) => {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const c = (edges[i] + edges[i + 1]) / 2; if (c < bLo || c >= bHi || c < yMin || c > yMax) continue;
+      pts.push([x0 + (dens[i] / dMax) * profW, sy(c)]);
+    }
+    if (pts.length < 2) return;
+    const yTop = Math.max(sy(Math.min(bHi, yMax)), L.t), yBot = Math.min(sy(Math.max(bLo, yMin)), L.t + ih);
+    g += `<path d="M${x0},${yBot.toFixed(1)} L${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" L")} L${x0},${yTop.toFixed(1)} Z" fill="${color}" opacity="0.55"/>`;
   });
-  g += `<text x="${x0 + 4}" y="${L.t - 4}" fill="${C.muted}" font-size="10">terminal distribution</text>`;
-  g += `<text x="${L.l}" y="${L.t - 4}" fill="${C.muted}" font-size="10">close, then P5 to P95 and P25 to P75 fan to the horizon</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}" width="${PW}" height="${PH}" role="img" aria-label="Price history with the forecast fan and the terminal price distribution drawn vertically at the horizon. Median ${money(s.median_price)}." font-family="IBM Plex Sans, ui-sans-serif, system-ui, sans-serif">${g}</svg>`;
+  g += `<line x1="${x0}" y1="${L.t}" x2="${x0}" y2="${L.t + ih}" stroke="${C.axis}"/>`;
+  // probability labels beside each band, placed at the band's centre within the visible range
+  bands.forEach(([label, bLo, bHi, color, p]) => {
+    const a = Math.max(bLo, yMin), b = Math.min(bHi === Infinity ? yMax : bHi, yMax); if (b <= a) return;
+    const y = sy((a + b) / 2);
+    g += `<text x="${x0 + profW + 10}" y="${(y + 4).toFixed(1)}" fill="${color}" font-size="12" font-weight="600">${pct(p, 0)}</text><text x="${x0 + profW + 44}" y="${(y + 4).toFixed(1)}" fill="${C.muted}" font-size="10.5">${label}</text>`;
+  });
+  // targets across the fan and profile, labelled on the frame's right edge
+  [["Bull", m.bull_price, C.green], ["Base", m.base_price, C.amber], ["Bear", m.bear_price, C.red]].forEach(([lbl, v, col]) => {
+    if (v < yMin || v > yMax) return;
+    g += `<line x1="${xs}" y1="${sy(v).toFixed(1)}" x2="${x0 + profW}" y2="${sy(v).toFixed(1)}" stroke="${col}" stroke-width="1.1" stroke-dasharray="6 4"/>`;
+    g += `<text x="${xs + 6}" y="${(sy(v) - 4).toFixed(1)}" fill="${col}" font-size="10.5" font-weight="600">${lbl} ${money0(v)}</text>`;
+  });
+  g += `<text x="${x0 + 4}" y="${(sy(med) + 4).toFixed(1)}" fill="${C.purple}" font-size="10.5" font-weight="600">median ${money0(med)}</text>`;
+  g += `<text x="${L.l}" y="${L.t - 12}" fill="${C.text}" font-size="13" font-weight="600">${esc(m.ticker)} price, the simulated range to the horizon, and the distribution at ${m.horizon_years} years</text>`;
+  g += `<text x="${L.l + iw}" y="${L.t - 12}" fill="${C.muted}" font-size="10.5" text-anchor="end">bands: P5 to P95, P25 to P75; dashed: median path</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}" width="${PW}" height="${PH}" role="img" aria-label="Price history, simulated range to the horizon and the terminal distribution at the horizon by scenario band." font-family="IBM Plex Sans, ui-sans-serif, system-ui, sans-serif">${g}</svg>`;
 }
-async function renderPath(r) {
-  const panel = $("pathPanel");
-  lastPath = await fetchPath(r.meta.ticker);
-  $("chartPath").innerHTML = pathChart(r, lastPath);
-  $("capPath").textContent = lastPath && lastPath.closes.length ? `Price path (closes to ${lastPath.as_of}) and the terminal distribution at ${r.meta.horizon_years} years` : `Forecast fan and terminal distribution at ${r.meta.horizon_years} years (no price history available)`;
-  panel.hidden = false;
+function svgStringToImage(svg) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" })), img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); }; img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not rasterise chart")); }; img.src = url;
+  });
 }
 
 /* Tables and panels */
@@ -557,7 +580,6 @@ function render(r, payload) {
   $("cap1").textContent = `Terminal price distribution, ${m.horizon_years}-year, ${m.n_simulations.toLocaleString()} paths`;
   $("chartHist").innerHTML = histChart(r); $("chartBars").innerHTML = barsChart(r); $("chartCdf").innerHTML = cdfChart(r); $("chartTornado").innerHTML = tornadoChart(r);
   $("summaryTables").innerHTML = summaryTables(r); $("sensitivityTables").innerHTML = sensitivityTables(r);
-  renderPath(r);
   ["shareBtn", "pinBtn", "exportPng", "exportJson", "logRun", "assessBtn"].forEach((id) => { $(id).disabled = false; });
 }
 
@@ -627,24 +649,22 @@ function assessorVerdict(r) {
 async function exportAssessor() {
   if (!lastResult) return;
   const r = lastResult, m = r.meta, rows = assessorRows(r, lastPayload), verdict = assessorVerdict(r);
-  const scale = 2, Wc = 1240, left = 40, colW = 520, lineH = 22;
-  const tableH = rows.length * lineH;
-  const cw = Wc - (left + colW + 40) - left, ch = cw * H / W, pathH = cw * 420 / 1120;
-  const Hc = 130 + Math.max(tableH, pathH + 24 + 2 * ch + 24) + 50;
+  // 4:3 slide: 1600 x 1200 logical, rendered at 2x
+  const scale = 2, Wc = 1600, Hc = 1200, left = 48, colW = 600, lineH = 21;
   const canvas = document.createElement("canvas"); canvas.width = Wc * scale; canvas.height = Hc * scale;
   const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, Wc, Hc);
   ctx.fillStyle = "#1b4b8a"; ctx.fillRect(0, 0, Wc, 6);
-  ctx.fillStyle = C.text; ctx.font = "600 24px IBM Plex Sans, system-ui, sans-serif";
-  ctx.fillText(`${m.company_name} (${m.ticker}): pitch assessment`, left, 50);
-  // verdict box
-  ctx.fillStyle = "#e8eff8"; ctx.fillRect(left, 66, Wc - 2 * left, 46);
-  ctx.fillStyle = C.text; ctx.font = "500 13.5px IBM Plex Sans, system-ui, sans-serif";
-  const words = verdict.split(" "); let line = "", y = 86; const maxW = Wc - 2 * left - 24;
-  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW) { ctx.fillText(line, left + 12, y); line = w; y += 18; } else line = t; }
+  ctx.fillStyle = C.text; ctx.font = "600 26px IBM Plex Sans, system-ui, sans-serif";
+  ctx.fillText(`${m.company_name} (${m.ticker}): pitch assessment`, left, 52);
+  // verdict
+  ctx.fillStyle = "#e8eff8"; ctx.fillRect(left, 70, Wc - 2 * left, 54);
+  ctx.fillStyle = C.text; ctx.font = "500 14px IBM Plex Sans, system-ui, sans-serif";
+  const words = verdict.split(" "); let line = "", y = 92; const maxW = Wc - 2 * left - 24;
+  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW) { ctx.fillText(line, left + 12, y); line = w; y += 19; } else line = t; }
   ctx.fillText(line, left + 12, y);
-  // table
-  let ty = 140;
+  // figures, left column
+  let ty = 160;
   rows.forEach(([k, v]) => {
     if (k) {
       ctx.fillStyle = C.muted; ctx.font = "12.5px IBM Plex Sans, system-ui, sans-serif"; ctx.fillText(k, left, ty);
@@ -653,16 +673,16 @@ async function exportAssessor() {
     }
     ty += lineH;
   });
-  // charts on the right: the price path with the terminal distribution, the probability bars, the histogram
-  const cx = left + colW + 40;
-  const ids = ["chartPath", "chartBars", "chartHist"].filter((id) => $(id).querySelector("svg"));
-  const imgs = await Promise.all(ids.map((id) => svgToImage($(id).querySelector("svg"))));
-  let cy = 130;
-  imgs.forEach((img, i) => { const h = ids[i] === "chartPath" ? pathH : ch; ctx.drawImage(img, cx, cy, cw, h); cy += h + 24; });
+  // right column: the path chart over the probability bars
+  const cx = left + colW + 40, cw = Wc - cx - left;
+  const pathSvg = pathChart(r, lastPath), pathH = cw * 560 / 1120;
+  const [pathImg, barsImg] = await Promise.all([svgStringToImage(pathSvg), svgToImage($("chartBars").querySelector("svg"))]);
+  ctx.drawImage(pathImg, cx, 150, cw, pathH);
+  const barsW = cw * 0.72, barsH = barsW * H / W;
+  ctx.drawImage(barsImg, cx + (cw - barsW) / 2, 150 + pathH + 20, barsW, barsH);
   ctx.fillStyle = C.faint; ctx.font = "11px IBM Plex Mono, ui-monospace, monospace";
-  ctx.fillText("Model output, not investment advice.", left, Hc - 16);
+  ctx.fillText(`Model output, not investment advice. ${new Date().toISOString().slice(0, 10)}.`, left, Hc - 18);
   const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${m.ticker}_pitch_assessment.png`; a.click();
-  // and the same figures as a tab-separated block for Excel
   const tsv = rows.filter(([k]) => k).map(([k, v]) => `${k}\t${v}`).join("\n") + `\nVerdict\t${verdict}`;
   try { await navigator.clipboard.writeText(tsv); $("assessBtn").textContent = "Image saved, table copied"; }
   catch (_) { $("assessBtn").textContent = "Image saved"; }
@@ -704,7 +724,7 @@ $("pinBtn").addEventListener("click", () => {
   if (lastResult) compareStrip(lastResult);
 });
 $("exportPng").addEventListener("click", () => exportPng().catch((e) => showError(e.message)));
-$("assessBtn").addEventListener("click", () => exportAssessor().catch((e) => showError(e.message)));
+$("assessBtn").addEventListener("click", async () => { lastPath = await fetchPath(lastResult.meta.ticker); exportAssessor().catch((e) => showError(e.message)); });
 $("exportJson").addEventListener("click", () => {
   if (!lastResult) return;
   const blob = new Blob([JSON.stringify({ inputs: lastPayload, result: lastResult }, null, 2)], { type: "application/json" });

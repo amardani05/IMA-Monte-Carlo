@@ -1,4 +1,28 @@
 {
+ "AAMI": {
+  "cik": 1748824,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Acadian Asset Management Inc.",
+  "name": "Acadian Asset Management Inc.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "AAP": {
+  "cik": 1158449,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Advance Auto Parts, Inc.",
+  "name": "ADVANCE AUTO PARTS INC",
+  "sic": 5531,
+  "sic_description": "Retail-Auto & Home Supply Stores"
+ },
  "AAPL": {
   "cik": 320193,
   "exchanges": [
@@ -7,6 +31,129 @@
   "name": "Apple Inc.",
   "sic": 3571,
   "sic_description": "Electronic Computers"
+ },
+ "AAT": {
+  "cik": 1500217,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "American Assets Trust",
+  "name": "American Assets Trust, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "ABCB": {
+  "cik": 351569,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Ameris Bancorp",
+  "name": "Ameris Bancorp",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "ABG": {
+  "cik": 1144980,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Asbury Automotive Group",
+  "name": "ASBURY AUTOMOTIVE GROUP INC",
+  "sic": 5500,
+  "sic_description": "Retail-Auto Dealers & Gasoline Stations"
+ },
+ "ABM": {
+  "cik": 771497,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "ABM Industries, Inc.",
+  "name": "ABM INDUSTRIES INC /DE/",
+  "sic": 7340,
+  "sic_description": "Services-To Dwellings & Other Buildings"
+ },
+ "ABR": {
+  "cik": 1253986,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Arbor Realty Trust",
+  "name": "ARBOR REALTY TRUST INC",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "ACA": {
+  "cik": 1739445,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Arcosa, Inc.",
+  "name": "Arcosa, Inc.",
+  "sic": 3440,
+  "sic_description": "Fabricated Structural Metal Products"
+ },
+ "ACAD": {
+  "cik": 1070494,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Acadia Pharmaceuticals",
+  "name": "ACADIA PHARMACEUTICALS INC",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "ACHC": {
+  "cik": 1520697,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Acadia Healthcare",
+  "name": "Acadia Healthcare Company, Inc.",
+  "sic": 8093,
+  "sic_description": "Services-Specialty Outpatient Facilities, NEC"
+ },
+ "ACIW": {
+  "cik": 935036,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "ACI Worldwide",
+  "name": "ACI WORLDWIDE, INC.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "ACLS": {
+  "cik": 1113232,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Axcelis Technologies, Inc.",
+  "name": "AXCELIS TECHNOLOGIES INC",
+  "sic": 3559,
+  "sic_description": "Special Industry Machinery, NEC"
  },
  "ACM": {
   "cik": 868857,
@@ -17,6 +164,51 @@
   "sic": 8711,
   "sic_description": "Services-Engineering Services"
  },
+ "ACMR": {
+  "cik": 1680062,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "ACM Research, Inc.",
+  "name": "ACM Research, Inc.",
+  "sic": 3559,
+  "sic_description": "Special Industry Machinery, NEC"
+ },
+ "ACT": {
+  "cik": 1823529,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Enact Holdings, Inc.",
+  "name": "Enact Holdings, Inc.",
+  "sic": 6411,
+  "sic_description": "Insurance Agents, Brokers & Service"
+ },
+ "ADAM": {
+  "cik": 1273685,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Adamas Trust, Inc.",
+  "name": "ADAMAS TRUST, INC.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
  "ADBE": {
   "cik": 796343,
   "exchanges": [
@@ -26,6 +218,18 @@
   "sic": 7372,
   "sic_description": "Services-Prepackaged Software"
  },
+ "ADEA": {
+  "cik": 1803696,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Adeia, Inc.",
+  "name": "Adeia Inc.",
+  "sic": 4841,
+  "sic_description": "Cable & Other Pay Television Services"
+ },
  "ADI": {
   "cik": 6281,
   "exchanges": [
@@ -34,6 +238,246 @@
   "name": "ANALOG DEVICES INC",
   "sic": 3674,
   "sic_description": "Semiconductors & Related Devices"
+ },
+ "ADIG": {
+  "cik": 2105139,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "ADI Global Distribution",
+  "name": "ADI GLOBAL DISTRIBUTION INC.",
+  "sic": 5072,
+  "sic_description": "Wholesale-Hardware"
+ },
+ "ADMA": {
+  "cik": 1368514,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "ADMA Biologics, Inc.",
+  "name": "ADMA BIOLOGICS, INC.",
+  "sic": 2836,
+  "sic_description": "Biological Products, (No Diagnostic Substances)"
+ },
+ "ADNT": {
+  "cik": 1670541,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Adient",
+  "name": "Adient plc",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "ADT": {
+  "cik": 1703056,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "ADT Inc.",
+  "name": "ADT Inc.",
+  "sic": 7381,
+  "sic_description": "Services-Detective, Guard & Armored Car Services"
+ },
+ "ADUS": {
+  "cik": 1468328,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Addus HomeCare Corp.",
+  "name": "Addus HomeCare Corp",
+  "sic": 8082,
+  "sic_description": "Services-Home Health Care Services"
+ },
+ "AEO": {
+  "cik": 919012,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "American Eagle Outfitters",
+  "name": "AMERICAN EAGLE OUTFITTERS INC",
+  "sic": 5651,
+  "sic_description": "Retail-Family Clothing Stores"
+ },
+ "AESI": {
+  "cik": 1984060,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Atlas Energy Solutions, Inc.",
+  "name": "Atlas Energy Solutions Inc.",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "AGNT": {
+  "cik": 1495932,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "eXp World Holdings, Inc.",
+  "name": "AGNT, Inc.",
+  "sic": 6531,
+  "sic_description": "Real Estate Agents & Managers (For Others)"
+ },
+ "AGO": {
+  "cik": 1273813,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Assured Guaranty Ltd.",
+  "name": "ASSURED GUARANTY LTD",
+  "sic": 6351,
+  "sic_description": "Surety Insurance"
+ },
+ "AGX": {
+  "cik": 100591,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Argan, Inc.",
+  "name": "ARGAN INC",
+  "sic": 1700,
+  "sic_description": "Construction - Special Trade Contractors"
+ },
+ "AGYS": {
+  "cik": 78749,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Agilysys, Inc.",
+  "name": "AGILYSYS INC",
+  "sic": 7373,
+  "sic_description": "Services-Computer Integrated Systems Design"
+ },
+ "AHCO": {
+  "cik": 1725255,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "AdaptHealth Corp.",
+  "name": "AdaptHealth Corp.",
+  "sic": 8082,
+  "sic_description": "Services-Home Health Care Services"
+ },
+ "AIN": {
+  "cik": 819793,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Albany International Corp.",
+  "name": "ALBANY INTERNATIONAL CORP /DE/",
+  "sic": 2221,
+  "sic_description": "Broadwoven Fabric Mills, Man Made Fiber & Silk"
+ },
+ "AIR": {
+  "cik": 1750,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "AAR Corp.",
+  "name": "AAR CORP",
+  "sic": 3720,
+  "sic_description": "Aircraft & Parts"
+ },
+ "AKR": {
+  "cik": 899629,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Acadia Realty Trust",
+  "name": "ACADIA REALTY TRUST",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "ALG": {
+  "cik": 897077,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Alamo Group",
+  "name": "ALAMO GROUP INC",
+  "sic": 3523,
+  "sic_description": "Farm Machinery & Equipment"
+ },
+ "ALGT": {
+  "cik": 1362468,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Allegiant Travel Company",
+  "name": "Allegiant Travel CO",
+  "sic": 4512,
+  "sic_description": "Air Transportation, Scheduled"
+ },
+ "ALHC": {
+  "cik": 1832466,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Alignment Healthcare, Inc.",
+  "name": "Alignment Healthcare, Inc.",
+  "sic": 6324,
+  "sic_description": "Hospital & Medical Service Plans"
+ },
+ "ALKS": {
+  "cik": 1520262,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Alkermes plc",
+  "name": "Alkermes plc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "ALRM": {
+  "cik": 1459200,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Alarm.Com, Inc.",
+  "name": "Alarm.com Holdings, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
  },
  "AMD": {
   "cik": 2488,
@@ -53,6 +497,138 @@
   "sic": 3823,
   "sic_description": "Industrial Instruments For Measurement, Display, and Control"
  },
+ "AMN": {
+  "cik": 1142750,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Amn Healthcare Services, Inc.",
+  "name": "AMN HEALTHCARE SERVICES INC",
+  "sic": 7363,
+  "sic_description": "Services-Help Supply Services"
+ },
+ "AMPH": {
+  "cik": 1297184,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Amphstar Pharmaceuticals, Inc.",
+  "name": "Amphastar Pharmaceuticals, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "AMR": {
+  "cik": 1704715,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Alpha Metallurgical Resources, Inc.",
+  "name": "Alpha Metallurgical Resources, Inc.",
+  "sic": 1221,
+  "sic_description": "Bituminous Coal & Lignite Surface Mining"
+ },
+ "AMRX": {
+  "cik": 1723128,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Amneal Pharmaceuticals",
+  "name": "Amneal Pharmaceuticals, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "AMSF": {
+  "cik": 1018979,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Amerisafe, Inc.",
+  "name": "AMERISAFE INC",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "AMTM": {
+  "cik": 2011286,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Amentum",
+  "name": "Amentum Holdings, Inc.",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "ANDE": {
+  "cik": 821026,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "The Andersons, Inc.",
+  "name": "Andersons, Inc.",
+  "sic": 5150,
+  "sic_description": "Wholesale-Farm Product Raw Materials"
+ },
+ "ANIP": {
+  "cik": 1023024,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "ANI Pharmaceuticals, Inc.",
+  "name": "ANI PHARMACEUTICALS INC",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "AORT": {
+  "cik": 784199,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Artivion",
+  "name": "ARTIVION, INC.",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
+ "AOSL": {
+  "cik": 1387467,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Alpha and Omega Semiconductor, Ltd.",
+  "name": "ALPHA & OMEGA SEMICONDUCTOR Ltd",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "APAM": {
+  "cik": 1517302,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Artisan Partners Asset Management, Inc.",
+  "name": "Artisan Partners Asset Management Inc.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
  "APG": {
   "cik": 1796209,
   "exchanges": [
@@ -61,6 +637,30 @@
   "name": "APi Group Corp",
   "sic": 7340,
   "sic_description": "Services-To Dwellings & Other Buildings"
+ },
+ "APLE": {
+  "cik": 1418121,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Apple Hospitality REIT, Inc.",
+  "name": "Apple Hospitality REIT, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "APOG": {
+  "cik": 6845,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Apogee Enterprises, Inc.",
+  "name": "APOGEE ENTERPRISES, INC.",
+  "sic": 3231,
+  "sic_description": "Glass Products, Made of  Purchased Glass"
  },
  "APP": {
   "cik": 1751008,
@@ -71,6 +671,115 @@
   "sic": 7370,
   "sic_description": "Services-Computer Programming, Data Processing, Etc."
  },
+ "ARCB": {
+  "cik": 894405,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "ArcBest Corp.",
+  "name": "ARCBEST CORP /TX/",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "ARLO": {
+  "cik": 1736946,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Arlo Technologies",
+  "name": "Arlo Technologies, Inc.",
+  "sic": 7381,
+  "sic_description": "Services-Detective, Guard & Armored Car Services"
+ },
+ "AROC": {
+  "cik": 1389050,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Archrock, Inc.",
+  "name": "Archrock, Inc.",
+  "sic": 4922,
+  "sic_description": "Natural Gas Transmission"
+ },
+ "ARR": {
+  "cik": 1428205,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Armour Residential REIT",
+  "name": "Armour Residential REIT, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "ASO": {
+  "cik": 1817358,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Academy Sports + Outdoors",
+  "name": "Academy Sports & Outdoors, Inc.",
+  "sic": 5940,
+  "sic_description": "Retail-Miscellaneous Shopping Goods Stores"
+ },
+ "ASTE": {
+  "cik": 792987,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Astec Industries, Inc.",
+  "name": "ASTEC INDUSTRIES INC",
+  "sic": 3531,
+  "sic_description": "Construction Machinery & Equip"
+ },
+ "ASTH": {
+  "cik": 1083446,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Astrana Health, Inc.",
+  "name": "Astrana Health, Inc.",
+  "sic": 8742,
+  "sic_description": "Services-Management Consulting Services"
+ },
+ "ATEN": {
+  "cik": 1580808,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "A10 Networks, Inc.",
+  "name": "A10 Networks, Inc.",
+  "sic": 3576,
+  "sic_description": "Computer Communications Equipment"
+ },
+ "ATMU": {
+  "cik": 1921963,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Atmus Filtration Technologies Inc.",
+  "name": "Atmus Filtration Technologies Inc.",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
  "ATNI": {
   "cik": 879585,
   "exchanges": [
@@ -79,6 +788,31 @@
   "name": "ATN International, Inc.",
   "sic": 4813,
   "sic_description": "Telephone Communications (No Radiotelephone)"
+ },
+ "AUB": {
+  "cik": 883948,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Atlantic Union Bankshares, Corp.",
+  "name": "Atlantic Union Bankshares Corp",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "AVA": {
+  "cik": 104918,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Avista Corporation",
+  "name": "AVISTA CORP",
+  "sic": 4931,
+  "sic_description": "Electric & Other Services Combined"
  },
  "AVGO": {
   "cik": 1730168,
@@ -89,6 +823,116 @@
   "sic": 3674,
   "sic_description": "Semiconductors & Related Devices"
  },
+ "AWI": {
+  "cik": 7431,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Armstrong World Industries, Inc.",
+  "name": "ARMSTRONG WORLD INDUSTRIES INC",
+  "sic": 3089,
+  "sic_description": "Plastics Products, NEC"
+ },
+ "AWR": {
+  "cik": 1056903,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "American States Water Company",
+  "name": "AMERICAN STATES WATER CO",
+  "sic": 4941,
+  "sic_description": "Water Supply"
+ },
+ "AX": {
+  "cik": 1299709,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Axos Financial, Inc.",
+  "name": "Axos Financial, Inc.",
+  "sic": 6035,
+  "sic_description": "Savings Institution, Federally Chartered"
+ },
+ "AZTA": {
+  "cik": 933974,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Azenta, Inc.",
+  "name": "Azenta, Inc.",
+  "sic": 3559,
+  "sic_description": "Special Industry Machinery, NEC"
+ },
+ "AZZ": {
+  "cik": 8947,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "AZZ, Inc.",
+  "name": "AZZ INC",
+  "sic": 3470,
+  "sic_description": "Coating, Engraving & Allied Services"
+ },
+ "BANC": {
+  "cik": 1169770,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Banc Of California, Inc.",
+  "name": "BANC OF CALIFORNIA, INC.",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "BANF": {
+  "cik": 760498,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Bancfirst Corp",
+  "name": "BANCFIRST CORP /OK/",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "BANR": {
+  "cik": 946673,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Banner Corporation",
+  "name": "BANNER CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "BBT": {
+  "cik": 1108134,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Beacon Financial Corp.",
+  "name": "Beacon Financial Corp",
+  "sic": 6036,
+  "sic_description": "Savings Institutions, Not Federally Chartered"
+ },
  "BBY": {
   "cik": 764478,
   "exchanges": [
@@ -97,6 +941,265 @@
   "name": "BEST BUY CO INC",
   "sic": 5731,
   "sic_description": "Retail-Radio, Tv & Consumer Electronics Stores"
+ },
+ "BCC": {
+  "cik": 1328581,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Boise Cascade",
+  "name": "BOISE CASCADE Co",
+  "sic": 5030,
+  "sic_description": "Wholesale-Lumber & Other Construction Materials"
+ },
+ "BCPC": {
+  "cik": 9326,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Balchem Corporation",
+  "name": "BALCHEM CORP",
+  "sic": 2800,
+  "sic_description": "Chemicals & Allied Products"
+ },
+ "BFAM": {
+  "cik": 1437578,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Bright Horizons Family Solutions Inc.",
+  "name": "BRIGHT HORIZONS FAMILY SOLUTIONS INC.",
+  "sic": 8351,
+  "sic_description": "Services-Child Day Care Services"
+ },
+ "BFH": {
+  "cik": 1101215,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Bread Financial Holdings, Inc.",
+  "name": "BREAD FINANCIAL HOLDINGS, INC.",
+  "sic": 6141,
+  "sic_description": "Personal Credit Institutions"
+ },
+ "BFS": {
+  "cik": 907254,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Saul Centers, Inc.",
+  "name": "SAUL CENTERS, INC.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "BGC": {
+  "cik": 1094831,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "BGC Group, Inc.",
+  "name": "BGC Group, Inc.",
+  "sic": 6200,
+  "sic_description": "Security & Commodity Brokers, Dealers, Exchanges & Services"
+ },
+ "BHE": {
+  "cik": 863436,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Benchmark Electronics, Inc.",
+  "name": "BENCHMARK ELECTRONICS INC",
+  "sic": 3672,
+  "sic_description": "Printed Circuit Boards"
+ },
+ "BJRI": {
+  "cik": 1013488,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "BJ's Restaurants, Inc.",
+  "name": "BJs RESTAURANTS INC",
+  "sic": 5812,
+  "sic_description": "Retail-Eating  Places"
+ },
+ "BKE": {
+  "cik": 885245,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "The Buckle, Inc.",
+  "name": "BUCKLE INC",
+  "sic": 5651,
+  "sic_description": "Retail-Family Clothing Stores"
+ },
+ "BKU": {
+  "cik": 1504008,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "BankUnited, Inc.",
+  "name": "BankUnited, Inc.",
+  "sic": 6035,
+  "sic_description": "Savings Institution, Federally Chartered"
+ },
+ "BL": {
+  "cik": 1666134,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "BlackLine Systems, Inc.",
+  "name": "BLACKLINE, INC.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "BLFS": {
+  "cik": 834365,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "BioLife Solutions, Inc.",
+  "name": "BIOLIFE SOLUTIONS INC",
+  "sic": 3845,
+  "sic_description": "Electromedical & Electrotherapeutic Apparatus"
+ },
+ "BLKB": {
+  "cik": 1280058,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Blackbaud",
+  "name": "BLACKBAUD INC",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "BMI": {
+  "cik": 9092,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Badger Meter, Inc.",
+  "name": "BADGER METER INC",
+  "sic": 3824,
+  "sic_description": "Totalizing Fluid Meters & Counting Devices"
+ },
+ "BNL": {
+  "cik": 1424182,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Broadstone Net Lease, Inc.",
+  "name": "Broadstone Net Lease, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "BOH": {
+  "cik": 46195,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Bank of Hawaii",
+  "name": "BANK OF HAWAII CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "BOOT": {
+  "cik": 1610250,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Boot Barn Holdings, Inc.",
+  "name": "Boot Barn Holdings, Inc.",
+  "sic": 5661,
+  "sic_description": "Retail-Shoe Stores"
+ },
+ "BOX": {
+  "cik": 1372612,
+  "exchanges": [
+   "NYSE",
+   "OTC"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Box, Inc.",
+  "name": "BOX INC",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "BRC": {
+  "cik": 746598,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Brady Corporation",
+  "name": "BRADY CORP",
+  "sic": 3990,
+  "sic_description": "Miscellaneous Manufacturing Industries"
+ },
+ "BTU": {
+  "cik": 1064728,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Peabody Energy, Inc.",
+  "name": "PEABODY ENERGY CORP",
+  "sic": 1221,
+  "sic_description": "Bituminous Coal & Lignite Surface Mining"
+ },
+ "BXMT": {
+  "cik": 1061630,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Blackstone Mortgage Trust, Inc.",
+  "name": "BLACKSTONE MORTGAGE TRUST, INC.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
  },
  "CABO": {
   "cik": 1632127,
@@ -107,6 +1210,78 @@
   "sic": 4841,
   "sic_description": "Cable & Other Pay Television Services"
  },
+ "CACC": {
+  "cik": 885550,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Credit Acceptance",
+  "name": "CREDIT ACCEPTANCE CORP",
+  "sic": 6141,
+  "sic_description": "Personal Credit Institutions"
+ },
+ "CAG": {
+  "cik": 23217,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Conagra Brands",
+  "name": "CONAGRA BRANDS INC.",
+  "sic": 2000,
+  "sic_description": "Food and Kindred Products"
+ },
+ "CAKE": {
+  "cik": 887596,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "The Cheesecake Factory, Inc.",
+  "name": "CHEESECAKE FACTORY INC",
+  "sic": 5812,
+  "sic_description": "Retail-Eating  Places"
+ },
+ "CALM": {
+  "cik": 16160,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Cal-Maine Foods, Inc.",
+  "name": "CAL-MAINE FOODS INC",
+  "sic": 200,
+  "sic_description": "Agricultural Prod-Livestock & Animal Specialties"
+ },
+ "CALX": {
+  "cik": 1406666,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Calix",
+  "name": "CALIX, INC",
+  "sic": 4899,
+  "sic_description": "Communications Services, NEC"
+ },
+ "CALY": {
+  "cik": 837465,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Callaway Golf Company",
+  "name": "Callaway Golf Co",
+  "sic": 3949,
+  "sic_description": "Sporting & Athletic Goods, NEC"
+ },
  "CARG": {
   "cik": 1494259,
   "exchanges": [
@@ -116,6 +1291,18 @@
   "sic": 7374,
   "sic_description": "Services-Computer Processing & Data Preparation"
  },
+ "CASH": {
+  "cik": 907471,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Pathward Financial, Inc.",
+  "name": "PATHWARD FINANCIAL, INC.",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
  "CAT": {
   "cik": 18230,
   "exchanges": [
@@ -124,6 +1311,176 @@
   "name": "CATERPILLAR INC",
   "sic": 3531,
   "sic_description": "Construction Machinery & Equip"
+ },
+ "CATY": {
+  "cik": 861842,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Cathay General Bancorp",
+  "name": "CATHAY GENERAL BANCORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "CBRL": {
+  "cik": 1067294,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Cracker Barrel",
+  "name": "CRACKER BARREL OLD COUNTRY STORE, INC",
+  "sic": 5812,
+  "sic_description": "Retail-Eating  Places"
+ },
+ "CBU": {
+  "cik": 723188,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Community Bank System, Inc.",
+  "name": "COMMUNITY FINANCIAL SYSTEM, INC.",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "CC": {
+  "cik": 1627223,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Chemours",
+  "name": "Chemours Co",
+  "sic": 2800,
+  "sic_description": "Chemicals & Allied Products"
+ },
+ "CCOI": {
+  "cik": 1158324,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Cogent Communications Holdings, Inc.",
+  "name": "COGENT COMMUNICATIONS HOLDINGS, INC.",
+  "sic": 4899,
+  "sic_description": "Communications Services, NEC"
+ },
+ "CCS": {
+  "cik": 1576940,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Century Communities, Inc.",
+  "name": "Century Communities, Inc.",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "CE": {
+  "cik": 1306830,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Celanese",
+  "name": "Celanese Corp",
+  "sic": 2820,
+  "sic_description": "Plastic Material, Synth Resin/Rubber, Cellulos (No Glass)"
+ },
+ "CENT": {
+  "cik": 887733,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Central Garden & Pet Company",
+  "name": "CENTRAL GARDEN & PET CO",
+  "sic": 5190,
+  "sic_description": "Wholesale-Miscellaneous Nondurable Goods"
+ },
+ "CENTA": {
+  "cik": 887733,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Central Garden & Pet Company (Class A)",
+  "name": "CENTRAL GARDEN & PET CO",
+  "sic": 5190,
+  "sic_description": "Wholesale-Miscellaneous Nondurable Goods"
+ },
+ "CENX": {
+  "cik": 949157,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Century Aluminum Company",
+  "name": "CENTURY ALUMINUM CO",
+  "sic": 3334,
+  "sic_description": "Primary Production of  Aluminum"
+ },
+ "CERT": {
+  "cik": 1827090,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Certara, Inc.",
+  "name": "Certara, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "CFFN": {
+  "cik": 1490906,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Capitol Federal Savings Bank",
+  "name": "Capitol Federal Financial, Inc.",
+  "sic": 6035,
+  "sic_description": "Savings Institution, Federally Chartered"
+ },
+ "CHCO": {
+  "cik": 726854,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "City Holding Company",
+  "name": "CITY HOLDING CO",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "CHEF": {
+  "cik": 1517175,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Chefs' Warehouse, Inc.",
+  "name": "Chefs' Warehouse, Inc.",
+  "sic": 5141,
+  "sic_description": "Wholesale-Groceries, General Line"
  },
  "CHTR": {
   "cik": 1091667,
@@ -144,6 +1501,19 @@
   "sic": 4955,
   "sic_description": "Hazardous Waste Management"
  },
+ "CLSK": {
+  "cik": 827876,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "CleanSpark, Inc.",
+  "name": "CLEANSPARK, INC.",
+  "sic": 6199,
+  "sic_description": "Finance Services"
+ },
  "CMCSA": {
   "cik": 1166691,
   "exchanges": [
@@ -163,6 +1533,138 @@
   "sic": 3510,
   "sic_description": "Engines & Turbines"
  },
+ "CNK": {
+  "cik": 1385280,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Cinemark Holdings, Inc.",
+  "name": "Cinemark Holdings, Inc.",
+  "sic": 7830,
+  "sic_description": "Services-Motion Picture Theaters"
+ },
+ "CNMD": {
+  "cik": 816956,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "CONMED Corporation",
+  "name": "CONMED Corp",
+  "sic": 3845,
+  "sic_description": "Electromedical & Electrotherapeutic Apparatus"
+ },
+ "CNR": {
+  "cik": 1710366,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Core Natural Resources, Inc.",
+  "name": "Core Natural Resources, Inc.",
+  "sic": 1220,
+  "sic_description": "Silver Ores"
+ },
+ "CNS": {
+  "cik": 1284812,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Cohen & Steers, Inc.",
+  "name": "COHEN & STEERS, INC.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "CNXC": {
+  "cik": 1803599,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Concentrix",
+  "name": "Concentrix Corp",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "CNXN": {
+  "cik": 1050377,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "PC Connection, Inc.",
+  "name": "PC CONNECTION INC",
+  "sic": 5045,
+  "sic_description": "Wholesale-Computers & Peripheral Equipment & Software"
+ },
+ "COCO": {
+  "cik": 1482981,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "The Vita Coco Company",
+  "name": "Vita Coco Company, Inc.",
+  "sic": 2080,
+  "sic_description": "Beverages"
+ },
+ "COHU": {
+  "cik": 21535,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Cohu, Inc.",
+  "name": "COHU INC",
+  "sic": 3825,
+  "sic_description": "Instruments For Meas & Testing of  Electricity & Elec Signals"
+ },
+ "COLL": {
+  "cik": 1267565,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Collegium Pharmaceutical, Inc.",
+  "name": "COLLEGIUM PHARMACEUTICAL, INC",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "CON": {
+  "cik": 2014596,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Concentra Group Holdings Parent, Inc.",
+  "name": "Concentra Group Holdings Parent, Inc.",
+  "sic": 8093,
+  "sic_description": "Services-Specialty Outpatient Facilities, NEC"
+ },
+ "CORT": {
+  "cik": 1088856,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Corcept Therapeutics Incorporated",
+  "name": "CORCEPT THERAPEUTICS INC",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
  "COST": {
   "cik": 909832,
   "exchanges": [
@@ -171,6 +1673,102 @@
   "name": "COSTCO WHOLESALE CORP /NEW",
   "sic": 5331,
   "sic_description": "Retail-Variety Stores"
+ },
+ "COTY": {
+  "cik": 1024305,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Coty",
+  "name": "COTY INC.",
+  "sic": 2844,
+  "sic_description": "Perfumes, Cosmetics & Other Toilet Preparations"
+ },
+ "CPB": {
+  "cik": 16732,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "The Campbell's Company",
+  "name": "CAMPBELL'S Co",
+  "sic": 2000,
+  "sic_description": "Food and Kindred Products"
+ },
+ "CPF": {
+  "cik": 701347,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Central Pacific Financial Corp.",
+  "name": "CENTRAL PACIFIC FINANCIAL CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "CPK": {
+  "cik": 19745,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Chesapeake Utilities Corp.",
+  "name": "CHESAPEAKE UTILITIES CORP",
+  "sic": 4923,
+  "sic_description": "Natural Gas Transmisison & Distribution"
+ },
+ "CRC": {
+  "cik": 1609253,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "California Resources Corporation",
+  "name": "California Resources Corp",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "CRGY": {
+  "cik": 1866175,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Crescent Energy Company",
+  "name": "Crescent Energy Co",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "CRI": {
+  "cik": 1060822,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Carter's, Inc.",
+  "name": "CARTERS INC",
+  "sic": 2300,
+  "sic_description": "Apparel & Other Finishd Prods of  Fabrics & Similar Matl"
+ },
+ "CRK": {
+  "cik": 23194,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Comstock Resources, Inc.",
+  "name": "COMSTOCK RESOURCES INC",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
  },
  "CRM": {
   "cik": 1108524,
@@ -190,6 +1788,18 @@
   "sic": 3021,
   "sic_description": "Rubber & Plastics Footwear"
  },
+ "CRSR": {
+  "cik": 1743759,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Corsair Gaming",
+  "name": "Corsair Gaming, Inc.",
+  "sic": 3577,
+  "sic_description": "Computer Peripheral Equipment, NEC"
+ },
  "CRTO": {
   "cik": 1576427,
   "exchanges": [
@@ -198,6 +1808,18 @@
   "name": "Criteo S.A.",
   "sic": 7311,
   "sic_description": "Services-Advertising Agencies"
+ },
+ "CRVL": {
+  "cik": 874866,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "CorVel Corporation",
+  "name": "CORVEL CORP",
+  "sic": 6411,
+  "sic_description": "Insurance Agents, Brokers & Service"
  },
  "CRWD": {
   "cik": 1535527,
@@ -208,6 +1830,30 @@
   "sic": 7372,
   "sic_description": "Services-Prepackaged Software"
  },
+ "CSR": {
+  "cik": 798359,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Centerspace Trust",
+  "name": "CENTERSPACE",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "CSW": {
+  "cik": 1624794,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "CSW Industrials, Inc.",
+  "name": "CSW INDUSTRIALS, INC.",
+  "sic": 2891,
+  "sic_description": "Adhesives & Sealants"
+ },
  "CSX": {
   "cik": 277948,
   "exchanges": [
@@ -216,6 +1862,115 @@
   "name": "CSX CORP",
   "sic": 4011,
   "sic_description": "Railroads, Line-Haul Operating"
+ },
+ "CTS": {
+  "cik": 26058,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "CTS Corporation",
+  "name": "CTS CORP",
+  "sic": 3672,
+  "sic_description": "Printed Circuit Boards"
+ },
+ "CUBI": {
+  "cik": 1488813,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Customers Bancorp, Inc.",
+  "name": "Customers Bancorp, Inc.",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "CURB": {
+  "cik": 2027317,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Curbline Properties Corp.",
+  "name": "Curbline Properties Corp.",
+  "sic": 6500,
+  "sic_description": "Real Estate"
+ },
+ "CVBF": {
+  "cik": 354647,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "CVB Financial Corp.",
+  "name": "CVB FINANCIAL CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "CVCO": {
+  "cik": 278166,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Cavco Industries, Inc.",
+  "name": "CAVCO INDUSTRIES, INC.",
+  "sic": 2451,
+  "sic_description": "Mobile Homes"
+ },
+ "CVI": {
+  "cik": 1376139,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "CVR Energy, Inc.",
+  "name": "CVR ENERGY INC",
+  "sic": 2911,
+  "sic_description": "Petroleum Refining"
+ },
+ "CVSA": {
+  "cik": 730464,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Covista Inc.",
+  "name": "Covista Inc.",
+  "sic": 8200,
+  "sic_description": "Services-Educational Services"
+ },
+ "CWEN": {
+  "cik": 1567683,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Clearway Energy, Inc. (Class C)",
+  "name": "Clearway Energy, Inc.",
+  "sic": 4911,
+  "sic_description": "Electric Services"
+ },
+ "CWK": {
+  "cik": 1628369,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Cushman & Wakefield plc",
+  "name": "Cushman & Wakefield Ltd.",
+  "sic": 6500,
+  "sic_description": "Real Estate"
  },
  "CWST": {
   "cik": 911177,
@@ -226,6 +1981,117 @@
   "sic": 4953,
   "sic_description": "Refuse Systems"
  },
+ "CWT": {
+  "cik": 1035201,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "California Water Service Group",
+  "name": "CALIFORNIA WATER SERVICE GROUP",
+  "sic": 4941,
+  "sic_description": "Water Supply"
+ },
+ "CXM": {
+  "cik": 1569345,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Sprinklr, Inc.",
+  "name": "Sprinklr, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "CXW": {
+  "cik": 1070985,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "CoreCivic",
+  "name": "CoreCivic, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "CZR": {
+  "cik": 1590895,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Caesars Entertainment",
+  "name": "Caesars Entertainment, Inc.",
+  "sic": 7011,
+  "sic_description": "Hotels & Motels"
+ },
+ "DAN": {
+  "cik": 26780,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Dana Incorporated",
+  "name": "DANA Inc",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "DAVE": {
+  "cik": 1841408,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Dave, Inc.",
+  "name": "Dave Inc./DE",
+  "sic": 6199,
+  "sic_description": "Finance Services"
+ },
+ "DBD": {
+  "cik": 28823,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Diebold Nixdorf",
+  "name": "DIEBOLD NIXDORF, Inc",
+  "sic": 3578,
+  "sic_description": "Calculating & Accounting Machines (No Electronic Computers)"
+ },
+ "DCH": {
+  "cik": 1062231,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Dauch Corporation",
+  "name": "Dauch Corp",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "DCOM": {
+  "cik": 846617,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Dime Community Bancshares, Inc.",
+  "name": "Dime Commercial Bancshares, Inc. /NY/",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
  "DE": {
   "cik": 315189,
   "exchanges": [
@@ -234,6 +2100,18 @@
   "name": "DEERE & CO",
   "sic": 3523,
   "sic_description": "Farm Machinery & Equipment"
+ },
+ "DEA": {
+  "cik": 1622194,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Easterly Government Properties, Inc.",
+  "name": "Easterly Government Properties, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
  },
  "DECK": {
   "cik": 910521,
@@ -244,6 +2122,42 @@
   "sic": 3021,
   "sic_description": "Rubber & Plastics Footwear"
  },
+ "DEI": {
+  "cik": 1364250,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Douglas Emmett",
+  "name": "Douglas Emmett Inc",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "DFH": {
+  "cik": 1825088,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Dream Finders Homes, Inc.",
+  "name": "Dream Finders Homes, Inc.",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "DFIN": {
+  "cik": 1669811,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Donnelley Financial Solutions, Inc.",
+  "name": "Donnelley Financial Solutions, Inc.",
+  "sic": 7380,
+  "sic_description": "Services-Miscellaneous Business Services"
+ },
  "DG": {
   "cik": 29534,
   "exchanges": [
@@ -252,6 +2166,30 @@
   "name": "DOLLAR GENERAL CORP",
   "sic": 5331,
   "sic_description": "Retail-Variety Stores"
+ },
+ "DGII": {
+  "cik": 854775,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Digi International Inc.",
+  "name": "DIGI INTERNATIONAL INC",
+  "sic": 3576,
+  "sic_description": "Computer Communications Equipment"
+ },
+ "DIOD": {
+  "cik": 29002,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Diodes Incorporated",
+  "name": "DIODES INC /DEL/",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
  },
  "DLTR": {
   "cik": 935703,
@@ -262,6 +2200,54 @@
   "sic": 5331,
   "sic_description": "Retail-Variety Stores"
  },
+ "DLX": {
+  "cik": 27996,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Deluxe Corporation",
+  "name": "DELUXE CORP",
+  "sic": 2780,
+  "sic_description": "Blankbooks, Looseleaf Binders & Bookbindg & Relatd Work"
+ },
+ "DMC": {
+  "cik": 1047340,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Del Monte Corporation",
+  "name": "DEL MONTE CORP",
+  "sic": 100,
+  "sic_description": "Agricultural Production-Crops"
+ },
+ "DNOW": {
+  "cik": 1599617,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "NOW Inc",
+  "name": "DNOW Inc.",
+  "sic": 3533,
+  "sic_description": "Oil & Gas Field Machinery & Equipment"
+ },
+ "DORM": {
+  "cik": 868780,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Dorman Products, Inc.",
+  "name": "Dorman Products, Inc.",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
  "DOV": {
   "cik": 29905,
   "exchanges": [
@@ -270,6 +2256,18 @@
   "name": "DOVER Corp",
   "sic": 3530,
   "sic_description": "Construction, Mining & Materials Handling Machinery & Equip"
+ },
+ "DRH": {
+  "cik": 1298946,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "DiamondRock Hospitality Company",
+  "name": "DiamondRock Hospitality Co",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
  },
  "DV": {
   "cik": 1819928,
@@ -280,6 +2278,30 @@
   "sic": 7370,
   "sic_description": "Services-Computer Programming, Data Processing, Etc."
  },
+ "DXC": {
+  "cik": 1688568,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "DXC Technology",
+  "name": "DXC Technology Co",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "DXPE": {
+  "cik": 1020710,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "DXP Enterprises, Inc.",
+  "name": "DXP ENTERPRISES INC",
+  "sic": 5084,
+  "sic_description": "Wholesale-Industrial Machinery & Equipment"
+ },
  "DY": {
   "cik": 67215,
   "exchanges": [
@@ -288,6 +2310,105 @@
   "name": "DYCOM INDUSTRIES INC",
   "sic": 1623,
   "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "EAT": {
+  "cik": 703351,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Brinker International, Inc.",
+  "name": "BRINKER INTERNATIONAL, INC",
+  "sic": 5812,
+  "sic_description": "Retail-Eating  Places"
+ },
+ "EBC": {
+  "cik": 1810546,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Eastern Bankshares, Inc.",
+  "name": "Eastern Bankshares, Inc.",
+  "sic": 6035,
+  "sic_description": "Savings Institution, Federally Chartered"
+ },
+ "ECG": {
+  "cik": 2015845,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Everus Construction Group, Inc.",
+  "name": "Everus Construction Group, Inc.",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "ECPG": {
+  "cik": 1084961,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Encore Capital Group, Inc.",
+  "name": "ENCORE CAPITAL GROUP INC",
+  "sic": 6153,
+  "sic_description": "Short-Term Business Credit Institutions"
+ },
+ "EFC": {
+  "cik": 1411342,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Ellington Financial, Inc.",
+  "name": "Ellington Financial Inc.",
+  "sic": 6500,
+  "sic_description": "Real Estate"
+ },
+ "EFOR": {
+  "cik": 890564,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Everforth Inc.",
+  "name": "Everforth Inc",
+  "sic": 7363,
+  "sic_description": "Services-Help Supply Services"
+ },
+ "EGBN": {
+  "cik": 1050441,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Eagle Bancorp Inc",
+  "name": "EAGLE BANCORP INC",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "EIG": {
+  "cik": 1379041,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Employers Holdings, Inc.",
+  "name": "Employers Holdings, Inc.",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
  },
  "EME": {
   "cik": 105634,
@@ -298,6 +2419,18 @@
   "sic": 1731,
   "sic_description": "Electrical Work"
  },
+ "EMN": {
+  "cik": 915389,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Eastman Chemical Company",
+  "name": "EASTMAN CHEMICAL CO",
+  "sic": 2821,
+  "sic_description": "Plastic Materials, Synth Resins & Nonvulcan Elastomers"
+ },
  "EMR": {
   "cik": 32604,
   "exchanges": [
@@ -306,6 +2439,126 @@
   "name": "EMERSON ELECTRIC CO",
   "sic": 3600,
   "sic_description": "Electronic & Other Electrical Equipment (No Computer Equip)"
+ },
+ "ENOV": {
+  "cik": 1420800,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Enovis",
+  "name": "Enovis CORP",
+  "sic": 3842,
+  "sic_description": "Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+ },
+ "ENPH": {
+  "cik": 1463101,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Enphase Energy",
+  "name": "Enphase Energy, Inc.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "ENR": {
+  "cik": 1632790,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Energizer",
+  "name": "ENERGIZER HOLDINGS, INC.",
+  "sic": 3690,
+  "sic_description": "Miscellaneous Electrical Machinery, Equipment & Supplies"
+ },
+ "ENVA": {
+  "cik": 1529864,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Enova International, Inc.",
+  "name": "Enova International, Inc.",
+  "sic": 6141,
+  "sic_description": "Personal Credit Institutions"
+ },
+ "EPAC": {
+  "cik": 6955,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Enerpac Tool Group",
+  "name": "ENERPAC TOOL GROUP CORP",
+  "sic": 3590,
+  "sic_description": "Misc Industrial & Commercial Machinery & Equipment"
+ },
+ "EPAM": {
+  "cik": 1352010,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "EPAM Systems",
+  "name": "EPAM Systems, Inc.",
+  "sic": 7371,
+  "sic_description": "Services-Computer Programming Services"
+ },
+ "EPC": {
+  "cik": 1096752,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Edgewell Personal Care",
+  "name": "EDGEWELL PERSONAL CARE Co",
+  "sic": 2844,
+  "sic_description": "Perfumes, Cosmetics & Other Toilet Preparations"
+ },
+ "EPRT": {
+  "cik": 1728951,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Essential Properties Realty Trust, Inc.",
+  "name": "ESSENTIAL PROPERTIES REALTY TRUST, INC.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "ESE": {
+  "cik": 866706,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "ESCO Technologies Inc.",
+  "name": "ESCO TECHNOLOGIES INC",
+  "sic": 3669,
+  "sic_description": "Communications Equipment, NEC"
+ },
+ "ESI": {
+  "cik": 1590714,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Element Solutions",
+  "name": "Element Solutions Inc",
+  "sic": 2890,
+  "sic_description": "Miscellaneous Chemical Products"
  },
  "ETN": {
   "cik": 1551182,
@@ -316,6 +2569,18 @@
   "sic": 3590,
   "sic_description": "Misc Industrial & Commercial Machinery & Equipment"
  },
+ "ETSY": {
+  "cik": 1370637,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Etsy",
+  "name": "ETSY INC",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
  "EVER": {
   "cik": 1640428,
   "exchanges": [
@@ -324,6 +2589,54 @@
   "name": "EverQuote, Inc.",
   "sic": 7370,
   "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "EVTC": {
+  "cik": 1559865,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "EVERTEC, Inc.",
+  "name": "EVERTEC, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "EXTR": {
+  "cik": 1078271,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Extreme Networks, Inc.",
+  "name": "EXTREME NETWORKS INC",
+  "sic": 3576,
+  "sic_description": "Computer Communications Equipment"
+ },
+ "EYE": {
+  "cik": 1710155,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "National Vision Holdings",
+  "name": "National Vision Holdings, Inc.",
+  "sic": 3851,
+  "sic_description": "Ophthalmic Goods"
+ },
+ "EZPW": {
+  "cik": 876523,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "EZCORP, Inc.",
+  "name": "EZCORP INC",
+  "sic": 5900,
+  "sic_description": "Retail-Miscellaneous Retail"
  },
  "F": {
   "cik": 37996,
@@ -337,6 +2650,18 @@
   "sic": 3711,
   "sic_description": "Motor Vehicles & Passenger Car Bodies"
  },
+ "FA": {
+  "cik": 1210677,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "First Advantage Corporation",
+  "name": "FIRST ADVANTAGE CORP",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
  "FAST": {
   "cik": 815556,
   "exchanges": [
@@ -345,6 +2670,153 @@
   "name": "FASTENAL CO",
   "sic": 5200,
   "sic_description": "Retail-Building Materials, Hardware, Garden Supply"
+ },
+ "FBK": {
+  "cik": 1649749,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "FB Financial Corp.",
+  "name": "FB Financial Corp",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "FBNC": {
+  "cik": 811589,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "First Bancorp (Southern Pines NC)",
+  "name": "FIRST BANCORP /NC/",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "FBP": {
+  "cik": 1057706,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "First BanCorp (Puerto Rico)",
+  "name": "FIRST BANCORP /PR/",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "FBRT": {
+  "cik": 1562528,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Franklin BSP Realty Trust, Inc.",
+  "name": "Franklin BSP Realty Trust, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "FCF": {
+  "cik": 712537,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "First Commonwealth Financial, Corp.",
+  "name": "FIRST COMMONWEALTH FINANCIAL CORP /PA/",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "FCPT": {
+  "cik": 1650132,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Four Corners Property Trust, Inc.",
+  "name": "Four Corners Property Trust, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "FELE": {
+  "cik": 38725,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Franklin Electric",
+  "name": "FRANKLIN ELECTRIC CO INC",
+  "sic": 3621,
+  "sic_description": "Motors & Generators"
+ },
+ "FFBC": {
+  "cik": 708955,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "First Financial Bancorp",
+  "name": "FIRST FINANCIAL BANCORP /OH/",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "FG": {
+  "cik": 1934850,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "F&G Annuities & Life, Inc.",
+  "name": "F&G Annuities & Life, Inc.",
+  "sic": 6311,
+  "sic_description": "Life Insurance"
+ },
+ "FHB": {
+  "cik": 36377,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "First Hawaiian, Inc.",
+  "name": "FIRST HAWAIIAN, INC.",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "FIBK": {
+  "cik": 860413,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "First Interstate BancSystem, Inc.",
+  "name": "FIRST INTERSTATE BANCSYSTEM INC",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "FIVN": {
+  "cik": 1288847,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Five9, Inc.",
+  "name": "Five9, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
  },
  "FIX": {
   "cik": 1035983,
@@ -355,6 +2827,30 @@
   "sic": 1731,
   "sic_description": "Electrical Work"
  },
+ "FIZZ": {
+  "cik": 69891,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "National Beverage Corp.",
+  "name": "NATIONAL BEVERAGE CORP",
+  "sic": 2086,
+  "sic_description": "Bottled & Canned Soft Drinks & Carbonated Waters"
+ },
+ "FLO": {
+  "cik": 1128928,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Flowers Foods",
+  "name": "FLOWERS FOODS INC",
+  "sic": 2000,
+  "sic_description": "Food and Kindred Products"
+ },
  "FLR": {
   "cik": 1124198,
   "exchanges": [
@@ -364,6 +2860,187 @@
   "sic": 1600,
   "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
  },
+ "FMC": {
+  "cik": 37785,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "FMC Corporation",
+  "name": "FMC CORP",
+  "sic": 2800,
+  "sic_description": "Chemicals & Allied Products"
+ },
+ "FORM": {
+  "cik": 1039399,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "FormFactor, Inc.",
+  "name": "FORMFACTOR INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "FOXF": {
+  "cik": 1424929,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Fox Factory",
+  "name": "FOX FACTORY HOLDING CORP",
+  "sic": 3751,
+  "sic_description": "Motorcycles, Bicycles & Parts"
+ },
+ "FRPT": {
+  "cik": 1611647,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Freshpet",
+  "name": "Freshpet, Inc.",
+  "sic": 2040,
+  "sic_description": "Grain Mill Products"
+ },
+ "FSS": {
+  "cik": 277509,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Federal Signal Corporation",
+  "name": "FEDERAL SIGNAL CORP /DE/",
+  "sic": 3711,
+  "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "FTDR": {
+  "cik": 1727263,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Frontdoor, Inc.",
+  "name": "Frontdoor, Inc.",
+  "sic": 7340,
+  "sic_description": "Services-To Dwellings & Other Buildings"
+ },
+ "FTRE": {
+  "cik": 1965040,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Fortrea",
+  "name": "Fortrea Holdings Inc.",
+  "sic": 8071,
+  "sic_description": "Services-Medical Laboratories"
+ },
+ "FUL": {
+  "cik": 39368,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "H.B. Fuller Company",
+  "name": "FULLER H B CO",
+  "sic": 2891,
+  "sic_description": "Adhesives & Sealants"
+ },
+ "FULT": {
+  "cik": 700564,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Fulton Financial Corporation",
+  "name": "FULTON FINANCIAL CORP",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "FUN": {
+  "cik": 1999001,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Six Flags",
+  "name": "Six Flags Entertainment Corporation/NEW",
+  "sic": 7900,
+  "sic_description": "Services-Amusement & Recreation Services"
+ },
+ "GBX": {
+  "cik": 923120,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "The Greenbrier Companies, Inc.",
+  "name": "GREENBRIER COMPANIES INC",
+  "sic": 3743,
+  "sic_description": "Railroad Equipment"
+ },
+ "GEO": {
+  "cik": 923796,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "GEO Group, Inc.",
+  "name": "GEO GROUP INC",
+  "sic": 1520,
+  "sic_description": "General Bldg Contractors - Residential Bldgs"
+ },
+ "GFF": {
+  "cik": 50725,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Griffon Corporation",
+  "name": "GRIFFON CORP",
+  "sic": 3442,
+  "sic_description": "Metal Doors, Sash, Frames, Moldings & Trim"
+ },
+ "GIII": {
+  "cik": 821002,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "G-III Apparel Group, Ltd.",
+  "name": "G III APPAREL GROUP LTD /DE/",
+  "sic": 2300,
+  "sic_description": "Apparel & Other Finishd Prods of  Fabrics & Similar Matl"
+ },
+ "GKOS": {
+  "cik": 1192448,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Glaukos Corp.",
+  "name": "GLAUKOS Corp",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
  "GM": {
   "cik": 1467858,
   "exchanges": [
@@ -372,6 +3049,155 @@
   "name": "General Motors Co",
   "sic": 3711,
   "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "GNL": {
+  "cik": 1526113,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Global Net Lease, Inc.",
+  "name": "Global Net Lease, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "GNW": {
+  "cik": 1276520,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Genworth Financial, Inc.",
+  "name": "GENWORTH FINANCIAL INC",
+  "sic": 6311,
+  "sic_description": "Life Insurance"
+ },
+ "GO": {
+  "cik": 1771515,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Grocery Outlet",
+  "name": "Grocery Outlet Holding Corp.",
+  "sic": 5411,
+  "sic_description": "Retail-Grocery Stores"
+ },
+ "GOLF": {
+  "cik": 1672013,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Acushnet Company",
+  "name": "Acushnet Holdings Corp.",
+  "sic": 3949,
+  "sic_description": "Sporting & Athletic Goods, NEC"
+ },
+ "GPI": {
+  "cik": 1031203,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Group 1 Automotive, Inc.",
+  "name": "GROUP 1 AUTOMOTIVE INC",
+  "sic": 5500,
+  "sic_description": "Retail-Auto Dealers & Gasoline Stations"
+ },
+ "GPOR": {
+  "cik": 874499,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Gulfport Energy Corporation",
+  "name": "GULFPORT ENERGY CORP",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "GRBK": {
+  "cik": 1373670,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Green Brick Partners, Inc.",
+  "name": "Green Brick Partners, Inc.",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "GSHD": {
+  "cik": 1726978,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Goosehead Insurance, Inc.",
+  "name": "Goosehead Insurance, Inc.",
+  "sic": 6411,
+  "sic_description": "Insurance Agents, Brokers & Service"
+ },
+ "GT": {
+  "cik": 42582,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Goodyear Tire and Rubber Company",
+  "name": "GOODYEAR TIRE & RUBBER CO /OH/",
+  "sic": 3011,
+  "sic_description": "Tires & Inner Tubes"
+ },
+ "GTES": {
+  "cik": 1718512,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Gates Corporation",
+  "name": "Gates Industrial Corp Ltd.",
+  "sic": 3560,
+  "sic_description": "General Industrial Machinery & Equipment"
+ },
+ "GTM": {
+  "cik": 1794515,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "ZoomInfo",
+  "name": "ZoomInfo Technologies Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "GTY": {
+  "cik": 1052752,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Getty Realty Corp.",
+  "name": "GETTY REALTY CORP /MD/",
+  "sic": 6500,
+  "sic_description": "Real Estate"
  },
  "GVA": {
   "cik": 861459,
@@ -391,6 +3217,79 @@
   "sic": 5000,
   "sic_description": "Wholesale-Durable Goods"
  },
+ "HAFC": {
+  "cik": 1109242,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Hanmi Financial Corporation",
+  "name": "HANMI FINANCIAL CORP",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "HASI": {
+  "cik": 1561894,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Hannon Armstrong Sustainable Infrastructure Capital, Inc.",
+  "name": "HA Sustainable Infrastructure Capital, Inc.",
+  "sic": 6799,
+  "sic_description": "Investors, NEC"
+ },
+ "HAYW": {
+  "cik": 1834622,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Hayward Holdings, Inc.",
+  "name": "Hayward Holdings, Inc.",
+  "sic": 3580,
+  "sic_description": "Refrigeration & Service Industry Machinery"
+ },
+ "HCC": {
+  "cik": 1691303,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Warrior Met Coal, Inc.",
+  "name": "WARRIOR MET COAL, INC.",
+  "sic": 1220,
+  "sic_description": "Silver Ores"
+ },
+ "HCI": {
+  "cik": 1400810,
+  "exchanges": [
+   "NYSE",
+   "OTC"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "HCI Group, Inc.",
+  "name": "HCI Group, Inc.",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "HCSG": {
+  "cik": 731012,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Healthcare Services Group, Inc.",
+  "name": "HEALTHCARE SERVICES GROUP INC",
+  "sic": 8050,
+  "sic_description": "Services-Nursing & Personal Care Facilities"
+ },
  "HD": {
   "cik": 354950,
   "exchanges": [
@@ -400,6 +3299,258 @@
   "sic": 5211,
   "sic_description": "Retail-Lumber & Other Building Materials Dealers"
  },
+ "HE": {
+  "cik": 354707,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Hawaiian Electric Industries, Inc.",
+  "name": "HAWAIIAN ELECTRIC INDUSTRIES INC",
+  "sic": 4911,
+  "sic_description": "Electric Services"
+ },
+ "HFWA": {
+  "cik": 1046025,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Heritage Financial Corporation",
+  "name": "HERITAGE FINANCIAL CORP /WA/",
+  "sic": 6036,
+  "sic_description": "Savings Institutions, Not Federally Chartered"
+ },
+ "HIW": {
+  "cik": 921082,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Highwoods Properties",
+  "name": "HIGHWOODS PROPERTIES, INC.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "HLIT": {
+  "cik": 851310,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Harmonic Inc.",
+  "name": "HARMONIC INC.",
+  "sic": 3663,
+  "sic_description": "Radio & Tv Broadcasting & Communications Equipment"
+ },
+ "HLX": {
+  "cik": 866829,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Helix Energy Solutions Group, Inc.",
+  "name": "HORNBECK OFFSHORE SERVICES, INC.",
+  "sic": 1389,
+  "sic_description": "Oil & Gas Field Services, NEC"
+ },
+ "HMN": {
+  "cik": 850141,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Horace Mann Educators Corporation",
+  "name": "HORACE MANN EDUCATORS CORP /DE/",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "HNI": {
+  "cik": 48287,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "HNI Corporation",
+  "name": "HNI CORP",
+  "sic": 2522,
+  "sic_description": "Office Furniture (No Wood)"
+ },
+ "HOPE": {
+  "cik": 1128361,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Hope Bancorp, Inc.",
+  "name": "HOPE BANCORP INC",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "HP": {
+  "cik": 46765,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Helmerich & Payne, Inc.",
+  "name": "Helmerich & Payne, Inc.",
+  "sic": 1381,
+  "sic_description": "Drilling Oil & Gas Wells"
+ },
+ "HRMY": {
+  "cik": 1802665,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Harmony Biosciences Holdings, Inc.",
+  "name": "Harmony Biosciences Holdings, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "HSTM": {
+  "cik": 1095565,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "HealthStream, Inc.",
+  "name": "HEALTHSTREAM INC",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "HTH": {
+  "cik": 1265131,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Hilltop Holdings Inc.",
+  "name": "Hilltop Holdings Inc.",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "HTLD": {
+  "cik": 799233,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Heartland Express, Inc.",
+  "name": "HEARTLAND EXPRESS INC",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "HTO": {
+  "cik": 766829,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "H2O America",
+  "name": "H2O AMERICA",
+  "sic": 4941,
+  "sic_description": "Water Supply"
+ },
+ "HUBG": {
+  "cik": 940942,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Hub Group, Inc.",
+  "name": "Hub Group, Inc.",
+  "sic": 4731,
+  "sic_description": "Arrangement of  Transportation of  Freight & Cargo"
+ },
+ "HWKN": {
+  "cik": 46250,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Hawkins, Inc.",
+  "name": "HAWKINS INC",
+  "sic": 5160,
+  "sic_description": "Wholesale-Chemicals & Allied Products"
+ },
+ "HZO": {
+  "cik": 1057060,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "MarineMax, Inc.",
+  "name": "MARINEMAX INC",
+  "sic": 5531,
+  "sic_description": "Retail-Auto & Home Supply Stores"
+ },
+ "IART": {
+  "cik": 917520,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Integra Lifesciences Holdings",
+  "name": "INTEGRA LIFESCIENCES HOLDINGS CORP",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
+ "IBP": {
+  "cik": 1580905,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Installed Building Products, Inc.",
+  "name": "Installed Building Products, Inc.",
+  "sic": 1520,
+  "sic_description": "General Bldg Contractors - Residential Bldgs"
+ },
+ "ICHR": {
+  "cik": 1652535,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Ichor Holdings, Ltd.",
+  "name": "ICHOR HOLDINGS, LTD.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "ICUI": {
+  "cik": 883984,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "ICU Medical",
+  "name": "ICU MEDICAL INC/DE",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
  "IESC": {
   "cik": 1048268,
   "exchanges": [
@@ -408,6 +3559,67 @@
   "name": "IES Holdings, Inc.",
   "sic": 1731,
   "sic_description": "Electrical Work"
+ },
+ "IIPR": {
+  "cik": 1677576,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Innovative Industrial Properties, Inc.",
+  "name": "INNOVATIVE INDUSTRIAL PROPERTIES INC",
+  "sic": 6500,
+  "sic_description": "Real Estate"
+ },
+ "INDB": {
+  "cik": 776901,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Independent Bank Corp.",
+  "name": "INDEPENDENT BANK CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "INDV": {
+  "cik": 1625297,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Indivior",
+  "name": "Indivior Pharmaceuticals, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "INSP": {
+  "cik": 1609550,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Inspire Medical Systems, Inc.",
+  "name": "Inspire Medical Systems, Inc.",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
+ "INSW": {
+  "cik": 1679049,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "International Seaways, Inc.",
+  "name": "International Seaways, Inc.",
+  "sic": 4400,
+  "sic_description": "Water Transportation"
  },
  "INTC": {
   "cik": 50863,
@@ -427,6 +3639,54 @@
   "sic": 7372,
   "sic_description": "Services-Prepackaged Software"
  },
+ "INVA": {
+  "cik": 1080014,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Innoviva, Inc.",
+  "name": "Innoviva, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "INVX": {
+  "cik": 1042893,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Innovex International, Inc.",
+  "name": "Innovex International, Inc.",
+  "sic": 3533,
+  "sic_description": "Oil & Gas Field Machinery & Equipment"
+ },
+ "IOSP": {
+  "cik": 1054905,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Innospec, Inc.",
+  "name": "INNOSPEC INC.",
+  "sic": 2800,
+  "sic_description": "Chemicals & Allied Products"
+ },
+ "IPAR": {
+  "cik": 822663,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Inter Parfums, Inc.",
+  "name": "INTERPARFUMS INC",
+  "sic": 2844,
+  "sic_description": "Perfumes, Cosmetics & Other Toilet Preparations"
+ },
  "IR": {
   "cik": 1699150,
   "exchanges": [
@@ -435,6 +3695,42 @@
   "name": "Ingersoll Rand Inc.",
   "sic": 3560,
   "sic_description": "General Industrial Machinery & Equipment"
+ },
+ "IRDM": {
+  "cik": 1418819,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Iridium Communications",
+  "name": "Iridium Communications Inc.",
+  "sic": 4899,
+  "sic_description": "Communications Services, NEC"
+ },
+ "ITGR": {
+  "cik": 1114483,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Integer Holdings Corporation",
+  "name": "Integer Holdings Corp",
+  "sic": 3845,
+  "sic_description": "Electromedical & Electrotherapeutic Apparatus"
+ },
+ "ITRI": {
+  "cik": 780571,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Itron, Inc.",
+  "name": "ITRON, INC.",
+  "sic": 3825,
+  "sic_description": "Instruments For Meas & Testing of  Electricity & Elec Signals"
  },
  "ITW": {
   "cik": 49826,
@@ -445,6 +3741,18 @@
   "sic": 3560,
   "sic_description": "General Industrial Machinery & Equipment"
  },
+ "IVT": {
+  "cik": 1307748,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "InvenTrust Properties",
+  "name": "InvenTrust Properties Corp.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
  "J": {
   "cik": 52988,
   "exchanges": [
@@ -453,6 +3761,18 @@
   "name": "JACOBS SOLUTIONS INC.",
   "sic": 1600,
   "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "JBGS": {
+  "cik": 1689796,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "JBG Smith",
+  "name": "JBG SMITH Properties",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
  },
  "JBHT": {
   "cik": 728535,
@@ -463,6 +3783,103 @@
   "sic": 4213,
   "sic_description": "Trucking (No Local)"
  },
+ "JBLU": {
+  "cik": 1158463,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "JetBlue",
+  "name": "JETBLUE AIRWAYS CORP",
+  "sic": 4512,
+  "sic_description": "Air Transportation, Scheduled"
+ },
+ "JBSS": {
+  "cik": 880117,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "John B. Sanfilippo & Son, Inc.",
+  "name": "SANFILIPPO JOHN B & SON INC",
+  "sic": 2060,
+  "sic_description": "Sugar & Confectionery Products"
+ },
+ "JBTM": {
+  "cik": 1433660,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "JBT Marel Corporation",
+  "name": "JBT MAREL Corp",
+  "sic": 3550,
+  "sic_description": "Special Industry Machinery (No Metalworking Machinery)"
+ },
+ "JJSF": {
+  "cik": 785956,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "J&J Snack Foods Corp.",
+  "name": "J&J SNACK FOODS CORP",
+  "sic": 2052,
+  "sic_description": "Cookies & Crackers"
+ },
+ "JOE": {
+  "cik": 745308,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "St. Joe Company",
+  "name": "ST JOE Co",
+  "sic": 6552,
+  "sic_description": "Land Subdividers & Developers (No Cemeteries)"
+ },
+ "JXN": {
+  "cik": 1822993,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Jackson Financial, Inc.",
+  "name": "Jackson Financial Inc.",
+  "sic": 6311,
+  "sic_description": "Life Insurance"
+ },
+ "KAI": {
+  "cik": 886346,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Kadant Inc.",
+  "name": "KADANT INC",
+  "sic": 3550,
+  "sic_description": "Special Industry Machinery (No Metalworking Machinery)"
+ },
+ "KALU": {
+  "cik": 811596,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Kaiser Aluminum Corporation",
+  "name": "KAISER ALUMINUM CORP",
+  "sic": 3350,
+  "sic_description": "Rolling Drawing & Extruding of  Nonferrous Metals"
+ },
  "KBR": {
   "cik": 1357615,
   "exchanges": [
@@ -471,6 +3888,103 @@
   "name": "KBR, INC.",
   "sic": 1600,
   "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "KFY": {
+  "cik": 56679,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Korn/Ferry International",
+  "name": "KORN FERRY",
+  "sic": 7361,
+  "sic_description": "Services-Employment Agencies"
+ },
+ "KGS": {
+  "cik": 1767042,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Kodiak Gas Services, Inc.",
+  "name": "Kodiak Gas Services, Inc.",
+  "sic": 4922,
+  "sic_description": "Natural Gas Transmission"
+ },
+ "KLIC": {
+  "cik": 56978,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Kulicke and Soffa Industries, Inc.",
+  "name": "KULICKE & SOFFA INDUSTRIES INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "KMPR": {
+  "cik": 860748,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Kemper Corporation",
+  "name": "KEMPER Corp",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "KMT": {
+  "cik": 55242,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Kennametal",
+  "name": "KENNAMETAL INC",
+  "sic": 3541,
+  "sic_description": "Machine Tools, Metal Cutting Types"
+ },
+ "KMX": {
+  "cik": 1170010,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "CarMax, Inc.",
+  "name": "CARMAX INC",
+  "sic": 5500,
+  "sic_description": "Retail-Auto Dealers & Gasoline Stations"
+ },
+ "KN": {
+  "cik": 1587523,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Knowles Corporation",
+  "name": "Knowles Corp",
+  "sic": 3651,
+  "sic_description": "Household Audio & Video Equipment"
+ },
+ "KNTK": {
+  "cik": 1692787,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Kinetik Holdings, Inc.",
+  "name": "Kinetik Holdings Inc.",
+  "sic": 4922,
+  "sic_description": "Natural Gas Transmission"
  },
  "KNX": {
   "cik": 1492691,
@@ -481,6 +3995,18 @@
   "sic": 4213,
   "sic_description": "Trucking (No Local)"
  },
+ "KOP": {
+  "cik": 1315257,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Koppers Holdings, Inc.",
+  "name": "Koppers Holdings Inc.",
+  "sic": 2400,
+  "sic_description": "Lumber & Wood Products (No Furniture)"
+ },
  "KR": {
   "cik": 56873,
   "exchanges": [
@@ -490,6 +4016,238 @@
   "sic": 5411,
   "sic_description": "Retail-Grocery Stores"
  },
+ "KRMN": {
+  "cik": 2040127,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Karman Holdings",
+  "name": "Karman Holdings Inc.",
+  "sic": 3728,
+  "sic_description": "Aircraft Parts & Auxiliary Equipment, NEC"
+ },
+ "KSS": {
+  "cik": 885639,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Kohl's Corp.",
+  "name": "KOHLS Corp",
+  "sic": 5311,
+  "sic_description": "Retail-Department Stores"
+ },
+ "KTB": {
+  "cik": 1760965,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Kontoor Brands",
+  "name": "Kontoor Brands, Inc.",
+  "sic": 2320,
+  "sic_description": "Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+ },
+ "KWR": {
+  "cik": 81362,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Quaker Chemical Corporation",
+  "name": "QUAKER CHEMICAL CORP",
+  "sic": 2990,
+  "sic_description": "Miscellaneous Products of  Petroleum & Coal"
+ },
+ "LAUR": {
+  "cik": 912766,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Laureate Education, Inc.",
+  "name": "LAUREATE EDUCATION, INC.",
+  "sic": 8200,
+  "sic_description": "Services-Educational Services"
+ },
+ "LAZ": {
+  "cik": 1311370,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Lazard",
+  "name": "Lazard, Inc.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "LBRT": {
+  "cik": 1694028,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Liberty Energy, Inc.",
+  "name": "Liberty Energy Inc.",
+  "sic": 1389,
+  "sic_description": "Oil & Gas Field Services, NEC"
+ },
+ "LCII": {
+  "cik": 763744,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "LCI Industries",
+  "name": "LCI INDUSTRIES",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "LEG": {
+  "cik": 58492,
+  "exchanges": [],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Leggett & Platt",
+  "name": "LEGGETT & PLATT INC",
+  "sic": 2510,
+  "sic_description": "Household Furniture"
+ },
+ "LEU": {
+  "cik": 1065059,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Centrus Energy Corp.",
+  "name": "CENTRUS ENERGY CORP",
+  "sic": 1400,
+  "sic_description": "Mining & Quarrying of  Nonmetallic Minerals (No Fuels)"
+ },
+ "LFST": {
+  "cik": 1845257,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Lifestance Health",
+  "name": "LifeStance Health Group, Inc.",
+  "sic": 8000,
+  "sic_description": "Services-Health Services"
+ },
+ "LGIH": {
+  "cik": 1580670,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "LGI Homes",
+  "name": "LGI Homes, Inc.",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "LGND": {
+  "cik": 886163,
+  "exchanges": [
+   "Nasdaq",
+   "OTC",
+   "OTC",
+   "OTC",
+   "OTC"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Ligand Pharmaceuticals, Inc.",
+  "name": "LIGAND PHARMACEUTICALS INC",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "LIF": {
+  "cik": 1581760,
+  "exchanges": [
+   "Nasdaq",
+   "OTC"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Life360",
+  "name": "Life360, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "LKFN": {
+  "cik": 721994,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Lakeland Financial",
+  "name": "LAKELAND FINANCIAL CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "LKQ": {
+  "cik": 1065696,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "LKQ Corporation",
+  "name": "LKQ CORP",
+  "sic": 5010,
+  "sic_description": "Wholesale-Motor Vehicles & Motor Vehicle Parts & Supplies"
+ },
+ "LMAT": {
+  "cik": 1158895,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "LeMaitre Vascular",
+  "name": "LEMAITRE VASCULAR INC",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
+ "LNC": {
+  "cik": 59558,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Lincoln Financial",
+  "name": "LINCOLN NATIONAL CORP",
+  "sic": 6311,
+  "sic_description": "Life Insurance"
+ },
+ "LNN": {
+  "cik": 836157,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Lindsay Corporation",
+  "name": "LINDSAY CORP",
+  "sic": 3523,
+  "sic_description": "Farm Machinery & Equipment"
+ },
  "LOW": {
   "cik": 60667,
   "exchanges": [
@@ -498,6 +4256,78 @@
   "name": "LOWES COMPANIES INC",
   "sic": 5211,
   "sic_description": "Retail-Lumber & Other Building Materials Dealers"
+ },
+ "LPG": {
+  "cik": 1596993,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Dorian LPG Ltd.",
+  "name": "DORIAN LPG LTD.",
+  "sic": 4412,
+  "sic_description": "Deep Sea Foreign Transportation of  Freight"
+ },
+ "LQDA": {
+  "cik": 1819576,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Liquidia Corporation",
+  "name": "Liquidia Corp",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "LQDT": {
+  "cik": 1235468,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Liquidity Services, Inc.",
+  "name": "LIQUIDITY SERVICES INC",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "LRN": {
+  "cik": 1157408,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Stride, Inc.",
+  "name": "Stride, Inc.",
+  "sic": 8200,
+  "sic_description": "Services-Educational Services"
+ },
+ "LTC": {
+  "cik": 887905,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "LTC Properties, Inc.",
+  "name": "LTC PROPERTIES INC",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "LTH": {
+  "cik": 1869198,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Life Time Group Holdings, Inc.",
+  "name": "Life Time Group Holdings, Inc.",
+  "sic": 7997,
+  "sic_description": "Services-Membership Sports & Recreation Clubs"
  },
  "LULU": {
   "cik": 1397187,
@@ -517,6 +4347,250 @@
   "sic": 4813,
   "sic_description": "Telephone Communications (No Radiotelephone)"
  },
+ "LW": {
+  "cik": 1679273,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Lamb Weston",
+  "name": "Lamb Weston Holdings, Inc.",
+  "sic": 2030,
+  "sic_description": "Canned, Frozen & Preservd Fruit, Veg & Food Specialties"
+ },
+ "LXP": {
+  "cik": 910108,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Lexington Realty Trust",
+  "name": "LXP Industrial Trust",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "LYFT": {
+  "cik": 1759509,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Lyft, Inc.",
+  "name": "Lyft, Inc.",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "LZ": {
+  "cik": 1286139,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "LegalZoom.com, Inc.",
+  "name": "LEGALZOOM.COM, INC.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "LZB": {
+  "cik": 57131,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "La-Z-Boy, Inc.",
+  "name": "LA-Z-BOY INC",
+  "sic": 2510,
+  "sic_description": "Household Furniture"
+ },
+ "MAC": {
+  "cik": 912242,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Macerich",
+  "name": "MACERICH CO",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "MAN": {
+  "cik": 871763,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "ManpowerGroup",
+  "name": "ManpowerGroup Inc.",
+  "sic": 7363,
+  "sic_description": "Services-Help Supply Services"
+ },
+ "MARA": {
+  "cik": 1507605,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "MARA Holdings, Inc.",
+  "name": "MARA Holdings, Inc.",
+  "sic": 6199,
+  "sic_description": "Finance Services"
+ },
+ "MATW": {
+  "cik": 63296,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Matthews International Corporation",
+  "name": "MATTHEWS INTERNATIONAL CORP",
+  "sic": 3360,
+  "sic_description": "Nonferrous Foundries (Castings)"
+ },
+ "MATX": {
+  "cik": 3453,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Matson, Inc.",
+  "name": "Matson, Inc.",
+  "sic": 4400,
+  "sic_description": "Water Transportation"
+ },
+ "MBC": {
+  "cik": 1941365,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "MasterBrand, Inc.",
+  "name": "MasterBrand, Inc.",
+  "sic": 2511,
+  "sic_description": "Wood Household Furniture, (No Upholstered)"
+ },
+ "MBGL": {
+  "cik": 2090312,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Mobility Global, Inc.",
+  "name": "Mobility Global Inc.",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "MBIN": {
+  "cik": 1629019,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Merchants Bancorp",
+  "name": "Merchants Bancorp",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "MC": {
+  "cik": 1596967,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Moelis & Company",
+  "name": "Moelis & Co",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "MCRI": {
+  "cik": 907242,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Monarch Casino & Resort, Inc.",
+  "name": "MONARCH CASINO & RESORT INC",
+  "sic": 7011,
+  "sic_description": "Hotels & Motels"
+ },
+ "MCY": {
+  "cik": 64996,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Mercury General",
+  "name": "MERCURY GENERAL CORP",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "MD": {
+  "cik": 893949,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Pediatrix Medical Group",
+  "name": "Pediatrix Medical Group, Inc.",
+  "sic": 8060,
+  "sic_description": "Services-Hospitals"
+ },
+ "MDU": {
+  "cik": 67716,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "MDU Resources Group, Inc.",
+  "name": "MDU RESOURCES GROUP INC",
+  "sic": 4924,
+  "sic_description": "Natural Gas Distribution"
+ },
+ "MFP": {
+  "cik": 2088281,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Midera Food Processing, Inc.",
+  "name": "Midera Food Processing, Inc.",
+  "sic": 3580,
+  "sic_description": "Refrigeration & Service Industry Machinery"
+ },
+ "MGEE": {
+  "cik": 1161728,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "MGE Energy, Inc.",
+  "name": "MGE ENERGY INC",
+  "sic": 4900,
+  "sic_description": "Electric, Gas & Sanitary Services"
+ },
  "MGNI": {
   "cik": 1595974,
   "exchanges": [
@@ -526,6 +4600,163 @@
   "sic": 7370,
   "sic_description": "Services-Computer Programming, Data Processing, Etc."
  },
+ "MGY": {
+  "cik": 1698990,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Magnolia Oil & Gas, Corp.",
+  "name": "Magnolia Oil & Gas Corp",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "MHK": {
+  "cik": 851968,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Mohawk Industries",
+  "name": "MOHAWK INDUSTRIES INC",
+  "sic": 2273,
+  "sic_description": "Carpets & Rugs"
+ },
+ "MHO": {
+  "cik": 799292,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "M/I Homes, Inc.",
+  "name": "M/I HOMES, INC.",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "MIR": {
+  "cik": 1809987,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Mirion Technologies, Inc.",
+  "name": "Mirion Technologies, Inc.",
+  "sic": 3829,
+  "sic_description": "Measuring & Controlling Devices, NEC"
+ },
+ "MKTX": {
+  "cik": 1278021,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "MarketAxess",
+  "name": "MARKETAXESS HOLDINGS INC",
+  "sic": 6211,
+  "sic_description": "Security Brokers, Dealers & Flotation Companies"
+ },
+ "MLKN": {
+  "cik": 66382,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "MillerKnoll, Inc.",
+  "name": "MILLERKNOLL, INC.",
+  "sic": 2520,
+  "sic_description": "Office Furniture"
+ },
+ "MMI": {
+  "cik": 1578732,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Marcus & Millichap, Inc.",
+  "name": "Marcus & Millichap, Inc.",
+  "sic": 6531,
+  "sic_description": "Real Estate Agents & Managers (For Others)"
+ },
+ "MMSI": {
+  "cik": 856982,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Merit Medical Systems, Inc.",
+  "name": "MERIT MEDICAL SYSTEMS INC",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
+ "MPT": {
+  "cik": 1287865,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Medical Properties Trust",
+  "name": "MEDICAL PROPERTIES TRUST INC",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "MRCY": {
+  "cik": 1049521,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Mercury Systems",
+  "name": "MERCURY SYSTEMS INC",
+  "sic": 3670,
+  "sic_description": "Electronic Components & Accessories"
+ },
+ "MRP": {
+  "cik": 2017206,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Millrose Properties, Inc.",
+  "name": "Millrose Properties, Inc.",
+  "sic": 6500,
+  "sic_description": "Real Estate"
+ },
+ "MRTN": {
+  "cik": 799167,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Marten Transport, Ltd.",
+  "name": "MARTEN TRANSPORT LTD",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "MSEX": {
+  "cik": 66004,
+  "exchanges": [
+   "Nasdaq",
+   "OTC"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Middlesex Water Company",
+  "name": "MIDDLESEX WATER CO",
+  "sic": 4941,
+  "sic_description": "Water Supply"
+ },
  "MSFT": {
   "cik": 789019,
   "exchanges": [
@@ -534,6 +4765,78 @@
   "name": "MICROSOFT CORP",
   "sic": 7372,
   "sic_description": "Services-Prepackaged Software"
+ },
+ "MSGS": {
+  "cik": 1636519,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Madison Square Garden Sports Corp.",
+  "name": "Madison Square Garden Sports Corp.",
+  "sic": 7990,
+  "sic_description": "Services-Miscellaneous Amusement & Recreation"
+ },
+ "MTCH": {
+  "cik": 891103,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Match Group",
+  "name": "Match Group, Inc.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "MTH": {
+  "cik": 833079,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Meritage Homes Corporation",
+  "name": "Meritage Homes CORP",
+  "sic": 1531,
+  "sic_description": "Operative Builders"
+ },
+ "MTRN": {
+  "cik": 1104657,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Materion Corp.",
+  "name": "MATERION Corp",
+  "sic": 3460,
+  "sic_description": "Metal Forgings & Stampings"
+ },
+ "MTUS": {
+  "cik": 1598428,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Metallus Inc",
+  "name": "Metallus Inc.",
+  "sic": 3312,
+  "sic_description": "Steel Works, Blast Furnaces & Rolling Mills (Coke Ovens)"
+ },
+ "MTX": {
+  "cik": 891014,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Minerals Technologies",
+  "name": "MINERALS TECHNOLOGIES INC",
+  "sic": 2810,
+  "sic_description": "Industrial Inorganic Chemicals"
  },
  "MTZ": {
   "cik": 15615,
@@ -553,6 +4856,30 @@
   "sic": 3674,
   "sic_description": "Semiconductors & Related Devices"
  },
+ "MWA": {
+  "cik": 1350593,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Mueller Water Products",
+  "name": "Mueller Water Products, Inc.",
+  "sic": 3490,
+  "sic_description": "Miscellaneous Fabricated Metal Products"
+ },
+ "MXL": {
+  "cik": 1288469,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "MaxLinear, Inc.",
+  "name": "MAXLINEAR, INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
  "MYRG": {
   "cik": 700923,
   "exchanges": [
@@ -561,6 +4888,153 @@
   "name": "MYR GROUP INC.",
   "sic": 1623,
   "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "NABL": {
+  "cik": 1834488,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "N-able, Inc.",
+  "name": "N-able, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "NATL": {
+  "cik": 1974138,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "NCR Atleos",
+  "name": "NCR Atleos Corp",
+  "sic": 3578,
+  "sic_description": "Calculating & Accounting Machines (No Electronic Computers)"
+ },
+ "NAVI": {
+  "cik": 1593538,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Navient",
+  "name": "NAVIENT CORP",
+  "sic": 6211,
+  "sic_description": "Security Brokers, Dealers & Flotation Companies"
+ },
+ "NBHC": {
+  "cik": 1475841,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "National Bank Holdings Corporation",
+  "name": "National Bank Holdings Corp",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "NBTB": {
+  "cik": 790359,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "NBT Bancorp, Inc.",
+  "name": "NBT BANCORP INC",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "NE": {
+  "cik": 1895262,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Noble Corporation",
+  "name": "Noble Corp plc",
+  "sic": 1381,
+  "sic_description": "Drilling Oil & Gas Wells"
+ },
+ "NEO": {
+  "cik": 1077183,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "NeoGenomics Laboratories, Inc.",
+  "name": "NEOGENOMICS INC",
+  "sic": 8734,
+  "sic_description": "Services-Testing Laboratories"
+ },
+ "NEOG": {
+  "cik": 711377,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Neogen",
+  "name": "NEOGEN CORP",
+  "sic": 2835,
+  "sic_description": "In Vitro & In Vivo Diagnostic Substances"
+ },
+ "NGVT": {
+  "cik": 1653477,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Ingevity, Corp.",
+  "name": "Ingevity Corp",
+  "sic": 2800,
+  "sic_description": "Chemicals & Allied Products"
+ },
+ "NHC": {
+  "cik": 1047335,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "National Healthcare, Corp.",
+  "name": "NATIONAL HEALTHCARE CORP",
+  "sic": 8051,
+  "sic_description": "Services-Skilled Nursing Care Facilities"
+ },
+ "NHI": {
+  "cik": 877860,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "National Health Investors, Inc.",
+  "name": "NATIONAL HEALTH INVESTORS INC",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "NIC": {
+  "cik": 1174850,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Nicolet Bankshares",
+  "name": "NICOLET BANKSHARES INC",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
  },
  "NKE": {
   "cik": 320187,
@@ -571,6 +5045,30 @@
   "sic": 3021,
   "sic_description": "Rubber & Plastics Footwear"
  },
+ "NMIH": {
+  "cik": 1547903,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "NMI Holdings, Inc.",
+  "name": "NMI Holdings, Inc.",
+  "sic": 6351,
+  "sic_description": "Surety Insurance"
+ },
+ "NOG": {
+  "cik": 1104485,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Northern Oil and Gas, Inc.",
+  "name": "NORTHERN OIL & GAS, INC.",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
  "NOW": {
   "cik": 1373715,
   "exchanges": [
@@ -579,6 +5077,30 @@
   "name": "ServiceNow, Inc.",
   "sic": 7372,
   "sic_description": "Services-Prepackaged Software"
+ },
+ "NPK": {
+  "cik": 80172,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "National Presto Industries, Inc.",
+  "name": "NATIONAL PRESTO INDUSTRIES INC",
+  "sic": 3480,
+  "sic_description": "Ordnance & Accessories, (No Vehicles/Guided Missiles)"
+ },
+ "NPO": {
+  "cik": 1164863,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "EnPro Industries, Inc.",
+  "name": "Enpro Inc.",
+  "sic": 3050,
+  "sic_description": "Gaskets, Packg & Sealg Devices & Rubber & Plastics Hose"
  },
  "NSC": {
   "cik": 702165,
@@ -589,6 +5111,66 @@
   "sic": 4011,
   "sic_description": "Railroads, Line-Haul Operating"
  },
+ "NSIT": {
+  "cik": 932696,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Insight Enterprises, Inc.",
+  "name": "INSIGHT ENTERPRISES INC",
+  "sic": 5961,
+  "sic_description": "Retail-Catalog & Mail-Order Houses"
+ },
+ "NSP": {
+  "cik": 1000753,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Insperity",
+  "name": "INSPERITY, INC.",
+  "sic": 7363,
+  "sic_description": "Services-Help Supply Services"
+ },
+ "NSSC": {
+  "cik": 69633,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Napco Security Technologies",
+  "name": "NAPCO SECURITY TECHNOLOGIES, INC",
+  "sic": 3669,
+  "sic_description": "Communications Equipment, NEC"
+ },
+ "NTCT": {
+  "cik": 1078075,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "NETSCOUT Systems, Inc.",
+  "name": "NETSCOUT SYSTEMS INC",
+  "sic": 7373,
+  "sic_description": "Services-Computer Integrated Systems Design"
+ },
+ "NTST": {
+  "cik": 1798100,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "NETSTREIT Corp.",
+  "name": "NETSTREIT Corp.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
  "NVDA": {
   "cik": 1045810,
   "exchanges": [
@@ -598,6 +5180,66 @@
   "sic": 3674,
   "sic_description": "Semiconductors & Related Devices"
  },
+ "NWBI": {
+  "cik": 1471265,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Northwest Bancshares, Inc.",
+  "name": "Northwest Bancshares, Inc.",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "NWL": {
+  "cik": 814453,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Newell Brands",
+  "name": "NEWELL BRANDS INC.",
+  "sic": 3089,
+  "sic_description": "Plastics Products, NEC"
+ },
+ "NWN": {
+  "cik": 1733998,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "NW Natural",
+  "name": "Northwest Natural Holding Co",
+  "sic": 4924,
+  "sic_description": "Natural Gas Distribution"
+ },
+ "NX": {
+  "cik": 1423221,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Quanex Building Products Corporation",
+  "name": "Quanex Building Products CORP",
+  "sic": 3350,
+  "sic_description": "Rolling Drawing & Extruding of  Nonferrous Metals"
+ },
+ "NXRT": {
+  "cik": 1620393,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "NexPoint Residential Trust, Inc.",
+  "name": "NexPoint Residential Trust, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
  "ODFL": {
   "cik": 878927,
   "exchanges": [
@@ -606,6 +5248,78 @@
   "name": "OLD DOMINION FREIGHT LINE, INC.",
   "sic": 4213,
   "sic_description": "Trucking (No Local)"
+ },
+ "OFG": {
+  "cik": 1030469,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "OFG Bancorp",
+  "name": "OFG BANCORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "OGN": {
+  "cik": 1821825,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Organon & Co.",
+  "name": "Organon & Co.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "OI": {
+  "cik": 812074,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "O-I Glass, Inc.",
+  "name": "O-I Glass, Inc. /DE/",
+  "sic": 3221,
+  "sic_description": "Glass Containers"
+ },
+ "OII": {
+  "cik": 73756,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Oceaneering International, Inc.",
+  "name": "OCEANEERING INTERNATIONAL INC",
+  "sic": 1389,
+  "sic_description": "Oil & Gas Field Services, NEC"
+ },
+ "OMCL": {
+  "cik": 926326,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Omnicell",
+  "name": "OMNICELL, INC.",
+  "sic": 3571,
+  "sic_description": "Electronic Computers"
+ },
+ "OPLN": {
+  "cik": 1395942,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "OPENLANE, Inc.",
+  "name": "OPENLANE, Inc.",
+  "sic": 5500,
+  "sic_description": "Retail-Auto Dealers & Gasoline Stations"
  },
  "ORCL": {
   "cik": 1341439,
@@ -617,6 +5331,66 @@
   "sic": 7372,
   "sic_description": "Services-Prepackaged Software"
  },
+ "OSIS": {
+  "cik": 1039065,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "OSI Systems, Inc.",
+  "name": "OSI SYSTEMS INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "OSW": {
+  "cik": 1758488,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "OneSpaWorld Holdings Limited",
+  "name": "ONESPAWORLD HOLDINGS Ltd",
+  "sic": 7997,
+  "sic_description": "Services-Membership Sports & Recreation Clubs"
+ },
+ "OTTR": {
+  "cik": 1466593,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Otter Tail Corporation",
+  "name": "Otter Tail Corp",
+  "sic": 4911,
+  "sic_description": "Electric Services"
+ },
+ "OUT": {
+  "cik": 1579877,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Outfront Media",
+  "name": "OUTFRONT Media Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "PAHC": {
+  "cik": 1069899,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Phibro Animal Health",
+  "name": "PHIBRO ANIMAL HEALTH CORP",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
  "PANW": {
   "cik": 1327567,
   "exchanges": [
@@ -625,6 +5399,79 @@
   "name": "Palo Alto Networks Inc",
   "sic": 3577,
   "sic_description": "Computer Peripheral Equipment, NEC"
+ },
+ "PARR": {
+  "cik": 821483,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Par Pacific Holdings, Inc.",
+  "name": "PAR PACIFIC HOLDINGS, INC.",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "PATK": {
+  "cik": 76605,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Patrick Industries, Inc.",
+  "name": "PATRICK INDUSTRIES INC",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "PAYC": {
+  "cik": 1590955,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Paycom",
+  "name": "Paycom Software, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "PAYO": {
+  "cik": 1845815,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Payoneer Global Inc.",
+  "name": "Payoneer Global Inc.",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "PBH": {
+  "cik": 1295947,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Prestige Consumer Healthcare",
+  "name": "Prestige Consumer Healthcare Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "PBI": {
+  "cik": 78814,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Pitney Bowes, Inc.",
+  "name": "PITNEY BOWES INC /DE/",
+  "sic": 3579,
+  "sic_description": "Office Machines, NEC"
  },
  "PCAR": {
   "cik": 75362,
@@ -635,6 +5482,82 @@
   "sic": 3711,
   "sic_description": "Motor Vehicles & Passenger Car Bodies"
  },
+ "PCRX": {
+  "cik": 1396814,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Pacira BioSciences, Inc.",
+  "name": "Pacira BioSciences, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "PDFS": {
+  "cik": 1120914,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "PDF Solutions, Inc.",
+  "name": "PDF SOLUTIONS INC",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "PEB": {
+  "cik": 1474098,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Pebblebrook Hotel Trust",
+  "name": "Pebblebrook Hotel Trust",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "PECO": {
+  "cik": 1476204,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Phillips Edison & Company",
+  "name": "Phillips Edison & Company, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "PENG": {
+  "cik": 1616533,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Penguin Solutions, Inc.",
+  "name": "Penguin Solutions, Inc.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "PENN": {
+  "cik": 921738,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Penn Entertainment",
+  "name": "PENN Entertainment, Inc.",
+  "sic": 7011,
+  "sic_description": "Hotels & Motels"
+ },
  "PERI": {
   "cik": 1338940,
   "exchanges": [
@@ -643,6 +5566,42 @@
   "name": "Perion Network Ltd.",
   "sic": 7371,
   "sic_description": "Services-Computer Programming Services"
+ },
+ "PFBC": {
+  "cik": 1492165,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Preferred Bank",
+  "name": "Preferred Bank",
+  "sic": null,
+  "sic_description": ""
+ },
+ "PFS": {
+  "cik": 1178970,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Provident Financial Services, Inc.",
+  "name": "PROVIDENT FINANCIAL SERVICES INC",
+  "sic": 6035,
+  "sic_description": "Savings Institution, Federally Chartered"
+ },
+ "PGNY": {
+  "cik": 1551306,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Progyny, Inc.",
+  "name": "Progyny, Inc.",
+  "sic": 8090,
+  "sic_description": "Services-Misc Health & Allied Services, NEC"
  },
  "PH": {
   "cik": 76334,
@@ -653,6 +5612,216 @@
   "sic": 3490,
   "sic_description": "Miscellaneous Fabricated Metal Products"
  },
+ "PHIN": {
+  "cik": 1968915,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "PHINIA, Inc.",
+  "name": "PHINIA INC.",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "PI": {
+  "cik": 1114995,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Impinj, Inc.",
+  "name": "IMPINJ INC",
+  "sic": 3679,
+  "sic_description": "Electronic Components, NEC"
+ },
+ "PIPR": {
+  "cik": 1230245,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Piper Sandler Companies",
+  "name": "PIPER SANDLER COMPANIES",
+  "sic": 6211,
+  "sic_description": "Security Brokers, Dealers & Flotation Companies"
+ },
+ "PJT": {
+  "cik": 1626115,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "PJT Partners, Inc.",
+  "name": "PJT Partners Inc.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "PLAB": {
+  "cik": 810136,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Photronics, Inc.",
+  "name": "PHOTRONICS INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "PLMR": {
+  "cik": 1761312,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Palomar Holdings, Inc.",
+  "name": "Palomar Holdings, Inc.",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "PLUS": {
+  "cik": 1022408,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "ePlus, Inc.",
+  "name": "EPLUS INC",
+  "sic": 5045,
+  "sic_description": "Wholesale-Computers & Peripheral Equipment & Software"
+ },
+ "PLXS": {
+  "cik": 785786,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Plexus Corp.",
+  "name": "PLEXUS CORP",
+  "sic": 3672,
+  "sic_description": "Printed Circuit Boards"
+ },
+ "PMT": {
+  "cik": 1464423,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "PennyMac Mortgage Investment Trust",
+  "name": "PennyMac Mortgage Investment Trust",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "POOL": {
+  "cik": 945841,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Pool Corporation",
+  "name": "POOL CORP",
+  "sic": 5090,
+  "sic_description": "Wholesale-Misc Durable Goods"
+ },
+ "POWI": {
+  "cik": 833640,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Power Integrations",
+  "name": "POWER INTEGRATIONS INC",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "POWL": {
+  "cik": 80420,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Powell Industries, Inc.",
+  "name": "POWELL INDUSTRIES INC",
+  "sic": 3613,
+  "sic_description": "Switchgear & Switchboard Apparatus"
+ },
+ "PPLI": {
+  "cik": 1800227,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "People Inc.",
+  "name": "People Inc",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "PRDO": {
+  "cik": 1046568,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Perdoceo Education Corp.",
+  "name": "PERDOCEO EDUCATION Corp",
+  "sic": 8200,
+  "sic_description": "Services-Educational Services"
+ },
+ "PRG": {
+  "cik": 1808834,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "PROG Holdings, Inc.",
+  "name": "PROG Holdings, Inc.",
+  "sic": 7359,
+  "sic_description": "Services-Equipment Rental & Leasing, NEC"
+ },
+ "PRGO": {
+  "cik": 1585364,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Perrigo",
+  "name": "PERRIGO Co plc",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "PRGS": {
+  "cik": 876167,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Progress Software Corporation",
+  "name": "PROGRESS SOFTWARE CORP /MA",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
  "PRIM": {
   "cik": 1361538,
   "exchanges": [
@@ -661,6 +5830,126 @@
   "name": "Primoris Services Corp",
   "sic": 1623,
   "sic_description": "Water, Sewer, Pipeline, Comm & Power Line Construction"
+ },
+ "PRK": {
+  "cik": 805676,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Park National Corp.",
+  "name": "PARK NATIONAL CORP /OH/",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "PRKS": {
+  "cik": 1564902,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "United Parks & Resorts",
+  "name": "United Parks & Resorts Inc.",
+  "sic": 7990,
+  "sic_description": "Services-Miscellaneous Amusement & Recreation"
+ },
+ "PRLB": {
+  "cik": 1443669,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Protolabs",
+  "name": "Proto Labs Inc",
+  "sic": 3440,
+  "sic_description": "Fabricated Structural Metal Products"
+ },
+ "PRSU": {
+  "cik": 884219,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Pursuit Attractions & Hospitality, Inc.",
+  "name": "Pursuit Attractions & Hospitality, Inc.",
+  "sic": 7990,
+  "sic_description": "Services-Miscellaneous Amusement & Recreation"
+ },
+ "PRVA": {
+  "cik": 1759655,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Privia Health Group, Inc.",
+  "name": "Privia Health Group, Inc.",
+  "sic": 8000,
+  "sic_description": "Services-Health Services"
+ },
+ "PSMT": {
+  "cik": 1041803,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "PriceSmart",
+  "name": "PRICESMART INC",
+  "sic": 5331,
+  "sic_description": "Retail-Variety Stores"
+ },
+ "PTCT": {
+  "cik": 1070081,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "PTC Therapeutics, Inc.",
+  "name": "PTC THERAPEUTICS, INC.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "PTEN": {
+  "cik": 889900,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Patterson-UTI Energy, Inc.",
+  "name": "PATTERSON UTI ENERGY INC",
+  "sic": 1381,
+  "sic_description": "Drilling Oil & Gas Wells"
+ },
+ "PTGX": {
+  "cik": 1377121,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Protagonist Therapeutics, Inc.",
+  "name": "Protagonist Therapeutics, Inc",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "PTON": {
+  "cik": 1639825,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Peloton Interactive, Inc.",
+  "name": "PELOTON INTERACTIVE, INC.",
+  "sic": 3949,
+  "sic_description": "Sporting & Athletic Goods, NEC"
  },
  "PUBM": {
   "cik": 1422930,
@@ -680,6 +5969,18 @@
   "sic": 1731,
   "sic_description": "Electrical Work"
  },
+ "PZZA": {
+  "cik": 901491,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Papa John's Pizza",
+  "name": "PAPA JOHNS INTERNATIONAL INC",
+  "sic": 5812,
+  "sic_description": "Retail-Eating  Places"
+ },
  "QCOM": {
   "cik": 804328,
   "exchanges": [
@@ -688,6 +5989,18 @@
   "name": "QUALCOMM INC/DE",
   "sic": 3663,
   "sic_description": "Radio & Tv Broadcasting & Communications Equipment"
+ },
+ "QDEL": {
+  "cik": 1906324,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "QuidelOrtho",
+  "name": "QuidelOrtho Corp",
+  "sic": 2835,
+  "sic_description": "In Vitro & In Vivo Diagnostic Substances"
  },
  "QNST": {
   "cik": 1117297,
@@ -698,6 +6011,192 @@
   "sic": 7389,
   "sic_description": "Services-Business Services, NEC"
  },
+ "QRVO": {
+  "cik": 1604778,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Qorvo",
+  "name": "Qorvo, Inc.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "QTWO": {
+  "cik": 1410384,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Q2 Holdings, Inc.",
+  "name": "Q2 Holdings, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "RAL": {
+  "cik": 2041385,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Ralliant Corp",
+  "name": "Ralliant Corp",
+  "sic": 3823,
+  "sic_description": "Industrial Instruments For Measurement, Display, and Control"
+ },
+ "RAMP": {
+  "cik": 733269,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "LiveRamp Holdings, Inc.",
+  "name": "LiveRamp Holdings, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "RCUS": {
+  "cik": 1724521,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Arcus Biosciences, Inc.",
+  "name": "Arcus Biosciences, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "RDN": {
+  "cik": 890926,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Radian Group, Inc.",
+  "name": "RADIAN GROUP INC",
+  "sic": 6351,
+  "sic_description": "Surety Insurance"
+ },
+ "RDNT": {
+  "cik": 790526,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "RadNet, Inc.",
+  "name": "RadNet, Inc.",
+  "sic": 8071,
+  "sic_description": "Services-Medical Laboratories"
+ },
+ "RELY": {
+  "cik": 1782170,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Remitly",
+  "name": "Remitly Global, Inc.",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "RES": {
+  "cik": 742278,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "RPC, Inc.",
+  "name": "RPC INC",
+  "sic": 1389,
+  "sic_description": "Oil & Gas Field Services, NEC"
+ },
+ "REX": {
+  "cik": 744187,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "REX American Resources Corporation",
+  "name": "REX AMERICAN RESOURCES Corp",
+  "sic": 2860,
+  "sic_description": "Industrial Organic Chemicals"
+ },
+ "REYN": {
+  "cik": 1786431,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Reynolds Consumer Products",
+  "name": "Reynolds Consumer Products Inc.",
+  "sic": 2673,
+  "sic_description": "Plastics, Foil & Coated Paper Bags"
+ },
+ "REZI": {
+  "cik": 1740332,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Resideo Technologies, Inc.",
+  "name": "RESIDEO TECHNOLOGIES, INC.",
+  "sic": 5072,
+  "sic_description": "Wholesale-Hardware"
+ },
+ "RHI": {
+  "cik": 315213,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Robert Half",
+  "name": "ROBERT HALF INC.",
+  "sic": 7363,
+  "sic_description": "Services-Help Supply Services"
+ },
+ "RHP": {
+  "cik": 1040829,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Ryman Hospitality Properties",
+  "name": "Ryman Hospitality Properties, Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "RITM": {
+  "cik": 1556593,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Rithm Capital",
+  "name": "Rithm Capital Corp.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
  "RIVN": {
   "cik": 1874178,
   "exchanges": [
@@ -706,6 +6205,30 @@
   "name": "Rivian Automotive, Inc. / DE",
   "sic": 3711,
   "sic_description": "Motor Vehicles & Passenger Car Bodies"
+ },
+ "RNG": {
+  "cik": 1384905,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "RingCentral, Inc.",
+  "name": "RingCentral, Inc.",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "RNST": {
+  "cik": 715072,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Renasant Corp.",
+  "name": "RENASANT CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
  },
  "ROAD": {
   "cik": 1718227,
@@ -716,6 +6239,30 @@
   "sic": 1600,
   "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
  },
+ "ROCK": {
+  "cik": 912562,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Gibraltar Industries, Inc.",
+  "name": "GIBRALTAR INDUSTRIES, INC.",
+  "sic": 3310,
+  "sic_description": "Steel Works, Blast Furnaces & Rolling & Finishing Mills"
+ },
+ "ROG": {
+  "cik": 84748,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Rogers Corporation",
+  "name": "ROGERS CORP",
+  "sic": 2821,
+  "sic_description": "Plastic Materials, Synth Resins & Nonvulcan Elastomers"
+ },
  "ROK": {
   "cik": 1024478,
   "exchanges": [
@@ -724,6 +6271,18 @@
   "name": "ROCKWELL AUTOMATION, INC",
   "sic": 3829,
   "sic_description": "Measuring & Controlling Devices, NEC"
+ },
+ "RRR": {
+  "cik": 1653653,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Red Rock Resorts, Inc.",
+  "name": "Red Rock Resorts, Inc.",
+  "sic": 7011,
+  "sic_description": "Hotels & Motels"
  },
  "RSG": {
   "cik": 1060391,
@@ -734,6 +6293,103 @@
   "sic": 4953,
   "sic_description": "Refuse Systems"
  },
+ "RSI": {
+  "cik": 1793659,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Rush Street Interactive, Inc.",
+  "name": "Rush Street Interactive, Inc.",
+  "sic": 7990,
+  "sic_description": "Services-Miscellaneous Amusement & Recreation"
+ },
+ "RUN": {
+  "cik": 1469367,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Sunrun",
+  "name": "Sunrun Inc.",
+  "sic": 1700,
+  "sic_description": "Construction - Special Trade Contractors"
+ },
+ "RUSHA": {
+  "cik": 1012019,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Rush Enterprises",
+  "name": "RUSH ENTERPRISES INC \\TX\\",
+  "sic": 5500,
+  "sic_description": "Retail-Auto Dealers & Gasoline Stations"
+ },
+ "RXO": {
+  "cik": 1929561,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "RXO, Inc.",
+  "name": "RXO, Inc.",
+  "sic": 4700,
+  "sic_description": "Transportation Services"
+ },
+ "SABR": {
+  "cik": 1597033,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Sabre",
+  "name": "Sabre Corp",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "SAFE": {
+  "cik": 1095651,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Safehold, Inc.",
+  "name": "Safehold Inc.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "SAFT": {
+  "cik": 1172052,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Safety Insurance Group, Inc.",
+  "name": "SAFETY INSURANCE GROUP INC",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "SAH": {
+  "cik": 1043509,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Sonic Automotive, Inc.",
+  "name": "SONIC AUTOMOTIVE INC",
+  "sic": 5500,
+  "sic_description": "Retail-Auto Dealers & Gasoline Stations"
+ },
  "SAIA": {
   "cik": 1177702,
   "exchanges": [
@@ -742,6 +6398,162 @@
   "name": "SAIA INC",
   "sic": 4213,
   "sic_description": "Trucking (No Local)"
+ },
+ "SBCF": {
+  "cik": 730708,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Seacoast Banking Corporation of Florida",
+  "name": "SEACOAST BANKING CORP OF FLORIDA",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "SBH": {
+  "cik": 1368458,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Sally Beauty Holdings, Inc.",
+  "name": "Sally Beauty Holdings, Inc.",
+  "sic": 5990,
+  "sic_description": "Retail-Retail Stores, NEC"
+ },
+ "SBSI": {
+  "cik": 705432,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Southside Bancshares, Inc.",
+  "name": "SOUTHSIDE BANCSHARES INC",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "SCHL": {
+  "cik": 866729,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Scholastic Corporation",
+  "name": "SCHOLASTIC CORP",
+  "sic": 2731,
+  "sic_description": "Books: Publishing or  Publishing & Printing"
+ },
+ "SCL": {
+  "cik": 94049,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Stepan Company",
+  "name": "STEPAN CO",
+  "sic": 2840,
+  "sic_description": "Soap, Detergents, Cleang Preparations, Perfumes, Cosmetics"
+ },
+ "SCSC": {
+  "cik": 918965,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "ScanSource, Inc.",
+  "name": "SCANSOURCE, INC.",
+  "sic": 5045,
+  "sic_description": "Wholesale-Computers & Peripheral Equipment & Software"
+ },
+ "SDGR": {
+  "cik": 1490978,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Schr\u00f6dinger, Inc.",
+  "name": "Schrodinger, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "SEDG": {
+  "cik": 1419612,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "SolarEdge",
+  "name": "SOLAREDGE TECHNOLOGIES, INC.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "SEI": {
+  "cik": 1697500,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Solaris Energy Infrastructure, Inc.",
+  "name": "Solaris Energy Infrastructure, Inc.",
+  "sic": 3533,
+  "sic_description": "Oil & Gas Field Machinery & Equipment"
+ },
+ "SEZL": {
+  "cik": 1662991,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Sezzle",
+  "name": "Sezzle Inc.",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "SFBS": {
+  "cik": 1430723,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "ServisFirst Bancshares, Inc.",
+  "name": "ServisFirst Bancshares, Inc.",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "SFNC": {
+  "cik": 90498,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Simmons First National Corporation",
+  "name": "SIMMONS FIRST NATIONAL CORP",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "SHAK": {
+  "cik": 1620533,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Shake Shack, Inc.",
+  "name": "Shake Shack Inc.",
+  "sic": 5810,
+  "sic_description": "Retail-Eating & Drinking Places"
  },
  "SHEN": {
   "cik": 354963,
@@ -752,6 +6564,285 @@
   "sic": 4813,
   "sic_description": "Telephone Communications (No Radiotelephone)"
  },
+ "SHO": {
+  "cik": 1295810,
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Sunstone Hotel Investors, Inc.",
+  "name": "Sunstone Hotel Investors, Inc.",
+  "sic": 7011,
+  "sic_description": "Hotels & Motels"
+ },
+ "SHOO": {
+  "cik": 913241,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Steven Madden, Ltd.",
+  "name": "STEVEN MADDEN, LTD.",
+  "sic": 3140,
+  "sic_description": "Footwear, (No Rubber)"
+ },
+ "SIG": {
+  "cik": 832988,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Signet Jewelers",
+  "name": "SIGNET JEWELERS LTD",
+  "sic": 5944,
+  "sic_description": "Retail-Jewelry Stores"
+ },
+ "SKT": {
+  "cik": 899715,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Tanger Factory Outlet Centers, Inc.",
+  "name": "TANGER INC.",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "SKY": {
+  "cik": 90896,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Champion Homes, Inc.",
+  "name": "Champion Homes, Inc.",
+  "sic": 2451,
+  "sic_description": "Mobile Homes"
+ },
+ "SKYW": {
+  "cik": 793733,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "SkyWest, Inc.",
+  "name": "SKYWEST INC",
+  "sic": 4512,
+  "sic_description": "Air Transportation, Scheduled"
+ },
+ "SLG": {
+  "cik": 1040971,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "SL Green Realty",
+  "name": "SL GREEN REALTY CORP",
+  "sic": 6798,
+  "sic_description": "Real Estate Investment Trusts"
+ },
+ "SLVM": {
+  "cik": 1856485,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Sylvamo Corp.",
+  "name": "Sylvamo Corp",
+  "sic": 2621,
+  "sic_description": "Paper Mills"
+ },
+ "SM": {
+  "cik": 893538,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "SM Energy Company",
+  "name": "SM Energy Co",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "SMP": {
+  "cik": 93389,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Standard Motor Products, Inc.",
+  "name": "STANDARD MOTOR PRODUCTS, INC.",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "SMPL": {
+  "cik": 1702744,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Simply Good Foods Company",
+  "name": "Simply Good Foods Co",
+  "sic": 2000,
+  "sic_description": "Food and Kindred Products"
+ },
+ "SNDR": {
+  "cik": 1692063,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Schneider National",
+  "name": "Schneider National, Inc.",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "SNEX": {
+  "cik": 913760,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "StoneX Group Inc.",
+  "name": "StoneX Group Inc.",
+  "sic": 6200,
+  "sic_description": "Security & Commodity Brokers, Dealers, Exchanges & Services"
+ },
+ "SONO": {
+  "cik": 1314727,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Sonos, Inc.",
+  "name": "Sonos Inc",
+  "sic": 3651,
+  "sic_description": "Household Audio & Video Equipment"
+ },
+ "SPHR": {
+  "cik": 1795250,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Sphere Entertainment",
+  "name": "Sphere Entertainment Co.",
+  "sic": 7900,
+  "sic_description": "Services-Amusement & Recreation Services"
+ },
+ "SPNT": {
+  "cik": 1576018,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "SiriusPoint Ltd.",
+  "name": "SiriusPoint Ltd",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "SPSC": {
+  "cik": 1092699,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "SPS Commerce, Inc.",
+  "name": "SPS COMMERCE INC",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
+ "SRPT": {
+  "cik": 873303,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Sarepta Therapeutics",
+  "name": "Sarepta Therapeutics, Inc.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "STAA": {
+  "cik": 718937,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "STAAR Surgical Company",
+  "name": "STAAR SURGICAL CO",
+  "sic": 3851,
+  "sic_description": "Ophthalmic Goods"
+ },
+ "STBA": {
+  "cik": 719220,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "S&T Bancorp, Inc.",
+  "name": "S&T BANCORP INC",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "STC": {
+  "cik": 94344,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Stewart Information Services Corporation",
+  "name": "STEWART INFORMATION SERVICES CORP",
+  "sic": 6361,
+  "sic_description": "Title Insurance"
+ },
+ "STEP": {
+  "cik": 1796022,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "StepStone Group",
+  "name": "StepStone Group Inc.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "STRA": {
+  "cik": 1013934,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Strategic Education, Inc.",
+  "name": "Strategic Education, Inc.",
+  "sic": 8200,
+  "sic_description": "Services-Educational Services"
+ },
  "STRL": {
   "cik": 874238,
   "exchanges": [
@@ -760,6 +6851,42 @@
   "name": "STERLING INFRASTRUCTURE, INC.",
   "sic": 1600,
   "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+ },
+ "SUPN": {
+  "cik": 1356576,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Supernus Pharmaceuticals, Inc.",
+  "name": "SUPERNUS PHARMACEUTICALS, INC.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "SXI": {
+  "cik": 310354,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Standex International Corporation",
+  "name": "STANDEX INTERNATIONAL CORP/DE/",
+  "sic": 3580,
+  "sic_description": "Refrigeration & Service Industry Machinery"
+ },
+ "SXT": {
+  "cik": 310142,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Sensient Technologies",
+  "name": "SENSIENT TECHNOLOGIES CORP",
+  "sic": 2860,
+  "sic_description": "Industrial Organic Chemicals"
  },
  "T": {
   "cik": 732717,
@@ -773,6 +6900,30 @@
   "sic": 4813,
   "sic_description": "Telephone Communications (No Radiotelephone)"
  },
+ "TALO": {
+  "cik": 1724965,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Talos Energy, Inc.",
+  "name": "TALOS ENERGY INC.",
+  "sic": 1311,
+  "sic_description": "Crude Petroleum & Natural Gas"
+ },
+ "TBBK": {
+  "cik": 1295401,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "The Bancorp, Inc.",
+  "name": "Bancorp, Inc.",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
  "TBLA": {
   "cik": 1840502,
   "exchanges": [
@@ -781,6 +6932,18 @@
   "name": "Taboola.com Ltd.",
   "sic": 7370,
   "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "TDC": {
+  "cik": 816761,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Teradata",
+  "name": "TERADATA CORP /DE/",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
  },
  "TDS": {
   "cik": 1051512,
@@ -793,6 +6956,45 @@
   "sic": 4813,
   "sic_description": "Telephone Communications (No Radiotelephone)"
  },
+ "TDW": {
+  "cik": 98222,
+  "exchanges": [
+   "NYSE",
+   "OTC",
+   "OTC"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Tidewater, Inc.",
+  "name": "TIDEWATER INC",
+  "sic": 4400,
+  "sic_description": "Water Transportation"
+ },
+ "TFIN": {
+  "cik": 1539638,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Triumph Bancorp, Inc.",
+  "name": "Triumph Financial, Inc.",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "TFX": {
+  "cik": 96943,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Teleflex",
+  "name": "TELEFLEX INC",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
  "TGT": {
   "cik": 27419,
   "exchanges": [
@@ -801,6 +7003,66 @@
   "name": "TARGET CORP",
   "sic": 5331,
   "sic_description": "Retail-Variety Stores"
+ },
+ "TGTX": {
+  "cik": 1001316,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "TG Therapeutics, Inc.",
+  "name": "TG THERAPEUTICS, INC.",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "THRM": {
+  "cik": 903129,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Gentherm Incorporated",
+  "name": "Gentherm Inc",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "TILE": {
+  "cik": 715787,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Interface, Inc.",
+  "name": "INTERFACE INC",
+  "sic": 2273,
+  "sic_description": "Carpets & Rugs"
+ },
+ "TMDX": {
+  "cik": 1756262,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "TransMedics Group, Inc.",
+  "name": "TransMedics Group, Inc.",
+  "sic": 3845,
+  "sic_description": "Electromedical & Electrotherapeutic Apparatus"
+ },
+ "TMP": {
+  "cik": 1005817,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Tompkins Financial Corporation",
+  "name": "TOMPKINS FINANCIAL CORP",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
  },
  "TMUS": {
   "cik": 1283699,
@@ -813,6 +7075,127 @@
   "name": "T-Mobile US, Inc.",
   "sic": 4812,
   "sic_description": "Radiotelephone Communications"
+ },
+ "TNC": {
+  "cik": 97134,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Tennant Company",
+  "name": "TENNANT CO",
+  "sic": 3580,
+  "sic_description": "Refrigeration & Service Industry Machinery"
+ },
+ "TNDM": {
+  "cik": 1438133,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Tandem Diabetes Care",
+  "name": "TANDEM DIABETES CARE INC",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
+ "TPC": {
+  "cik": 77543,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Tutor Perini Corporation",
+  "name": "TUTOR PERINI CORP",
+  "sic": 1540,
+  "sic_description": "General Bldg Contractors - Nonresidential Bldgs"
+ },
+ "TR": {
+  "cik": 98677,
+  "exchanges": [
+   "NYSE",
+   "OTC"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Tootsie Roll Industries, Inc.",
+  "name": "TOOTSIE ROLL INDUSTRIES INC",
+  "sic": 2060,
+  "sic_description": "Sugar & Confectionery Products"
+ },
+ "TRIP": {
+  "cik": 1526520,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "TripAdvisor",
+  "name": "TripAdvisor, Inc.",
+  "sic": 7370,
+  "sic_description": "Services-Computer Programming, Data Processing, Etc."
+ },
+ "TRMK": {
+  "cik": 36146,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Trustmark Corp.",
+  "name": "TRUSTMARK CORP",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "TRN": {
+  "cik": 99780,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Trinity Industries, Inc.",
+  "name": "TRINITY INDUSTRIES INC",
+  "sic": 3743,
+  "sic_description": "Railroad Equipment"
+ },
+ "TRNO": {
+  "cik": 1476150,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Terreno Realty Corporation",
+  "name": "Terreno Realty Corp",
+  "sic": 6500,
+  "sic_description": "Real Estate"
+ },
+ "TRST": {
+  "cik": 357301,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "TrustCo Bank Corp NY",
+  "name": "TRUSTCO BANK CORP N Y",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "TRUP": {
+  "cik": 1371285,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Trupanion",
+  "name": "TRUPANION, INC.",
+  "sic": 6324,
+  "sic_description": "Hospital & Medical Service Plans"
  },
  "TSLA": {
   "cik": 1318605,
@@ -850,6 +7233,92 @@
   "sic": 3674,
   "sic_description": "Semiconductors & Related Devices"
  },
+ "UA": {
+  "cik": 1336917,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Under Armour (Class C)",
+  "name": "Under Armour, Inc.",
+  "sic": 2300,
+  "sic_description": "Apparel & Other Finishd Prods of  Fabrics & Similar Matl"
+ },
+ "UAA": {
+  "cik": 1336917,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Under Armour (Class A)",
+  "name": "Under Armour, Inc.",
+  "sic": 2300,
+  "sic_description": "Apparel & Other Finishd Prods of  Fabrics & Similar Matl"
+ },
+ "UCB": {
+  "cik": 857855,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "United Community Banks, Inc.",
+  "name": "UNITED COMMUNITY BANKS INC",
+  "sic": 6022,
+  "sic_description": "State Commercial Banks"
+ },
+ "UCTT": {
+  "cik": 1275014,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Ultra Clean Holdings, Inc.",
+  "name": "Ultra Clean Holdings, Inc.",
+  "sic": 3674,
+  "sic_description": "Semiconductors & Related Devices"
+ },
+ "UE": {
+  "cik": 1611547,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Urban Edge Properties",
+  "name": "Urban Edge Properties",
+  "sic": 6500,
+  "sic_description": "Real Estate"
+ },
+ "UFCS": {
+  "cik": 101199,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "United Fire Group, Inc.",
+  "name": "UNITED FIRE GROUP INC",
+  "sic": 6331,
+  "sic_description": "Fire, Marine & Casualty Insurance"
+ },
+ "UFPT": {
+  "cik": 914156,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "UFP Technologies, Inc.",
+  "name": "UFP TECHNOLOGIES INC",
+  "sic": 3841,
+  "sic_description": "Surgical & Medical Instruments & Apparatus"
+ },
  "ULTA": {
   "cik": 1403568,
   "exchanges": [
@@ -858,6 +7327,42 @@
   "name": "Ulta Beauty, Inc.",
   "sic": 5990,
   "sic_description": "Retail-Retail Stores, NEC"
+ },
+ "UNF": {
+  "cik": 717954,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "UniFirst Corporation",
+  "name": "UNIFIRST CORP",
+  "sic": 7200,
+  "sic_description": "Services-Personal Services"
+ },
+ "UNFI": {
+  "cik": 1020859,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "United Natural Foods Inc",
+  "name": "UNITED NATURAL FOODS INC",
+  "sic": 5141,
+  "sic_description": "Wholesale-Groceries, General Line"
+ },
+ "UNIT": {
+  "cik": 2020795,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Uniti Group",
+  "name": "Uniti Group Inc.",
+  "sic": 4813,
+  "sic_description": "Telephone Communications (No Radiotelephone)"
  },
  "UNP": {
   "cik": 100885,
@@ -868,6 +7373,162 @@
   "sic": 4011,
   "sic_description": "Railroads, Line-Haul Operating"
  },
+ "UPBD": {
+  "cik": 933036,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Upbound Group, Inc.",
+  "name": "UPBOUND GROUP, INC.",
+  "sic": 7359,
+  "sic_description": "Services-Equipment Rental & Leasing, NEC"
+ },
+ "UPWK": {
+  "cik": 1627475,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Upwork, Inc.",
+  "name": "UPWORK, INC",
+  "sic": 7374,
+  "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "URBN": {
+  "cik": 912615,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Urban Outfitters, Inc.",
+  "name": "URBAN OUTFITTERS INC",
+  "sic": 5651,
+  "sic_description": "Retail-Family Clothing Stores"
+ },
+ "USLM": {
+  "cik": 82020,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "United States Lime & Minerals, Inc.",
+  "name": "UNITED STATES LIME & MINERALS INC",
+  "sic": 1400,
+  "sic_description": "Mining & Quarrying of  Nonmetallic Minerals (No Fuels)"
+ },
+ "USPH": {
+  "cik": 885978,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "U.S. Physical Therapy, Inc.",
+  "name": "U S PHYSICAL THERAPY INC /NV",
+  "sic": 8000,
+  "sic_description": "Services-Health Services"
+ },
+ "UTI": {
+  "cik": 1261654,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Universal Technical Institute",
+  "name": "UNIVERSAL TECHNICAL INSTITUTE INC",
+  "sic": 8200,
+  "sic_description": "Services-Educational Services"
+ },
+ "UTL": {
+  "cik": 755001,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Utilities",
+  "in_sp600": true,
+  "index_name": "Unitil Corporation",
+  "name": "UNITIL CORP",
+  "sic": 4931,
+  "sic_description": "Electric & Other Services Combined"
+ },
+ "UVV": {
+  "cik": 102037,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "Universal Corporation",
+  "name": "UNIVERSAL CORP /VA/",
+  "sic": 5150,
+  "sic_description": "Wholesale-Farm Product Raw Materials"
+ },
+ "VAC": {
+  "cik": 1524358,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Marriott Vacations Worldwide",
+  "name": "MARRIOTT VACATIONS WORLDWIDE Corp",
+  "sic": 6531,
+  "sic_description": "Real Estate Agents & Managers (For Others)"
+ },
+ "VCEL": {
+  "cik": 887359,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Vericel",
+  "name": "Vericel Corp",
+  "sic": 2836,
+  "sic_description": "Biological Products, (No Diagnostic Substances)"
+ },
+ "VCTR": {
+  "cik": 1570827,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Victory Capital Holdings, Inc.",
+  "name": "Victory Capital Holdings, Inc.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "VCYT": {
+  "cik": 1384101,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Veracyte, Inc.",
+  "name": "VERACYTE, INC.",
+  "sic": 8071,
+  "sic_description": "Services-Medical Laboratories"
+ },
+ "VECO": {
+  "cik": 103145,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Veeco Instruments Inc.",
+  "name": "VEECO INSTRUMENTS INC",
+  "sic": 3559,
+  "sic_description": "Special Industry Machinery, NEC"
+ },
  "VFC": {
   "cik": 103379,
   "exchanges": [
@@ -876,6 +7537,176 @@
   "name": "V F CORP",
   "sic": 2320,
   "sic_description": "Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+ },
+ "VGNT": {
+  "cik": 2078008,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Versigent PLC",
+  "name": "Versigent PLC",
+  "sic": 3714,
+  "sic_description": "Motor Vehicle Parts & Accessories"
+ },
+ "VIR": {
+  "cik": 1706431,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Vir Biotechnology, Inc.",
+  "name": "Vir Biotechnology, Inc.",
+  "sic": 2836,
+  "sic_description": "Biological Products, (No Diagnostic Substances)"
+ },
+ "VIRT": {
+  "cik": 1592386,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Virtu Financial, Inc.",
+  "name": "Virtu Financial, Inc.",
+  "sic": 6211,
+  "sic_description": "Security Brokers, Dealers & Flotation Companies"
+ },
+ "VRRM": {
+  "cik": 1682745,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Verra Mobility Corporation",
+  "name": "VERRA MOBILITY Corp",
+  "sic": 4700,
+  "sic_description": "Transportation Services"
+ },
+ "VRTS": {
+  "cik": 883237,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Virtus Investment Partners, Inc.",
+  "name": "VIRTUS INVESTMENT PARTNERS, INC.",
+  "sic": 6282,
+  "sic_description": "Investment Advice"
+ },
+ "VSAT": {
+  "cik": 797721,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Viasat, Inc.",
+  "name": "VIASAT INC",
+  "sic": 4899,
+  "sic_description": "Communications Services, NEC"
+ },
+ "VSEC": {
+  "cik": 102752,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "VSE Corporation",
+  "name": "VSE CORP",
+  "sic": 8711,
+  "sic_description": "Services-Engineering Services"
+ },
+ "VSH": {
+  "cik": 103730,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Vishay Intertechnology",
+  "name": "VISHAY INTERTECHNOLOGY INC",
+  "sic": 3670,
+  "sic_description": "Electronic Components & Accessories"
+ },
+ "VSNT": {
+  "cik": 2067876,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Versant Media Group, Inc.",
+  "name": "Versant Media Group, Inc.",
+  "sic": 4833,
+  "sic_description": "Television Broadcasting Stations"
+ },
+ "VSTS": {
+  "cik": 1967649,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Vestis",
+  "name": "Vestis Corp",
+  "sic": 5190,
+  "sic_description": "Wholesale-Miscellaneous Nondurable Goods"
+ },
+ "VSXY": {
+  "cik": 1856437,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Victoria's Secret",
+  "name": "Victoria's Secret & Co.",
+  "sic": 5621,
+  "sic_description": "Retail-Women's Clothing Stores"
+ },
+ "VTOL": {
+  "cik": 1525221,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Bristow Group Inc.",
+  "name": "Bristow Group Inc.",
+  "sic": 4522,
+  "sic_description": "Air Transportation, Nonscheduled"
+ },
+ "VVX": {
+  "cik": 1601548,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "V2X, Inc.",
+  "name": "V2X, Inc.",
+  "sic": 8744,
+  "sic_description": "Services-Facilities Support Management Services"
+ },
+ "VYX": {
+  "cik": 70866,
+  "exchanges": [
+   "NYSE",
+   "OTC"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "NCR Voyix",
+  "name": "NCR Voyix Corp",
+  "sic": 3578,
+  "sic_description": "Calculating & Accounting Machines (No Electronic Computers)"
  },
  "VZ": {
   "cik": 732712,
@@ -886,6 +7717,55 @@
   "sic": 4813,
   "sic_description": "Telephone Communications (No Radiotelephone)"
  },
+ "WABC": {
+  "cik": 311094,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Westamerica Bank",
+  "name": "WESTAMERICA BANCORPORATION",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "WAFD": {
+  "cik": 936528,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "WaFd, Inc.",
+  "name": "WAFD INC",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "WAY": {
+  "cik": 1990354,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Waystar Holding Corp",
+  "name": "Waystar Holding Corp.",
+  "sic": 7373,
+  "sic_description": "Services-Computer Integrated Systems Design"
+ },
+ "WD": {
+  "cik": 1497770,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Walker & Dunlop, Inc.",
+  "name": "Walker & Dunlop, Inc.",
+  "sic": 6199,
+  "sic_description": "Finance Services"
+ },
  "WDAY": {
   "cik": 1327811,
   "exchanges": [
@@ -894,6 +7774,103 @@
   "name": "Workday, Inc.",
   "sic": 7374,
   "sic_description": "Services-Computer Processing & Data Preparation"
+ },
+ "WDFC": {
+  "cik": 105132,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Staples",
+  "in_sp600": true,
+  "index_name": "WD-40 Company",
+  "name": "WD 40 CO",
+  "sic": 2890,
+  "sic_description": "Miscellaneous Chemical Products"
+ },
+ "WEN": {
+  "cik": 30697,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "The Wendy's Company",
+  "name": "Wendy's Co",
+  "sic": 5810,
+  "sic_description": "Retail-Eating & Drinking Places"
+ },
+ "WERN": {
+  "cik": 793074,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Werner Enterprises",
+  "name": "WERNER ENTERPRISES INC",
+  "sic": 4213,
+  "sic_description": "Trucking (No Local)"
+ },
+ "WGO": {
+  "cik": 107687,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Winnebago Industries, Inc.",
+  "name": "WINNEBAGO INDUSTRIES INC",
+  "sic": 3716,
+  "sic_description": "Motor Homes"
+ },
+ "WHD": {
+  "cik": 1699136,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "Cactus, Inc.",
+  "name": "Cactus, Inc.",
+  "sic": 3533,
+  "sic_description": "Oil & Gas Field Machinery & Equipment"
+ },
+ "WINA": {
+  "cik": 908315,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Winmark",
+  "name": "WINMARK CORP",
+  "sic": 5900,
+  "sic_description": "Retail-Miscellaneous Retail"
+ },
+ "WKC": {
+  "cik": 789460,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Energy",
+  "in_sp600": true,
+  "index_name": "World Kinect Corporation",
+  "name": "WORLD KINECT CORP",
+  "sic": 5172,
+  "sic_description": "Wholesale-Petroleum & Petroleum Products (No Bulk Stations)"
+ },
+ "WLY": {
+  "cik": 107140,
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "John Wiley & Sons",
+  "name": "JOHN WILEY & SONS, INC.",
+  "sic": 2731,
+  "sic_description": "Books: Publishing or  Publishing & Printing"
  },
  "WM": {
   "cik": 823768,
@@ -913,6 +7890,163 @@
   "sic": 5331,
   "sic_description": "Retail-Variety Stores"
  },
+ "WOR": {
+  "cik": 108516,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Worthington Enterprises",
+  "name": "WORTHINGTON ENTERPRISES, INC.",
+  "sic": 3310,
+  "sic_description": "Steel Works, Blast Furnaces & Rolling & Finishing Mills"
+ },
+ "WRBY": {
+  "cik": 1504776,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Warby Parker",
+  "name": "Warby Parker Inc.",
+  "sic": 3851,
+  "sic_description": "Ophthalmic Goods"
+ },
+ "WRLD": {
+  "cik": 108385,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "World Acceptance Corporation",
+  "name": "WORLD ACCEPTANCE CORP",
+  "sic": 6141,
+  "sic_description": "Personal Credit Institutions"
+ },
+ "WS": {
+  "cik": 1968487,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Materials",
+  "in_sp600": true,
+  "index_name": "Worthington Steel",
+  "name": "Worthington Steel, Inc.",
+  "sic": 3310,
+  "sic_description": "Steel Works, Blast Furnaces & Rolling & Finishing Mills"
+ },
+ "WSBC": {
+  "cik": 203596,
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "WesBanco",
+  "name": "WESBANCO INC",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "WSC": {
+  "cik": 1647088,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "WillScot Holdings Corp.",
+  "name": "WillScot Holdings Corp",
+  "sic": 7350,
+  "sic_description": "Services-Miscellaneous Equipment Rental & Leasing"
+ },
+ "WSFS": {
+  "cik": 828944,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "WSFS Financial Corporation",
+  "name": "WSFS FINANCIAL CORP",
+  "sic": 6021,
+  "sic_description": "National Commercial Banks"
+ },
+ "WT": {
+  "cik": 880631,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "WisdomTree Investments, Inc.",
+  "name": "WisdomTree, Inc.",
+  "sic": 6211,
+  "sic_description": "Security Brokers, Dealers & Flotation Companies"
+ },
+ "WU": {
+  "cik": 1365135,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Financials",
+  "in_sp600": true,
+  "index_name": "Western Union",
+  "name": "Western Union CO",
+  "sic": 7389,
+  "sic_description": "Services-Business Services, NEC"
+ },
+ "WWW": {
+  "cik": 110471,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "Wolverine World Wide, Inc.",
+  "name": "WOLVERINE WORLD WIDE INC /DE/",
+  "sic": 3140,
+  "sic_description": "Footwear, (No Rubber)"
+ },
+ "XHR": {
+  "cik": 1616000,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Real Estate",
+  "in_sp600": true,
+  "index_name": "Xenia Hotels & Resorts, Inc.",
+  "name": "Xenia Hotels & Resorts, Inc.",
+  "sic": 7011,
+  "sic_description": "Hotels & Motels"
+ },
+ "XNCR": {
+  "cik": 1326732,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Health Care",
+  "in_sp600": true,
+  "index_name": "Xencor Inc",
+  "name": "Xencor Inc",
+  "sic": 2834,
+  "sic_description": "Pharmaceutical Preparations"
+ },
+ "XPEL": {
+  "cik": 1767258,
+  "exchanges": [
+   "Nasdaq"
+  ],
+  "gics_sector": "Consumer Discretionary",
+  "in_sp600": true,
+  "index_name": "XPEL, Inc.",
+  "name": "XPEL, Inc.",
+  "sic": 3470,
+  "sic_description": "Coating, Engraving & Allied Services"
+ },
  "XPO": {
   "cik": 1166003,
   "exchanges": [
@@ -922,6 +8056,30 @@
   "sic": 4700,
   "sic_description": "Transportation Services"
  },
+ "YELP": {
+  "cik": 1345016,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Communication Services",
+  "in_sp600": true,
+  "index_name": "Yelp, Inc.",
+  "name": "YELP INC",
+  "sic": 7200,
+  "sic_description": "Services-Personal Services"
+ },
+ "YOU": {
+  "cik": 1856314,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Information Technology",
+  "in_sp600": true,
+  "index_name": "Clear Secure, Inc.",
+  "name": "Clear Secure, Inc.",
+  "sic": 7372,
+  "sic_description": "Services-Prepackaged Software"
+ },
  "ZD": {
   "cik": 1084048,
   "exchanges": [
@@ -930,5 +8088,17 @@
   "name": "ZIFF DAVIS, INC.",
   "sic": 4822,
   "sic_description": "Telegraph & Other Message Communications"
+ },
+ "ZWS": {
+  "cik": 1439288,
+  "exchanges": [
+   "NYSE"
+  ],
+  "gics_sector": "Industrials",
+  "in_sp600": true,
+  "index_name": "Zurn Elkay Water Solutions Corp.",
+  "name": "Zurn Elkay Water Solutions Corp",
+  "sic": 3560,
+  "sic_description": "General Industrial Machinery & Equipment"
  }
 }
