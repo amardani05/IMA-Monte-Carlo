@@ -171,17 +171,17 @@ the service's mode path and implied values read the same field.
 
 | Change | Horizon | CRPS/spot delta (se) | Median delta | 90% coverage | Gate |
 | --- | --- | --- | --- | --- | --- |
-| Level widths full at two years (H = 2) | 1 year | -0.187 (0.051) | -0.005 | 86% to 77% | FAIL |
+| Level widths full at two years (H = 2) | 1 year | -0.184 (0.051) | -0.004 | 85% to 77% | FAIL |
 | Dilution stated over the horizon | 2 years | -0.016 (0.003) | -0.001 | 79% to 79% | PASS |
 | Level widths full at one year (H = 1) | 0.5 year | -0.020 (0.002) | -0.011 | 90% to 84% | FAIL |
 | H = 1 and dilution over the horizon | 0.5 year | -0.020 (0.002) | -0.012 | 90% to 84% | FAIL |
 
 What it says: **v2's stated widths are one-year widths.** At one year v2 is
-nearly calibrated (50 / 80 / 90% coverage 51% / 77% / 86%, PIT tails 23%), at
+nearly calibrated (50 / 80 / 90% coverage 51% / 77% / 85%, PIT tails 23%), at
 two years too narrow (42% / 69% / 79%, 31%). Pulling the one-year distribution
-in toward a two-year reference costs nine points of 90% coverage in every
-snapshot year; its mean CRPS gain is a few extreme-width names (TGTX, SUPN),
-and the median paired delta is -0.005. At half a year the stated widths are
+in toward a two-year reference costs eight points of 90% coverage, and some in
+every snapshot year; its mean CRPS gain is a few extreme-width names (TGTX,
+SUPN), and the median paired delta is -0.004. At half a year the stated widths are
 too wide in the body (50% coverage 62%, PIT tails 15%: a hump) and on target
 in the 90% band. H = 1 sharpens it on two snapshots in three (ten standard
 errors on the mean, median delta -0.011) and puts the 50% band on target, but
@@ -195,15 +195,21 @@ on. Dilution over the horizon, the one change that passed, belongs in
 the short end the next hypothesis is a width that narrows the body but keeps
 the tails, which root-T scaling of a level distribution cannot do; an H
 between half a year and one year would only trade the CRPS gain against the
-coverage tolerance. Run files: `backtests/h05_*`, `h1_*`, `h2_*`.
+coverage tolerance. Run files: `backtests/h05_*`, `h1_*`, `h2_*`. Every run
+in this entry reads one data definition, main as of c48ae3e (impairments added
+back to EBITDA, short-term investments in net debt), and none is paired
+against the earlier `sp600fix3_*` files. A first one-year pair launched before
+c48ae3e is kept in `backtests/pre_c48ae3e/`; on its own, c48ae3e moves v2's
+one-year CRPS/spot by -0.006 (se 0.002) and touches 11% of snapshots.
 
 The chain as in the handoff, rerun on today's data: v2 against the own-history
-baseline at one year (14,464 snapshots) fails on the mean (+0.366, se 0.170;
+baseline at one year (14,455 snapshots) fails on the mean (+0.360, se 0.170;
 TGTX's 2024 snapshots alone are +1,000 to +1,500 each) and wins on the median
-(-0.009) and the 5% trimmed mean (-0.036), with 90% coverage 64% to 86%. At
+(-0.009) and the 5% trimmed mean (-0.037), with 90% coverage 63% to 85%. At
 two years it fails the same way (+0.539, se 0.282; VCEL), median -0.012,
 coverage 55% to 79%. COLL's 2022 snapshots are the same margin-history
-pathology as VCEL: median $0 and P95 $62,000 to $119,000 on a $20 stock.
+pathology as VCEL: median $0 and P95 $100,000 to $154,000 on a $16 to $23
+stock.
 
 ## Phase 3, mechanisms: done
 
