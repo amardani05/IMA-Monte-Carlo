@@ -1298,6 +1298,7 @@ $("exampleMenu").addEventListener("click", (e) => {
   toggleExampleMenu(false);
   if (id === "preset") {
     clearProvenance(); applyExtraDrivers(null); fillForm(PRESET);
+    ["dcf_g", "dcf_m", "dcf_mult"].forEach((k) => { form[k].value = ""; });   // an earlier example's base-case path
     $("lookupMsg").hidden = true; $("formError").hidden = true; $("exampleStrip").hidden = true;
   } else {
     const ex = EXAMPLES.find((x) => x.id === id);
