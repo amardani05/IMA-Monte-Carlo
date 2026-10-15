@@ -29,7 +29,7 @@ those, or engine output.
 | `montecarlo/data/` | `sp600.txt`, `peers.json`, `peer_overrides.json`, `panels/`, `prices/`, `sec_tickers.json` |
 | `tools/` | `backtest.py`, `build_peers.py`, `build_panels.py`, `refresh_prices.py`, `refresh_tickers.py` |
 | `public/` | the front end: `index.html`, `app.js`, `styles.css` |
-| `tests/` | 80 tests, offline; `IMA_LIVE_SEC=1` adds live EDGAR |
+| `tests/` | 99 tests, offline; `IMA_LIVE_SEC=1` adds live EDGAR |
 
 ## Run it
 
@@ -52,20 +52,28 @@ the current default on paired CRPS and 90% coverage. The harness has rejected
 more than it has accepted; see "What the harness decided" in `ROADMAP.md`.
 Production calibration defaults are `V2_DEFAULTS` in `marketdata.py`.
 
-## Running right now
+## Last S&P 600 verdict
 
-The S&P 600 backtest chain, relaunched late on 15 October after the first
-attempt filled the disk (the EDGAR cache is gzip now, about 300 KB a name):
-baseline over the 603 members from 2012 at a two-year horizon, then v2 with
-`--gate` against it. Several hours each. Logs in
-`backtests/sp600_*.log`, run files and HTML reports in `backtests/`
-(git-ignored). Read `backtests/sp600_v2.log` when it finishes; the paired line
-at the end and the `gate:` line are the verdict. If the gate fails, do not
-change the defaults; look at the per-name and per-year tables in
-`backtests/sp600_v2.html` first.
+`python tools/backtest.py --names sp600 --start 2012-12-31` then the same with
+`--model phase2 --compare <base label> --gate`; about ten minutes each on a warm
+EDGAR cache (the cache expires after 24 hours; a cold run downloads about
+180 MB). `--names all` is the S&P 600 plus about 90 large caps from the
+curated peer pool; `sp600` is the index alone. Latest run files are
+`backtests/sp600fix3_*` (git-ignored). The gate **fails** on mean CRPS, and
+VCEL's four snapshots are the whole of it; see the S&P 600 entry under "What
+the harness decided" in `ROADMAP.md`. Defaults unchanged. The machine's disk
+runs within a few hundred MB of full; a full disk stops every command,
+including the tool's own output.
 
 ## Open
 
+- v2 carries extreme margin-history years straight into its margin metalog
+  (VCEL, -1,416x from pre-launch revenue); the baseline trims them. A guard
+  there is the likeliest way to pass the S&P 600 gate.
+- Dual-class share counts are understated: the SEC's company facts drop the
+  per-class cover counts, so SHAK, AMRX and MIR bridge on Class A alone and
+  CXM on a stale count. LMAT's cover count is off by ten. Fixing it means
+  reading the filing's own XBRL instance.
 - The 2022 to 2024 miss (90% coverage about 50% on those snapshot years) is
   unexplained by anything tried: mean reversion, peer widths, multiple
   momentum. Next hypothesis: a market-state input through width or the rate

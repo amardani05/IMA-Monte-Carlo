@@ -4,6 +4,7 @@ Score the model against realised prices.
 
     python tools/backtest.py                       # default names, 2-year horizon
     python tools/backtest.py --names MYRG,TDS,QNST --start 2018-12-31
+    python tools/backtest.py --names sp600         # the index constituents only
     python tools/backtest.py --label phase2 --compare baseline
 
 Writes backtests/<label>.json. --compare prints a paired CRPS comparison
@@ -31,8 +32,15 @@ ap.add_argument("--gate", action="store_true", help="exit 1 if the run fails the
 ap.add_argument("--n-sims", type=int, default=20000)
 args = ap.parse_args()
 if args.names.strip().lower() == "all":
+    # the S&P 600 plus the curated peer pool in peers.json (about 90 large caps)
     from montecarlo import panel as _panel  # noqa: E402
     args.names = ",".join(sorted(set(_panel.peers_map()) | set(backtest.DEFAULT_NAMES)))
+elif args.names.strip().lower() == "sp600":
+    # the index constituents and nothing else
+    _path = os.path.join(os.path.dirname(__file__), "..", "montecarlo", "data", "sp600.txt")
+    with open(_path) as fh:
+        args.names = ",".join(sorted({ln.split("|")[0].strip().upper().replace(".", "-")
+                                      for ln in fh if ln.strip() and not ln.startswith("#")}))
 
 from montecarlo import variants  # noqa: E402
 model_fn, prefill_fn = variants.get(args.model)

@@ -112,6 +112,41 @@ accurate at the centre. Two things the numbers say about what is left:
   curated 102-name list and the panel builder now make a scheduled job rather
   than a project.
 
+**S&P 600, 12,639 paired snapshots across 429 names, 2013 to 2024, two-year
+horizon (15 October; `--names sp600`)**. The first run of this chain read
+`gate: FAIL` with a delta of NaN, a verdict about the data, not the model. Five
+filer tagging patterns had to be handled before the gate meant anything, each
+of which had put a median price somewhere between $5,900 and $100M a share:
+
+- a share count of zero (dual-class filers tag the undimensioned total as 0;
+  SHAK, CXM, ROAD, FOXF), which divided equity by zero in 48 snapshots;
+- a placeholder or stale count (TRIP's 1,000 pre-spin-off shares from 2011,
+  AMRX's 1,000 holding-company shares);
+- a count tagged in thousands as shares, or 1,000 times too large (HUBG, ANIP,
+  PAHC, SEI; CPK, SKY, STAA), now caught against net income over diluted EPS;
+- a revenue sub-line under `Revenues` shadowing the `SalesRevenueNet` total
+  (ANDE's $0.9M beside $5.6B, PRGO, MWA, NPO), which made a 161x margin.
+
+| | Own history (baseline) | v2 adopted |
+| --- | --- | --- |
+| CRPS / spot, mean | 0.933 | 1.512 |
+| CRPS / spot, median | 0.330 | 0.312 |
+| Better on snapshots | | 54% |
+| 50% / 90% coverage | 27% / 56% | 42% / 80% |
+| PIT in outer deciles | 53% | 31% |
+
+**Gate: FAIL** on the mean (delta +0.578, standard error 0.307); coverage
+passes. VCEL's four 2021 snapshots contribute +0.590 of the delta: its filed
+margin history includes the near-zero revenue years before its products
+launched (-1,416x), the baseline's robust bounds trim that year, and v2 carries
+it straight into a margin metalog with a P10 of -1,416 and a P95 price of
+$4.4M. Without VCEL the delta is -0.012 (standard error 0.074), a tie again;
+the median paired delta is -0.010 and the 5% trimmed delta -0.032. The
+defaults are unchanged. The fix the numbers point to is a margin-history guard
+in v2 of the kind v1 has, and it goes through the harness like anything else.
+2022 to 2024 coverage is 79%, 75% and 74% under v2 against 58%, 58% and 56%:
+better, still short.
+
 ## Phase 3, mechanisms: done
 
 In `engine.py`, each switched on per name from the UI, proposed from filings by

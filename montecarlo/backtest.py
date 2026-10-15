@@ -116,6 +116,11 @@ def snapshot(ticker: str, as_of: str, series: list, horizon: float,
         samples = model_fn(f)
     except Exception as exc:  # noqa: BLE001
         return {"ticker": ticker, "as_of": as_of, "error": f"model: {type(exc).__name__}: {exc}"}
+    bad = int(np.size(samples) - np.isfinite(samples).sum())
+    if bad:
+        # one NaN CRPS turns the paired mean into NaN and the gate into a FAIL
+        # that says nothing about the model; skip the snapshot and say why
+        return {"ticker": ticker, "as_of": as_of, "error": f"model: {bad} of {np.size(samples)} terminal prices non-finite"}
     q = np.percentile(samples, [5, 10, 25, 50, 75, 90, 95])
     return {
         "ticker": ticker, "as_of": as_of, "spot": spot,

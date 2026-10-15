@@ -428,6 +428,122 @@ class ZeroRevenueGuard(unittest.TestCase):
             _ = hist[2023] / rev[2023]
 
 
+class RevenueSubLines(unittest.TestCase):
+    def test_a_sub_line_tag_does_not_shadow_the_total(self):
+        # ANDE 2013: $0.9M under Revenues beside $5.6B of SalesRevenueNet
+        f = facts(Revenues={"CY2013": 0.9e6}, SalesRevenueNet={"CY2012": 5272.0e6, "CY2013": 5604.6e6})
+        rev = md.annual_series(f, md.REVENUE_TAGS, sub_line_ratio=md.REVENUE_SUB_LINE_RATIO)
+        self.assertEqual(rev, {2012: 5272.0e6, 2013: 5604.6e6})
+
+    def test_a_tax_basis_gap_keeps_the_preferred_tag(self):
+        f = facts(RevenueFromContractWithCustomerExcludingAssessedTax={"CY2024": 82.0}, Revenues={"CY2024": 100.0})
+        rev = md.annual_series(f, md.REVENUE_TAGS, sub_line_ratio=md.REVENUE_SUB_LINE_RATIO)
+        self.assertEqual(rev[2024], 82.0)
+
+
+class ZeroShareCount(unittest.TestCase):
+    """A filed share count of zero is a tagging artefact; it divided equity by zero in 48 baseline snapshots."""
+
+    def test_a_zero_cover_count_falls_back_to_the_last_positive_one(self):
+        # FOXF's May 2016 10-Q cover carries 0
+        f = facts(EntityCommonStockSharesOutstanding={"CY2015Q4I": 37_025_076.0, "CY2016Q1I": 0.0})
+        got = md._point_in_time(f, md.SHARES_TAGS, taxonomy="dei", unit="shares", positive=True)
+        self.assertEqual(got[1], 37_025_076.0)
+
+    def test_an_all_zero_tag_gives_way_to_the_next(self):
+        # dual-class filers (SHAK, CXM, ROAD) tag the undimensioned total as 0
+        f = {"facts": {"us-gaap": {
+            "CommonStockSharesOutstanding": {"units": {"shares": [{"end": "2015-12-30", "val": 0}]}},
+            "WeightedAverageNumberOfDilutedSharesOutstanding": {"units": {"shares": [
+                {"start": "2015-01-01", "end": "2015-12-30", "val": 13_588_000}]}},
+        }}}
+        got = md._point_in_time(f, ["CommonStockSharesOutstanding", "WeightedAverageNumberOfDilutedSharesOutstanding"],
+                                unit="shares", positive=True)
+        self.assertEqual(got[2], "WeightedAverageNumberOfDilutedSharesOutstanding")
+
+    def test_zero_stays_a_figure_where_it_is_one(self):
+        f = facts(CashAndCashEquivalentsAtCarryingValue={"CY2024Q3I": 50.0, "CY2024Q4I": 0.0})
+        self.assertEqual(md._point_in_time(f, md.CASH_TAGS)[1], 0.0)
+
+    def test_zero_counts_do_not_enter_the_dilution_history(self):
+        f = facts(EntityCommonStockSharesOutstanding={"CY2014Q4I": 100.0, "CY2015Q4I": 0.0, "CY2016Q4I": 102.0})
+        self.assertEqual(md._share_history(f), {2014: 100.0, 2016: 102.0})
+
+    def test_a_stale_cover_count_gives_way_to_a_fresh_fallback(self):
+        # TRIP: the only undimensioned cover count is the 1,000 shares from before the 2011 spin-off
+        f = {"facts": {"dei": {"EntityCommonStockSharesOutstanding": {"units": {"shares": [
+                 {"end": "2011-11-30", "val": 1000}]}}},
+             "us-gaap": {"WeightedAverageNumberOfDilutedSharesOutstanding": {"units": {"shares": [
+                 {"start": "2019-01-01", "end": "2019-12-31", "val": 121_285_700}]}}}}}
+        self.assertEqual(md._share_count(f, "TRIP", 2019)[1], 121_285_700)
+
+    @staticmethod
+    def _with_eps(f, fy, ni, eps):
+        g = f["facts"].setdefault("us-gaap", {})
+        g["NetIncomeLoss"] = {"units": {"USD": [{"start": f"{fy}-01-01", "end": f"{fy}-12-31", "val": ni, "frame": f"CY{fy}"}]}}
+        g["EarningsPerShareDiluted"] = {"units": {"USD/shares": [
+            {"start": f"{fy}-01-01", "end": f"{fy}-12-31", "val": eps, "frame": f"CY{fy}", "filed": f"{fy + 1}-02-24"}]}}
+        return f
+
+    def test_a_placeholder_count_is_skipped(self):
+        # AMRX 2018: the cover still carried the holding company's 1,000 shares
+        f = {"facts": {"dei": {"EntityCommonStockSharesOutstanding": {"units": {"shares": [
+                 {"end": "2018-05-07", "val": 1000}]}}},
+             "us-gaap": {"WeightedAverageNumberOfDilutedSharesOutstanding": {"units": {"shares": [
+                 {"start": "2018-01-01", "end": "2018-09-30", "val": 127_196_000}]}}}}}
+        self._with_eps(f, 2018, -19_744_000, -0.16)
+        self.assertEqual(md._share_count(f, "AMRX", 2018)[1], 127_196_000)
+
+    def test_a_count_in_thousands_is_rescaled_and_labelled(self):
+        # HUBG tagged 32,566 for 32.6M diluted shares
+        f = {"facts": {"us-gaap": {"WeightedAverageNumberOfDilutedSharesOutstanding": {"units": {"shares": [
+            {"start": "2023-01-01", "end": "2023-06-30", "val": 32_566, "form": "10-Q"}]}}}}}
+        self._with_eps(f, 2022, 356_948_000, 10.64)
+        got = md._share_count(f, "HUBG", 2022)
+        self.assertEqual(got[1], 32_566_000)
+        self.assertIn("rescaled by 1000", got[3])
+
+    def test_a_count_a_thousand_times_too_large_is_rescaled(self):
+        # CPK's 2023 cover: 17.8 billion shares for 17.8 million
+        f = {"facts": {"dei": {"EntityCommonStockSharesOutstanding": {"units": {"shares": [
+            {"end": "2023-10-31", "val": 17_796_741_000}]}}}}}
+        self._with_eps(f, 2022, 89_796_000, 5.04)
+        self.assertAlmostEqual(md._share_count(f, "CPK", 2022)[1], 17_796_741, places=0)
+
+    def test_a_weaker_implied_count_does_not_override_the_filed_one(self):
+        # PZZA: 36.0M on the cover; net income over diluted EPS comes to about 1,000M
+        f = {"facts": {"dei": {"EntityCommonStockSharesOutstanding": {"units": {"shares": [
+            {"end": "2022-02-18", "val": 36_018_000}]}}}}}
+        self._with_eps(f, 2021, 120_000_000, 0.12)
+        self.assertEqual(md._share_count(f, "PZZA", 2021)[1], 36_018_000)
+
+    def test_with_no_candidate_left_the_implied_count_is_used(self):
+        f = self._with_eps({"facts": {}}, 2022, 356_948_000, 10.64)
+        got = md._share_count(f, "XYZ", 2022)
+        self.assertEqual(got[0], "FY2022")
+        self.assertAlmostEqual(got[1] / 1e6, 33.55, places=2)
+
+    def test_a_tiny_eps_is_not_divided_by(self):
+        f = self._with_eps({"facts": {}}, 2022, 1_000_000, 0.01)
+        self.assertIsNone(md._implied_share_count(f, 2022))
+
+    def test_only_stale_counts_is_a_data_error_that_names_the_date(self):
+        f = {"facts": {"dei": {"EntityCommonStockSharesOutstanding": {"units": {"shares": [
+            {"end": "2018-03-31", "val": 1000}]}}}}}
+        with self.assertRaisesRegex(md.DataError, "dated 2018-03-31, before FY2021"):
+            md._share_count(f, "AMRX", 2022)
+
+    def test_non_finite_model_output_is_a_skipped_snapshot(self):
+        from montecarlo.backtest import snapshot
+        pre = {"fields": {"shares_outstanding": 0.0, "current_net_debt": 0.0, "current_ev": 0.0},
+               "company": {"latest_fy": 2019}}
+        series = [("2020-01-02", 10.0), ("2022-01-03", 12.0)]
+        row = snapshot("XYZ", "2020-01-02", series, 2.0,
+                       model_fn=lambda f: np.array([1.0, np.inf, np.nan]),
+                       prefill_fn=lambda *a: pre)
+        self.assertIn("2 of 3 terminal prices non-finite", row["error"])
+
+
 class FinnhubQuote(unittest.TestCase):
     def test_finnhub_is_used_when_the_key_is_set(self):
         import io, os, urllib.request

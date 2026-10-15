@@ -58,6 +58,9 @@ REVENUE_TAGS = [
     "SalesRevenueNet",
     "SalesRevenueServicesNet",
 ]
+# below half the competing tag's figure, a revenue tag is a sub-line; above it,
+# the gap is a tax basis or restatement (Altria's excise-excluded is about 82%)
+REVENUE_SUB_LINE_RATIO = 0.5
 OPERATING_INCOME_TAGS = ["OperatingIncomeLoss"]
 GROSS_PROFIT_TAGS = ["GrossProfit"]
 OPERATING_EXPENSE_TAGS = ["OperatingExpenses", "CostsAndExpenses"]
@@ -87,6 +90,10 @@ DEBT_COMPONENT_TAGS = [
     ["LongTermDebtNoncurrent"],
 ]
 SHARES_TAGS = ["EntityCommonStockSharesOutstanding"]
+SHARE_FALLBACK_TAGS = ["CommonStockSharesOutstanding", "CommonStockSharesIssued",
+                       "WeightedAverageNumberOfDilutedSharesOutstanding"]
+EPS_DILUTED_TAGS = ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted"]
+MIN_LISTED_SHARES = 100_000   # below this a tagged count is a placeholder, not a listed issuer's
 PUBLIC_FLOAT_TAGS = ["EntityPublicFloat"]
 CFO_TAGS = ["NetCashProvidedByUsedInOperatingActivities",
             "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"]
@@ -328,32 +335,42 @@ def _tag_frames(facts: dict, tag: str, taxonomy: str = "us-gaap", unit: str = "U
     return {k: v for k, (_, v) in best.items()}
 
 
-def _merged_series(facts: dict, tags: list, pattern, unit: str = "USD") -> dict:
+def _merged_series(facts: dict, tags: list, pattern, unit: str = "USD",
+                   sub_line_ratio: Optional[float] = None) -> dict:
     """
     Merge candidate tags into one series keyed by period.
 
     Earlier tags win on conflict, but later tags fill periods the earlier ones
     never covered: a filer that switched tagging mid-history (MYRG moved from
     `Revenues` to `RevenueFromContractWithCustomer...`) otherwise loses years.
+
+    With sub_line_ratio set, an earlier tag loses a conflict when its value is
+    below that fraction of the later tag's: it is a component, not the total.
+    ANDE tagged $0.9M under `Revenues` for 2013 beside $5.6B of
+    `SalesRevenueNet`, and the 161x margin that made widened every driver.
     """
     merged: dict = {}
     for tag in reversed(tags):
         for frame, val in _tag_frames(facts, tag, unit=unit).items():
             m = pattern.match(frame)
-            if m:
-                merged[frame] = val
+            if not m:
+                continue
+            prev = merged.get(frame)
+            if sub_line_ratio and prev is not None and 0 <= val < sub_line_ratio * prev:
+                continue
+            merged[frame] = val
     return merged
 
 
-def annual_series(facts: dict, tags: list) -> dict:
+def annual_series(facts: dict, tags: list, sub_line_ratio: Optional[float] = None) -> dict:
     """{year:int -> value:float}, most reliable basis (audited full years)."""
-    raw = _merged_series(facts, tags, _ANNUAL)
+    raw = _merged_series(facts, tags, _ANNUAL, sub_line_ratio=sub_line_ratio)
     return {int(_ANNUAL.match(k).group(1)): float(v) for k, v in raw.items()}
 
 
-def quarterly_series(facts: dict, tags: list) -> dict:
+def quarterly_series(facts: dict, tags: list, sub_line_ratio: Optional[float] = None) -> dict:
     """{(year, quarter) -> value:float}."""
-    raw = _merged_series(facts, tags, _QUARTER)
+    raw = _merged_series(facts, tags, _QUARTER, sub_line_ratio=sub_line_ratio)
     out = {}
     for k, v in raw.items():
         m = _QUARTER.match(k)
@@ -403,8 +420,16 @@ def _public_float_series(facts: dict) -> dict:
     return {y: v for y, (_, v) in out.items()}
 
 
-def _point_in_time(facts: dict, tags: list, taxonomy: str = "us-gaap", unit: str = "USD"):
-    """Latest instant value for a balance-sheet concept, with its date."""
+def _point_in_time(facts: dict, tags: list, taxonomy: str = "us-gaap", unit: str = "USD",
+                   positive: bool = False):
+    """
+    Latest instant value for a balance-sheet concept, with its date.
+
+    positive=True skips values of zero or less, for concepts where zero is a
+    tagging artefact rather than a figure: dual-class filers tag the
+    undimensioned share count as 0 once the real counts move to per-class
+    members (SHAK, CXM, ROAD), and FOXF filed a 0 on one 10-Q cover.
+    """
     best = None
     for tag in tags:
         node = facts.get("facts", {}).get(taxonomy, {}).get(tag)
@@ -416,6 +441,8 @@ def _point_in_time(facts: dict, tags: list, taxonomy: str = "us-gaap", unit: str
             for row in rows:
                 end = row.get("end")
                 if not end:
+                    continue
+                if positive and not float(row["val"]) > 0:
                     continue
                 if best is None or end > best[0]:
                     best = (end, float(row["val"]), tag, row.get("form"), row.get("filed"))
@@ -529,6 +556,76 @@ def _debt(facts: dict):
     return None
 
 
+def _implied_share_count(facts: dict, latest_fy: int) -> Optional[tuple]:
+    """
+    Net income over diluted EPS for the latest fiscal year, shaped like a
+    _point_in_time result, or None when EPS is too small to divide by.
+    """
+    ni = annual_series(facts, ["NetIncomeLoss"]).get(latest_fy)
+    best = None
+    for tag in EPS_DILUTED_TAGS:
+        for row in facts.get("facts", {}).get("us-gaap", {}).get(tag, {}).get("units", {}).get("USD/shares", []):
+            if (row.get("frame") or _derive_frame(row)) == f"CY{latest_fy}" and (
+                    best is None or (row.get("filed") or "") >= (best.get("filed") or "")):
+                best = row
+        if best:
+            break
+    if not ni or not best:
+        return None
+    eps = float(best["val"])
+    if abs(eps) < 0.10 or (ni > 0) != (eps > 0):
+        return None
+    return (f"FY{latest_fy}", ni / eps, "NetIncomeLoss / EarningsPerShareDiluted", "net income over diluted EPS, 10-K",
+            best.get("filed"))
+
+
+def _share_count(facts: dict, ticker: str, latest_fy: int) -> tuple:
+    """
+    (date, count, tag, form, filed) for the bridge's share count.
+
+    The cover-page count first, then the us-gaap tags some filers use instead,
+    or only as a diluted weighted average. Each of these put a median price in
+    the hundreds of thousands until handled here:
+
+    - dated before the prior fiscal year: skipped (TRIP's only undimensioned
+      cover count is the 1,000 shares it had before the 2011 spin-off);
+    - within 2x of 1,000 times net income over diluted EPS, either way: a
+      units slip, rescaled and labelled (HUBG and ANIP tagged thousands as
+      shares; CPK, SKY and STAA a count 1,000 times too large);
+    - below MIN_LISTED_SHARES: a placeholder, skipped (AMRX's 2018 cover still
+      carried its holding company's 1,000 shares).
+
+    Any other disagreement with the implied count is left alone: the implied
+    count is the weaker number (PZZA's comes to 1,000M against 36M filed).
+    With no candidate left, the implied count itself is used.
+    """
+    floor = f"{latest_fy - 1}-01-01"
+    implied = _implied_share_count(facts, latest_fy)
+    candidates = [_point_in_time(facts, SHARES_TAGS, taxonomy="dei", unit="shares", positive=True)]
+    candidates += [_point_in_time(facts, [tag], unit="shares", positive=True) for tag in SHARE_FALLBACK_TAGS]
+    for c in candidates:
+        if not c or c[0] < floor:
+            continue
+        count, form = c[1], c[3]
+        ratio = count / implied[1] if implied else 1.0
+        if 500 <= ratio <= 2000 or 1 / 2000 <= ratio <= 1 / 500:
+            scale = 1e-3 if ratio > 1 else 1e3
+            count, form = count * scale, f"{form}, rescaled by {scale:g} against net income over diluted EPS"
+        if count < MIN_LISTED_SHARES:
+            continue
+        return (c[0], count, c[2], form, c[4])
+    if implied:
+        return implied
+    stale = max((c for c in candidates if c), default=None)
+    if stale:
+        raise DataError(
+            f"{ticker.upper()}'s most recent tagged share count is dated {stale[0]}, before FY{latest_fy - 1}. "
+            "Dual-class filers tag their cover counts by class, which the SEC's company facts do not carry; "
+            "take the count from the latest 10-Q cover instead."
+        )
+    raise DataError(f"No share count tagged in {ticker}'s filings")
+
+
 def _share_history(facts: dict) -> dict:
     """{year -> share count}, taking the last observation filed in each year."""
     node = facts.get("facts", {}).get("dei", {}).get("EntityCommonStockSharesOutstanding")
@@ -541,7 +638,7 @@ def _share_history(facts: dict) -> dict:
     for rows in node.get("units", {}).values():
         for row in rows:
             end = row.get("end")
-            if not end:
+            if not end or not float(row["val"]) > 0:
                 continue
             year = int(end[:4])
             if year not in by_year or end > by_year[year][0]:
@@ -657,7 +754,7 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
     warnings = _check_modelable(ticker.upper(), meta)
     facts = facts_as_of(_get_json(COMPANY_FACTS_URL.format(cik=cik), FACTS_TTL), as_of)
 
-    rev_annual = annual_series(facts, REVENUE_TAGS)
+    rev_annual = annual_series(facts, REVENUE_TAGS, sub_line_ratio=REVENUE_SUB_LINE_RATIO)
     if not rev_annual:
         raise DataError(f"No revenue figures tagged in {ticker}'s filings")
     da_annual = annual_series(facts, DA_TAGS)
@@ -679,7 +776,8 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
         if y >= cutoff and rev_annual.get(y)
     }
 
-    ttm = trailing_twelve_months(rev_annual, quarterly_series(facts, REVENUE_TAGS))
+    ttm = trailing_twelve_months(rev_annual, quarterly_series(facts, REVENUE_TAGS,
+                                                              sub_line_ratio=REVENUE_SUB_LINE_RATIO))
 
     # Historical EV/EBITDA on a public-float basis. Public float undercounts
     # market cap by the insider stake, so the LEVEL is biased low; the
@@ -718,13 +816,7 @@ def build_profile(ticker: str, history_years: int = 10, as_of: Optional[str] = N
         if y >= cutoff
     }
 
-    shares = _point_in_time(facts, SHARES_TAGS, taxonomy="dei", unit="shares")
-    if not shares:
-        # some filers carry the count only in us-gaap, or only as a diluted weighted average
-        shares = _point_in_time(facts, ["CommonStockSharesOutstanding", "CommonStockSharesIssued",
-                                        "WeightedAverageNumberOfDilutedSharesOutstanding"], unit="shares")
-    if not shares:
-        raise DataError(f"No share count tagged in {ticker}'s filings")
+    shares = _share_count(facts, ticker, latest_fy)
     cash = _point_in_time(facts, CASH_TAGS)
     debt = _debt(facts)
 
