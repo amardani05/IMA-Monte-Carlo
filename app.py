@@ -14,7 +14,7 @@ import tempfile
 from flask import Flask, jsonify, request, send_from_directory
 
 from montecarlo.marketdata import DataError, build_prefill
-from montecarlo.service import ValidationError, run_simulation
+from montecarlo.service import ValidationError, propose_extra_drivers, run_simulation
 
 MAX_BODY_BYTES = 1_000_000
 
@@ -62,6 +62,7 @@ def company(ticker: str):
     except Exception as exc:  # noqa: BLE001
         return jsonify(error=f"Lookup failed: {type(exc).__name__}: {exc}"), 502
 
+    result["extra_drivers"] = propose_extra_drivers(result.get("mechanisms"))
     response = jsonify(result)
     response.headers["Cache-Control"] = "public, max-age=1800"
     return response

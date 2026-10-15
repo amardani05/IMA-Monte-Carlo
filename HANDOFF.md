@@ -65,6 +65,35 @@ the harness decided" in `ROADMAP.md`. Defaults unchanged. The machine's disk
 runs within a few hundred MB of full; a full disk stops every command,
 including the tool's own output.
 
+## Pitch assessor and added drivers
+
+The assessor is a results tab (top bar button or the tab beside Analysis),
+drawn as one 1600 x 1200 SVG and saved as a PNG with the IBM Plex fonts
+inlined. Figures on the left; the terminal price probability (per-bin share
+coloured by scenario band, cumulative on the right axis, FCF bridge overlaid,
+axis cut at P98 with the share beyond stated) and the driver sensitivity on
+the right; the price history with the horizon densities along the bottom.
+
+- **Added drivers.** Backlog, FCF, ROIC and EVA, and cost structure are
+  driver groups added beside the base five, each uncertain input a P10 / P50 /
+  P90. `service.propose_extra_drivers` fills them from `marketdata.mechanisms`
+  and offers every group even when the filings cannot support it, leaving the
+  missing inputs for the analyst (TDS's ROIC, QuinStreet's backlog). ROIC,
+  WACC and growth fade accept a P50 alone (a point input) or a full triple (a
+  drawn driver, independent of the copula); the proposed widths are stated
+  (ROIC 0.75x to 1.25x the filed figure, WACC one point either side, fade
+  0.25 / 0.50 / 0.75). EVA at P50 is (ROIC - WACC) x filed invested capital.
+- **Driver sensitivity** (`engine.swing_tornado`): each driver held at its own
+  P10, then its P90, on the same paths with every other draw unchanged, for
+  the median and P(at least base), per bridge. `engine.tornado` (conditional
+  deciles) is kept for the CLI. The draw and bridge split that makes this
+  exact reproduces earlier runs bit for bit.
+- **Horizon densities** (`service.horizon_densities`): smoothed per-dollar
+  densities at quarters of the horizon on one price grid, Gaussian KDE in log
+  space. The intermediate horizons are interpolated from the terminal run
+  (log x_u = log spot + u log(median / spot) + sqrt(u)(log x_T - log median))
+  and labelled so; swap in real runs once the engine simulates those dates.
+
 ## Open
 
 - Two data fixes landed after the last S&P 600 run and are not in its
@@ -88,7 +117,12 @@ including the tool's own output.
   minority interest are taken off, the FCF bridge is offered, and the ROIC
   field is left for the analyst because the filed ROIC is negative.
 - Backlog conversion is a stated assumption (0.55/0.70/0.85) until the 10-K's
-  twelve-month figure is parsed.
+  twelve-month figure is parsed. At horizons of a year or more, more
+  conversion gives a lower price whenever the CAGR is positive: year-one
+  revenue is (1 + g) R - g x backlog x conversion, so backlog-covered revenue
+  does not grow. MYRG on the 2-year run: median $371 at P10 conversion, $360
+  at P90. The sensitivity chart shows it; the maths is unchanged here and a
+  change goes through the harness.
 - The calibration log is ephemeral on Vercel until `CALIBRATION_LOG_PATH`
   points at a durable store.
 - Weekly GitHub Actions refresh prices, panels and the ticker map and run a

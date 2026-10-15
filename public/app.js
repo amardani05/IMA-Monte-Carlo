@@ -25,11 +25,20 @@ const NORM = ["net_debt_change_pct", "share_dilution_pct"];
 const SCALARS = ["current_price", "bear_price", "base_price", "bull_price", "current_revenue",
   "current_ebitda_margin", "current_ev", "current_net_debt", "shares_outstanding",
   "n_simulations", "horizon_years", "random_seed"];
-const MECHS = ["cost_model", "backlog", "fcf_bridge", "justified_multiple"];
+const MECHS = ["backlog", "fcf_bridge", "justified_multiple", "cost_model"];
+const MECH_LABEL = { backlog: "backlog", fcf_bridge: "FCF", justified_multiple: "ROIC and EVA", cost_model: "cost structure" };
+/* What an added driver starts from when the filings propose nothing: stated assumptions, each named in its note */
+const EXTRA_DEFAULT = {
+  backlog: { conversion: { type: "metalog", p10: 0.55, p50: 0.70, p90: 0.85 }, note: "No remaining-performance-obligation figure from the filings. Enter backlog from the 10-K. Conversion 0.55 / 0.70 / 0.85 is an assumption, not a filed figure." },
+  fcf_bridge: { note: "No usable cash-flow history from the filings. Enter the FCF margin and EV/FCF you underwrite." },
+  justified_multiple: { fade: { type: "metalog", p10: 0.25, p50: 0.5, p90: 0.75 }, tax_rate: 0.25, da_share: 0.15, long_run_growth: 0.03, premium_reversion: 0.25,
+    note: "No filed return on capital to start from. Enter the ROIC and WACC you underwrite; tax 25% and D&A 15% of EBITDA are placeholders." },
+  cost_model: { fixed_cost_growth: { type: "normal", mean: 0.03, std: 0.03 }, note: "Cost of revenue is not tagged in enough years to split the margin. Enter gross margin and fixed cost by hand." },
+};
 
 const C = {
   blue: "#2a63b0", red: "#b1271f", amber: "#9a6300", green: "#1f6d44", purple: "#574ca6",
-  text: "#101820", muted: "#64707e", faint: "#8b959f", grid: "#e9edf2", axis: "#c9d1db", panel: "#ffffff",
+  text: "#101820", text2: "#364150", muted: "#64707e", faint: "#8b959f", grid: "#e9edf2", axis: "#c9d1db", panel: "#ffffff",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -144,61 +153,131 @@ function readForm() {
   return payload;
 }
 
-/* Mechanisms */
-const mechEl = (m) => document.querySelector(`details.mech[data-mech="${m}"]`);
+/* Added drivers: the four mechanisms, each one a group of P10/P50/P90 drivers beside the base five.
+   A group is on when its fieldset is shown; the payload carries only the groups that are on. */
+let lastExtra = null;
+const mechEl = (m) => document.querySelector(`fieldset.extra[data-mech="${m}"]`);
+const mechOn = (m) => !mechEl(m).hidden;
+const setVal = (name, v) => { form[name].value = v === null || v === undefined || v === "" ? "" : round(Number(v), 6); };
+function setTriple(prefix, spec) {
+  ["p10", "p50", "p90"].forEach((k) => setVal(`${prefix}_${k}`, spec ? spec[k] : null));
+}
+function showMech(m, on) {
+  mechEl(m).hidden = !on;
+  document.querySelector(`#addDriver [data-add="${m}"]`).hidden = on;
+  const n = MECHS.filter(mechOn).length;
+  $("addedHead").hidden = n === 0;
+  $("stackHint").hidden = n < 2;
+  $("addDriver").querySelector(".cap").textContent = n ? "Add another" : "Add a driver";
+  $("addDriver").hidden = n === MECHS.length;
+}
 function setMech(m, block, on) {
-  const d = mechEl(m); const cb = form[`use_${m}`];
   if (block) {
     if (m === "cost_model") {
-      const g = block.gross_margin; form.cm_gm_p10.value = g.p10; form.cm_gm_p50.value = g.p50; form.cm_gm_p90.value = g.p90;
-      form.cm_fixed.value = block.fixed_cost_m; form.cm_fcg_mean.value = block.fixed_cost_growth?.mean ?? 0.03; form.cm_fcg_std.value = block.fixed_cost_growth?.std ?? 0.05;
+      setTriple("cm_gm", block.gross_margin); setVal("cm_fixed", block.fixed_cost_m);
+      setVal("cm_fcg_mean", block.fixed_cost_growth?.mean ?? 0.03); setVal("cm_fcg_std", block.fixed_cost_growth?.std ?? 0.03);
     } else if (m === "backlog") {
-      form.bl_m.value = block.backlog_m; form.bl_p10.value = block.conversion.p10; form.bl_p50.value = block.conversion.p50; form.bl_p90.value = block.conversion.p90;
+      setVal("bl_m", block.backlog_m); setTriple("bl", block.conversion);
     } else if (m === "fcf_bridge") {
-      form.fb_fm_p10.value = block.fcf_margin.p10; form.fb_fm_p50.value = block.fcf_margin.p50; form.fb_fm_p90.value = block.fcf_margin.p90;
-      form.fb_mult_p10.value = block.ev_fcf_multiple.p10; form.fb_mult_p50.value = block.ev_fcf_multiple.p50; form.fb_mult_p90.value = block.ev_fcf_multiple.p90;
+      setTriple("fb_fm", block.fcf_margin); setTriple("fb_mult", block.ev_fcf_multiple);
     } else if (m === "justified_multiple") {
-      form.jm_roic.value = block.roic ?? ""; form.jm_wacc.value = block.wacc; form.jm_tax.value = block.tax_rate; form.jm_da.value = block.da_share;
-      form.jm_lrg.value = block.long_run_growth ?? 0.03; form.jm_fade.value = block.fade ?? 0.5; form.jm_prem.value = block.premium_reversion ?? 0.5;
+      // a number is a point input (P50 only); an object is a drawn driver
+      ["roic", "wacc", "fade"].forEach((k) => { const v = block[k]; setTriple(`jm_${k}`, v !== null && typeof v === "object" ? v : (v === null || v === undefined ? null : { p50: v })); });
+      setVal("jm_tax", block.tax_rate); setVal("jm_da", block.da_share); setVal("jm_lrg", block.long_run_growth ?? 0.03); setVal("jm_prem", block.premium_reversion ?? 0.25);
+      const d = mechEl(m);
       d.dataset.currentGrowth = block.current_growth ?? ""; d.dataset.currentMultiple = block.current_multiple ?? "";
+      d.dataset.investedCapital = block.invested_capital_m ?? "";
+      updateEva();
     }
   }
-  cb.checked = Boolean(on); d.open = Boolean(on);
+  mechEl(m).querySelectorAll("input").forEach((el) => { if (el.value !== "") el.closest("label")?.classList.remove("needs-input"); });
+  showMech(m, Boolean(on));
+}
+/* P10/P50/P90 inputs to a spec. With allowPoint, a P50 alone is a number. */
+function readTriple(prefix, label, { kind = "metalog", allowPoint = false, optional = false } = {}) {
+  const els = ["p10", "p50", "p90"].map((k) => form[`${prefix}_${k}`]), raw = els.map((el) => el.value.trim());
+  els.forEach((el) => el.classList.remove("invalid"));
+  if (raw.every((v) => v === "")) {
+    if (optional) return undefined;
+    els[1].classList.add("invalid"); throw new Error(`${label} needs ${allowPoint ? "a P50, or a P10, P50 and P90" : "a P10, P50 and P90"}.`);
+  }
+  if (allowPoint && raw[0] === "" && raw[2] === "") {
+    const v = Number(raw[1]); if (!Number.isFinite(v)) { els[1].classList.add("invalid"); throw new Error(`${label} P50 needs a number.`); }
+    return v;
+  }
+  const v = raw.map((x) => (x === "" ? NaN : Number(x)));
+  if (!v.every(Number.isFinite)) { els.forEach((el, i) => { if (!Number.isFinite(v[i])) el.classList.add("invalid"); }); throw new Error(`${label} needs a P10, P50 and P90${allowPoint ? ", or a P50 alone" : ""}.`); }
+  if (!(v[0] < v[1] && v[1] < v[2])) { els.forEach((el) => el.classList.add("invalid")); throw new Error(`${label}: P10 must be below P50, and P50 below P90.`); }
+  const spec = { type: kind, p10: v[0], p50: v[1], p90: v[2] };
+  if (kind === "log_metalog") spec.lower = 0;
+  return spec;
 }
 function readMech(m) {
-  if (!form[`use_${m}`].checked) return null;
-  const q = (a, b, c, type = "metalog", lbl) => {
-    const v = [num(a, lbl), num(b, lbl), num(c, lbl)];
-    if (!(v[0] < v[1] && v[1] < v[2])) throw new Error(`${lbl}: P10 < P50 < P90 required.`);
-    return type === "log_metalog" ? { type, p10: v[0], p50: v[1], p90: v[2], lower: 0 } : { type, p10: v[0], p50: v[1], p90: v[2] };
-  };
-  if (m === "cost_model") return { gross_margin: q("cm_gm_p10", "cm_gm_p50", "cm_gm_p90", "metalog", "Gross margin"),
-    fixed_cost_m: num("cm_fixed", "Fixed cost"), fixed_cost_growth: { type: "normal", mean: num("cm_fcg_mean", "Fixed cost growth"), std: num("cm_fcg_std", "Fixed cost growth std") } };
-  if (m === "backlog") return { backlog_m: num("bl_m", "Backlog"), conversion: q("bl_p10", "bl_p50", "bl_p90", "metalog", "Conversion") };
-  if (m === "fcf_bridge") return { fcf_margin: q("fb_fm_p10", "fb_fm_p50", "fb_fm_p90", "metalog", "FCF margin"),
-    ev_fcf_multiple: q("fb_mult_p10", "fb_mult_p50", "fb_mult_p90", "log_metalog", "EV/FCF") };
+  if (!mechOn(m)) return null;
+  if (m === "cost_model") return { gross_margin: readTriple("cm_gm", "Gross margin"), fixed_cost_m: num("cm_fixed", "Fixed cost ($M)"),
+    fixed_cost_growth: { type: "normal", mean: num("cm_fcg_mean", "Fixed cost growth mean"), std: num("cm_fcg_std", "Fixed cost growth std") } };
+  if (m === "backlog") return { backlog_m: num("bl_m", "Backlog ($M)"), conversion: readTriple("bl", "Backlog conversion") };
+  if (m === "fcf_bridge") return { fcf_margin: readTriple("fb_fm", "FCF margin"), ev_fcf_multiple: readTriple("fb_mult", "EV/FCF", { kind: "log_metalog" }) };
   if (m === "justified_multiple") {
     const d = mechEl(m);
-    const block = { roic: num("jm_roic", "ROIC"), wacc: num("jm_wacc", "WACC"), tax_rate: num("jm_tax", "Tax rate"), da_share: num("jm_da", "D&A share"),
-      long_run_growth: num("jm_lrg", "Long-run growth"), fade: num("jm_fade", "Growth fade"), premium_reversion: num("jm_prem", "Premium reversion") };
-    const cg = parseFloat(d.dataset.currentGrowth), cm = parseFloat(d.dataset.currentMultiple);
+    const block = { roic: readTriple("jm_roic", "ROIC", { allowPoint: true }), wacc: readTriple("jm_wacc", "WACC", { allowPoint: true }) };
+    const fade = readTriple("jm_fade", "Growth fade", { allowPoint: true, optional: true });
+    if (fade !== undefined) block.fade = fade;
+    Object.assign(block, { tax_rate: num("jm_tax", "Tax rate"), da_share: num("jm_da", "D&A / EBITDA"),
+      long_run_growth: num("jm_lrg", "Long-run growth"), premium_reversion: num("jm_prem", "Premium reversion") });
+    const cg = parseFloat(d.dataset.currentGrowth), cm = parseFloat(d.dataset.currentMultiple), ic = parseFloat(d.dataset.investedCapital);
     block.current_growth = Number.isFinite(cg) ? cg : readQ("rev_cagr")[1];
     block.current_multiple = Number.isFinite(cm) ? cm : readQ("ev_ebitda_multiple")[1];
+    if (Number.isFinite(ic)) block.invested_capital_m = ic;
     return block;
   }
   return null;
 }
-function applyMechanisms(mech) {
+const smoney0 = (v) => (v < 0 ? "-" : "+") + money0(Math.abs(v));
+function updateEva() {
+  const d = mechEl("justified_multiple"), el = $("evaLine");
+  const r = parseFloat(form.jm_roic_p50.value), w = parseFloat(form.jm_wacc_p50.value), ic = parseFloat(d.dataset.investedCapital);
+  const filed = lastExtra?.justified_multiple;
+  let txt;
+  if (Number.isFinite(r) && Number.isFinite(w)) {
+    txt = `At P50: ROIC ${pct(r, 1)} less WACC ${pct(w, 1)} is a ${spct(r - w, 1)} spread`;
+    txt += Number.isFinite(ic) ? `, EVA ${smoney0((r - w) * ic)}M a year on ${money0(ic)}M invested capital.` : ".";
+  } else txt = "Enter a ROIC P50 to see the spread over WACC and the EVA.";
+  if (filed && filed.filed_roic !== null && filed.filed_roic !== undefined) {
+    txt += ` Filed: ROIC ${pct(filed.filed_roic, 1)}${filed.eva_m !== null && filed.eva_m !== undefined ? `, EVA ${smoney0(filed.eva_m)}M` : ""}.`;
+  }
+  el.textContent = txt;
+  el.classList.toggle("neg", Number.isFinite(r) && Number.isFinite(w) && r < w);
+}
+/* Auto-fill proposals: fill every group's inputs, leave them off, and mark what only the analyst can supply */
+function applyExtraDrivers(x) {
+  lastExtra = x || null;
   MECHS.forEach((m) => {
-    const d = mechEl(m); const avail = Boolean(mech?.available?.[m]);
-    d.classList.toggle("unavailable", !avail);
-    form[`use_${m}`].disabled = !avail;
-    const note = d.querySelector(".mech-note"); note.textContent = mech?.notes?.[m] || "";
-    note.classList.toggle("weak", !avail);
-    if (avail && mech[m]) setMech(m, mech[m], false); else setMech(m, null, false);
+    const d = mechEl(m), g = x?.[m] || null, base = EXTRA_DEFAULT[m];
+    d.querySelectorAll("input").forEach((el) => { el.value = ""; el.classList.remove("invalid"); el.closest("label")?.classList.remove("needs-input"); });
+    d.querySelectorAll(".src-badge").forEach((b) => b.remove());
+    const block = { ...base };
+    if (g) Object.entries(g).forEach(([k, v]) => { if (v !== null && v !== undefined) block[k] = v; });
+    if (m === "justified_multiple" && !g?.invested_capital_m) block.invested_capital_m = null;
+    setMech(m, block, false);
+    const filed = Boolean(g?.filed);
+    const note = d.querySelector(".mech-note[data-note]"); note.textContent = (g?.note) || base.note; note.classList.toggle("weak", !filed);
+    d.querySelectorAll("input").forEach((el) => {
+      const optional = /^jm_(roic|wacc|fade)_p(10|90)$/.test(el.name);    // a P50 alone is a valid point input
+      if (el.value === "" && !optional) el.closest("label")?.classList.add("needs-input");
+    });
+    const chip = document.querySelector(`#addDriver [data-add="${m}"]`);
+    chip.classList.toggle("unfiled", !filed); chip.title = filed ? "Proposed from the filings; you can edit every value" : "Not in the filings: offered for you to fill in";
+    chip.setAttribute("aria-label", `Add ${MECH_LABEL[m]}${filed ? "" : ", by hand"}`);
+    if (m === "backlog" && filed && g.backlog_m) document.querySelector('label[data-field="bl_m"]').prepend(badge("SEC", g.note || "remaining performance obligation", ""));
+    if (m === "justified_multiple") {
+      const wn = $("jmWidthNote"); wn.textContent = g?.width_note || ""; wn.hidden = !g?.width_note;
+      const rl = document.querySelector('label[data-field="jm_roic"]');
+      if (g && g.roic) rl.prepend(badge("derived", "ROIC = NOPAT / invested capital from the latest 10-K; P10 and P90 are a stated width", "derived"));
+      updateEva();
+    }
   });
 }
-
 /* URL state */
 const b64e = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const b64d = (s) => decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))));
@@ -280,7 +359,7 @@ function fillFromPrefill(data) {
   form.copula.value = data.copula || "gaussian"; form.copula_df.value = data.copula_df || 5;
   buildCorrGrid(data.correlation_matrix || DEFAULT_CORR);
   applyProvenance(data.provenance, data.reference || {});
-  applyMechanisms(data.mechanisms);
+  applyExtraDrivers(data.extra_drivers || null);
   multipleIsPlaceholder = Boolean(data.needs_price); multipleEdited = false;
 
   const badgeEl = $("calibBadge");
@@ -393,97 +472,304 @@ function cdfChart(r) {
   if (m.current_price <= xMax) g += `<line x1="${sx(m.current_price).toFixed(2)}" y1="${PAD.t}" x2="${sx(m.current_price).toFixed(2)}" y2="${PAD.t + IH}" stroke="${C.text}" opacity="0.4"/>`;
   return frame(g, `Cumulative distribution. P(at least base) ${pct(s.p_at_least_base)}.`);
 }
-function tornadoChart(r) {
-  const rows = r.tornado.map((d) => ({ ...d, lo: Math.min(d.low, d.high), hi: Math.max(d.low, d.high) })), median = r.stats.median_price;
-  const L = { t: 14, r: 46, b: 40, l: 132 }, iw = W - L.l - L.r, ih = H - L.t - L.b;
-  const xMin = Math.min(...rows.map((d) => d.lo), median), xMax = Math.max(...rows.map((d) => d.hi), median), padX = (xMax - xMin) * 0.08 || 1, lo = xMin - padX, hi = xMax + padX, sx = (v) => L.l + ((v - lo) / (hi - lo)) * iw;
-  let g = "";
-  niceTicks(lo, hi, 5).forEach((v) => { g += `<line x1="${sx(v).toFixed(2)}" y1="${L.t}" x2="${sx(v).toFixed(2)}" y2="${L.t + ih}" stroke="${C.grid}"/><text x="${sx(v).toFixed(2)}" y="${L.t + ih + 15}" fill="${C.muted}" font-size="10" text-anchor="middle">${money0(v)}</text>`; });
-  const slot = ih / rows.length, bh = Math.min(slot * 0.5, 22);
-  rows.forEach((d, i) => { const cy = L.t + slot * (i + 0.5); g += `<rect x="${sx(d.lo).toFixed(2)}" y="${(cy - bh / 2).toFixed(2)}" width="${Math.max(sx(d.hi) - sx(d.lo), 1).toFixed(2)}" height="${bh}" rx="3" fill="${C.blue}" opacity="0.78"/><text x="${L.l - 9}" y="${(cy + 3.5).toFixed(2)}" fill="${C.text}" font-size="10.5" text-anchor="end">${esc(d.name)}</text><text x="${(sx(d.lo) - 5).toFixed(2)}" y="${(cy + 3.5).toFixed(2)}" fill="${C.red}" font-size="9.5" text-anchor="end">${money0(d.lo)}</text><text x="${(sx(d.hi) + 5).toFixed(2)}" y="${(cy + 3.5).toFixed(2)}" fill="${C.green}" font-size="9.5">${money0(d.hi)}</text>`; });
-  g += `<line x1="${sx(median).toFixed(2)}" y1="${L.t}" x2="${sx(median).toFixed(2)}" y2="${L.t + ih}" stroke="${C.purple}" stroke-width="1.5" stroke-dasharray="2 3"/><line x1="${L.l}" y1="${L.t + ih}" x2="${L.l + iw}" y2="${L.t + ih}" stroke="${C.axis}"/><text x="${L.l + iw / 2}" y="${H - 6}" fill="${C.muted}" font-size="10.5" text-anchor="middle">Median terminal price ($). Bar spans the driver's P10 to P90.</text>`;
-  const top = rows[rows.length - 1];
-  return frame(g, `Driver sensitivity. Widest swing: ${top.name}, ${money0(top.lo)} to ${money0(top.hi)}.`);
+/* Dense panels for the assessor and the sensitivity chart: crisp hairlines, small monospace labels,
+   numbers beside every mark. Light theme throughout. */
+const SANS = "IBM Plex Sans, Helvetica Neue, Arial, sans-serif", MONO = "IBM Plex Mono, Menlo, Consolas, monospace";
+const fx = (v) => String(Math.round(v * 10) / 10);
+function tx(x, y, s, o = {}) {
+  const { size = 10.5, fill = C.text, anchor = "start", weight = 400, font = MONO, ls = 0 } = o;
+  return `<text x="${fx(x)}" y="${fx(y)}" fill="${fill}" font-family="${font}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}"${ls ? ` letter-spacing="${ls}"` : ""}>${esc(s)}</text>`;
+}
+const hl = (x1, x2, y, stroke, extra = "") => `<line x1="${fx(x1)}" y1="${fx(y)}" x2="${fx(x2)}" y2="${fx(y)}" stroke="${stroke}" shape-rendering="crispEdges"${extra}/>`;
+const vl = (x, y1, y2, stroke, extra = "") => `<line x1="${fx(x)}" y1="${fx(y1)}" x2="${fx(x)}" y2="${fx(y2)}" stroke="${stroke}" shape-rendering="crispEdges"${extra}/>`;
+const box = (x, y, w, h, fill, extra = "") => `<rect x="${fx(x)}" y="${fx(y)}" width="${fx(Math.max(w, 0))}" height="${fx(Math.max(h, 0))}" fill="${fill}"${extra}/>`;
+const HEAD = 21;
+function panel(w, h, title, right) {
+  let g = box(0, 0, w, h, "#ffffff", ` stroke="${C.axis}" shape-rendering="crispEdges"`);
+  g += box(0.5, 0.5, w - 1, HEAD - 1, "#f1f4f8") + hl(0, w, HEAD - 0.5, C.axis);
+  g += tx(9, 14.5, title.toUpperCase(), { size: 10, weight: 600, ls: 0.6, fill: "#1b4b8a" });
+  if (right) g += tx(w - 9, 14.5, right, { size: 9.5, fill: C.muted, anchor: "end" });
+  return g;
+}
+const tickDigits = (ticks) => (ticks.length > 1 && ticks[1] - ticks[0] < 0.01 ? 1 : 0);
+/* Ticks on a 1, 2, 2.5, 5 ladder, as many as fit under `count`: denser than niceTicks */
+function denseTicks(min, max, count = 6) {
+  const span = max - min || 1, mag = 10 ** Math.floor(Math.log10(span / count));
+  const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((st) => span / st <= count) || 10 * mag, out = [];
+  for (let v = Math.ceil(min / step - 1e-9) * step; v <= max + 1e-9; v += step) out.push(Math.round(v / step) * step || 0);
+  return out;
 }
 
-/* Price path with the terminal distribution: assessor only.
-   History on the left; from today, log-space cones whose width grows with the square
-   root of time to the P5/P95 and P25/P75 of the simulated horizon; at the horizon the
-   terminal density drawn as a profile, coloured by scenario band with each band's
-   probability beside it. Y-range is the central mass, not the tails. */
-let lastPath = null;
-async function fetchPath(ticker) {
-  try { const res = await fetch(`/api/prices/${encodeURIComponent(ticker)}?years=3`); return res.ok ? await res.json() : null; }
-  catch (_) { return null; }
+/* Probability per bin, coloured by scenario band, with the cumulative line on the right axis */
+function histPanel(r, w, h) {
+  const m = r.meta, s = r.stats, e = r.histogram.edges, dens = r.histogram.density, dfcf = r.histogram.density_fcf;
+  // the axis runs to P98 so a long right tail does not squeeze the body; what lies beyond is stated
+  const i98 = r.cdf.y.findIndex((y) => y >= 0.98), x98 = i98 >= 0 ? r.cdf.x[i98] : e[e.length - 1];
+  const bw0 = e[1] - e[0], nVis = Math.min(dens.length, Math.ceil((x98 - e[0]) / bw0));
+  const k = nVis > 64 ? 2 : 1, nb = Math.ceil(nVis / k), bins = [];
+  for (let i = 0; i < nb && (i + 1) * k < e.length; i++) {
+    let p = 0, q = 0;
+    for (let j = 0; j < k; j++) { p += dens[i * k + j] * bw0; if (dfcf) q += dfcf[i * k + j] * bw0; }
+    bins.push({ lo: e[i * k], hi: e[(i + 1) * k], p, q });
+  }
+  const xMin = e[0], xMax = e[Math.min(bins.length * k, e.length - 1)];
+  const beyond = 1 - (r.cdf.y[r.cdf.x.findIndex((x) => x > xMax)] ?? 1);
+  const L = { l: 48, r: 44, t: HEAD + 30, b: 30 }, iw = w - L.l - L.r, ih = h - L.t - L.b;
+  const sx = (v) => L.l + ((v - xMin) / (xMax - xMin)) * iw;
+  const yMax = Math.max(...bins.map((b) => Math.max(b.p, b.q))) * 1.12 || 0.01;
+  const sy = (v) => L.t + ih - (v / yMax) * ih, sc = (v) => L.t + ih - v * ih;
+  const bandOf = (v) => (v < m.bear_price ? C.red : v < m.base_price ? C.amber : v < m.bull_price ? C.blue : C.green);
+  let g = panel(w, h, "Terminal price probability", `${m.horizon_years}-year horizon, ${m.n_simulations.toLocaleString()} paths, ${money(bw0 * k, bw0 * k < 10 ? 2 : 0)} bins`);
+  const yt = denseTicks(0, yMax, 5), yd = tickDigits(yt);
+  yt.forEach((v) => { g += hl(L.l, L.l + iw, sy(v), C.grid) + tx(L.l - 6, sy(v) + 3.5, pct(v, yd), { size: 9.5, fill: C.muted, anchor: "end" }); });
+  [0, 0.25, 0.5, 0.75, 1].forEach((v) => { g += tx(L.l + iw + 6, sc(v) + 3.5, pct(v, 0), { size: 9.5, fill: C.faint }); });
+  denseTicks(xMin, xMax, 10).forEach((v) => { g += vl(sx(v), L.t, L.t + ih, "#f1f3f7") + tx(sx(v), L.t + ih + 13, money0(v), { size: 9.5, fill: C.muted, anchor: "middle" }); });
+  bins.forEach((b) => {
+    if (b.p <= 0) return;
+    const x = sx(b.lo) + 0.4, bw = Math.max(sx(b.hi) - sx(b.lo) - 0.8, 0.6);
+    g += box(x, sy(b.p), bw, L.t + ih - sy(b.p), bandOf((b.lo + b.hi) / 2), ' opacity="0.82"');
+  });
+  if (dfcf) {
+    let d = `M${fx(sx(bins[0].lo))},${fx(sy(0))}`;
+    bins.forEach((b) => { d += ` V${fx(sy(b.q))} H${fx(sx(b.hi))}`; });
+    g += `<path d="${d} V${fx(sy(0))}" fill="none" stroke="${C.purple}" stroke-width="1.3"/>`;
+  }
+  const pts = r.cdf.x.map((v, i) => (v <= xMax ? `${fx(sx(v))},${fx(sc(r.cdf.y[i]))}` : null)).filter(Boolean).join(" ");
+  g += `<polyline points="${pts}" fill="none" stroke="${C.text}" stroke-width="1.1" opacity="0.75"/>`;
+  g += hl(L.l, L.l + iw, L.t + ih, C.axis) + vl(L.l, L.t, L.t + ih, C.axis) + vl(L.l + iw, L.t, L.t + ih, C.axis);
+  // the four scenario bands as a ruler above the plot, each with its probability
+  const bands = [["below bear", 0, m.bear_price, C.red, s.below_bear], ["bear to base", m.bear_price, m.base_price, C.amber, s.bear_to_base],
+    ["base to bull", m.base_price, m.bull_price, C.blue, s.base_to_bull], ["above bull", m.bull_price, Infinity, C.green, s.above_bull]];
+  bands.forEach(([label, lo, hi, color, p]) => {
+    const a = Math.max(lo, xMin), b = Math.min(hi, xMax);
+    const x1 = b > a ? sx(a) : (lo >= xMax ? L.l + iw - 2 : L.l), x2 = b > a ? sx(b) : x1 + 2;
+    g += box(x1, HEAD + 22, x2 - x1, 3, color);
+    const full = `${label} ${pct(p, 1)}`, short = pct(p, 0), room = x2 - x1;
+    const txt = room > full.length * 5.7 + 6 ? full : room > short.length * 5.7 + 2 ? short : "";
+    if (txt) g += tx((x1 + x2) / 2, HEAD + 17, txt, { size: 9.5, fill: color, anchor: "middle", weight: 600 });
+  });
+  // targets, spot and medians; labels staggered so close marks stay legible
+  const marks = [["BEAR", m.bear_price, C.red, "4 3"], ["BASE", m.base_price, C.amber, "4 3"], ["BULL", m.bull_price, C.green, "4 3"],
+    ["SPOT", m.current_price, C.text, ""], ["MEDIAN", s.median_price, C.purple, "1.5 2"]];
+  if (r.fcf_bridge) marks.push(["FCF MED", r.fcf_bridge.median_price, C.purple, "6 2"]);
+  const rows = [], shown = marks.filter(([, v]) => v >= xMin && v <= xMax).sort((a, b) => a[1] - b[1]);
+  shown.forEach(([, v, color, dash]) => { g += vl(sx(v), L.t, L.t + ih, color, ` stroke-width="1.2"${dash ? ` stroke-dasharray="${dash}"` : ""}`); });
+  shown.forEach(([label, v, color]) => {
+    const x = sx(v), txt = `${label} ${money0(v)}`, wTxt = txt.length * 5.45 + 8;
+    const x0 = x + wTxt > L.l + iw ? x - wTxt : x;                  // near the right edge the tag sits left of its line
+    let row = rows.findIndex((end) => end < x0 - 1); if (row < 0) { row = rows.length; rows.push(0); }
+    rows[row] = x0 + wTxt;
+    const y = L.t + 11 + row * 12;
+    g += box(x0 + 1, y - 9, wTxt - 1, 12, "#ffffff", ` stroke="${color}" stroke-width="0.6"`) + tx(x0 + 4, y, txt, { size: 9, fill: color, weight: 600 });
+  });
+  // legend
+  let lx = L.l;
+  const ly = h - 8;
+  g += tx(lx, ly, beyond > 0.0005 ? `TERMINAL PRICE ($); ${pct(beyond, 1)} OF PATHS ABOVE ${money0(xMax)}` : "TERMINAL PRICE ($)", { size: 9, fill: C.faint, ls: 0.4 });
+  lx = L.l + iw;
+  const leg = [["cumulative, right axis", (x) => hl(x, x + 14, ly - 3, C.text, ' stroke-width="1.2"')]];
+  if (dfcf) leg.unshift(["FCF bridge", (x) => hl(x, x + 14, ly - 3, C.purple, ' stroke-width="1.4"')]);
+  leg.unshift(["share of paths per bin, left axis", (x) => box(x, ly - 7, 9, 8, C.blue, ' opacity="0.82"')]);
+  leg.reverse().forEach(([label, mark]) => { const tw = label.length * 5.4; g += tx(lx, ly, label, { size: 9, fill: C.muted, anchor: "end" }); lx -= tw + 4; g += mark(lx - 14); lx -= 26; });
+  return g;
 }
-function pathChart(r, path) {
-  const m = r.meta, s = r.stats, closes = (path && path.closes) || [];
-  const PW = 1120, PH = 560, L = { t: 36, r: 230, b: 40, l: 64 }, iw = PW - L.l - L.r, ih = PH - L.t - L.b;
-  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now() - 365 * 864e5, tSpot = Date.now();
-  const tEnd = tSpot + m.horizon_years * 365.25 * 864e5;
-  const spot = m.current_price, med = s.median_price;
-  // y-range: the central mass and the history, not the tails
+
+/* Each driver held at its P10, then its P90, on the same paths; bars from the run's own median (and P(base)) */
+const DRV_FMT = {
+  rev_cagr: (v) => pct(v, 1), ebitda_margin: (v) => pct(v, 2), gross_margin: (v) => pct(v, 1), fc_growth: (v) => spct(v, 1),
+  ev_ebitda: (v, u) => (u === "ratio" ? v.toFixed(2) + "x" : mult(v)), net_debt_chg: (v) => spct(v, 1), dilution: (v) => spct(v, 1),
+  backlog_conv: (v) => pct(v, 0), roic: (v) => pct(v, 1), wacc: (v) => pct(v, 1), fade: (v) => v.toFixed(2), fcf_margin: (v) => pct(v, 1), ev_fcf: (v) => mult(v),
+};
+const fmtDrv = (row, v) => (DRV_FMT[row.key] || ((x) => x.toFixed(3)))(v, row.unit);
+const T_LO = "#9fbadc", T_HI = "#1b4b8a";
+function tornadoPanel(r, w, h, { metric = "median", bare = false } = {}) {
+  const sw = r.swing || {};
+  const secs = [["ebitda", "EBITDA bridge"], ["fcf", "FCF bridge"]].filter(([b]) => sw[b]).map(([b, label]) => ({ b, label, ...sw[b] }));
+  const compact = w < 800, multi = secs.length > 1, metrics = compact ? [metric] : ["median", "p_base"];
+  const top = (bare ? 4 : HEAD) + 18, bottom = 22;
+  const n = secs.reduce((a, sec) => a + sec.rows.length + (multi ? 1 : 0), 0) || 1;
+  const rowH = Math.min(24, (h - top - bottom) / n);
+  // columns: name, P10, P90, then for each metric a bar area and its swing
+  const cols = compact ? { name: 8, bars: [[150, w - 64]], swing: [w - 8] }
+    : { name: 9, p10: 226, p90: 290, bars: [[306, 634], [714, 958]], swing: [690, w - 9] };
+  const acc = { median: (row, end) => row[`median_${end}`], p_base: (row, end) => row[`p_base_${end}`] };
+  const centre = { median: (sec) => sec.median, p_base: (sec) => sec.p_base };
+  const scales = metrics.map((mt, i) => {
+    const vals = secs.flatMap((sec) => [centre[mt](sec), ...sec.rows.flatMap((row) => [acc[mt](row, "lo"), acc[mt](row, "hi")])]);
+    let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.16 || (mt === "median" ? 1 : 0.01);
+    lo -= pad; hi += pad; if (mt === "p_base") { lo = Math.max(lo, -0.02); hi = Math.min(hi, 1.02); }
+    const [a, b] = cols.bars[i];
+    return { mt, lo, hi, a, b, sx: (v) => a + ((v - lo) / (hi - lo)) * (b - a) };
+  });
+  const fmtV = { median: (v) => money0(v), p_base: (v) => pct(v, 0) };
+  const fmtS = { median: (d) => (d >= 0 ? "+" : "-") + money0(Math.abs(d)), p_base: (d) => (d >= 0 ? "+" : "-") + (Math.abs(d) * 100).toFixed(1) + "pp" };
+  let g = bare ? "" : panel(w, h, "Driver sensitivity", "each driver held at its P10, then its P90, the rest as drawn; bars start at the run's median and P(base)");
+  // column heads
+  const hy = top - 6;
+  g += tx(cols.name, hy, "DRIVER", { size: 9, fill: C.faint, ls: 0.4 });
+  if (!compact) { g += tx(cols.p10, hy, "P10", { size: 9, fill: C.faint, anchor: "end" }) + tx(cols.p90, hy, "P90", { size: 9, fill: C.faint, anchor: "end" }); }
+  scales.forEach((sc, i) => {
+    const head = sc.mt === "median" ? "MEDIAN PRICE AT P10 | P90" : "P(AT LEAST BASE) AT P10 | P90";
+    g += tx((sc.a + sc.b) / 2, hy, head, { size: 9, fill: C.faint, anchor: "middle", ls: 0.4 }) + tx(cols.swing[i], hy, "SWING", { size: 9, fill: C.faint, anchor: "end" });
+    denseTicks(sc.lo, sc.hi, compact ? 6 : 5).forEach((v) => {
+      if (sc.sx(v) < sc.a - 0.5 || sc.sx(v) > sc.b + 0.5) return;
+      g += vl(sc.sx(v), top, h - bottom, "#eef1f5") + tx(sc.sx(v), h - bottom + 12, fmtV[sc.mt](v), { size: 9, fill: C.muted, anchor: "middle" });
+    });
+  });
+  g += hl(4, w - 4, top - 0.5, C.axis) + hl(4, w - 4, h - bottom + 0.5, C.axis);
+  let y = top;
+  secs.forEach((sec) => {
+    if (multi) {
+      g += box(1, y, w - 2, rowH, "#f6f8fb");
+      g += tx(cols.name, y + rowH * 0.7, `${sec.label.toUpperCase()}: MEDIAN ${money0(sec.median)}, P(BASE) ${pct(sec.p_base, 1)}`, { size: 9, weight: 600, fill: C.text2, ls: 0.3 });
+      y += rowH;
+    }
+    const y0 = y;
+    sec.rows.forEach((row, i) => {
+      const cy = y + rowH / 2, bh = Math.max(Math.min(rowH * 0.6, 14), 3), fs = Math.min(10.5, rowH * 0.62);
+      if (i % 2 === 1) g += box(1, y, w - 2, rowH, "#fafbfd");
+      const tip = `${row.name} at P10 ${fmtDrv(row, row.lo)}: median ${money(row.median_lo)}, P(base) ${pct(row.p_base_lo)}. At P90 ${fmtDrv(row, row.hi)}: median ${money(row.median_hi)}, P(base) ${pct(row.p_base_hi)}.`;
+      g += `<g><title>${esc(tip)}</title>`;
+      g += tx(cols.name, cy + fs * 0.36, row.name, { size: fs, fill: C.text });
+      if (!compact) {
+        g += tx(cols.p10, cy + fs * 0.36, fmtDrv(row, row.lo), { size: fs, fill: C.muted, anchor: "end" });
+        g += tx(cols.p90, cy + fs * 0.36, fmtDrv(row, row.hi), { size: fs, fill: C.muted, anchor: "end" });
+      }
+      scales.forEach((sc, j) => {
+        const c = sc.sx(centre[sc.mt](sec)), vLo = acc[sc.mt](row, "lo"), vHi = acc[sc.mt](row, "hi"), xl = sc.sx(vLo), xh = sc.sx(vHi);
+        g += box(Math.min(c, xl), cy - bh / 2, Math.abs(xl - c), bh, T_LO) + box(Math.min(c, xh), cy - bh / 2, Math.abs(xh - c), bh, T_HI, ' opacity="0.92"');
+        const lab = (x, v) => (x < c ? tx(x - 3, cy + 3.2, fmtV[sc.mt](v), { size: 9, fill: C.muted, anchor: "end" }) : tx(x + 3, cy + 3.2, fmtV[sc.mt](v), { size: 9, fill: C.muted }));
+        if (rowH >= 11) g += lab(xl, vLo) + lab(xh, vHi);
+        const d = vHi - vLo;
+        g += tx(cols.swing[j], cy + fs * 0.36, fmtS[sc.mt](d), { size: fs, weight: 600, fill: d >= 0 ? C.green : C.red, anchor: "end" });
+      });
+      g += "</g>";
+      y += rowH;
+    });
+    scales.forEach((sc) => { g += vl(sc.sx(centre[sc.mt](sec)), y0 - 1, y + 1, C.text, ' stroke-width="1"'); });
+  });
+  // legend
+  const ly = h - 7;
+  g += box(cols.name, ly - 7, 9, 8, T_LO) + tx(cols.name + 13, ly, "at P10", { size: 9, fill: C.muted });
+  g += box(cols.name + 58, ly - 7, 9, 8, T_HI) + tx(cols.name + 71, ly, "at P90", { size: 9, fill: C.muted });
+  return g;
+}
+function swingChart(r, metric) {
+  if (!r.swing || !r.swing.ebitda) return frame("", "No sensitivity in this result.");
+  const rr = { ...r, swing: { ebitda: r.swing.ebitda } };
+  const top = rr.swing.ebitda.rows[0];
+  return frame(tornadoPanel(rr, W, H, { metric, bare: true }), `Driver sensitivity. Widest swing in the median: ${top ? top.name : "none"}.`);
+}
+
+/* Price history and the simulated distributions, the bottom band of the assessor.
+   Two years of weekly closes end in a dot at the last close. From a vertical baseline there,
+   smoothed densities at quarters of the horizon grow to the right on the history's price axis
+   and on one probability-per-dollar scale, so the near horizon is narrow and tall and the far
+   one broad and flat. Densities come from the summary (`horizon_densities`); the intermediate
+   horizons are interpolated from the terminal run until the engine simulates those dates. */
+const pathCache = {};
+const RAMP = ["#0d3266", "#1f5aa6", "#4a86cc", "#8fb9e6"];     // dark (nearest) to light (horizon)
+function weeklyCloses(closes) {
+  const out = []; let last = null;
+  closes.forEach(([d, c]) => {
+    const wk = Math.floor((Date.parse(d) / 864e5 + 3) / 7);    // weeks starting Monday
+    if (wk === last) out[out.length - 1] = [d, c]; else { out.push([d, c]); last = wk; }
+  });
+  return out;
+}
+async function fetchPath(ticker) {
+  if (pathCache[ticker] !== undefined) return pathCache[ticker];
+  try {
+    const res = await fetch(`/api/prices/${encodeURIComponent(ticker)}?years=2`);
+    const data = res.ok ? await res.json() : null;
+    pathCache[ticker] = data ? { ...data, closes: weeklyCloses(data.closes || []) } : null;
+  } catch (_) { pathCache[ticker] = null; }
+  return pathCache[ticker];
+}
+function pathPanel(r, path, PW, PH) {
+  const m = r.meta, s = r.stats, hd = r.horizon_densities, closes = (path && path.closes) || [];
+  const legendW = 262, densW = 210;
+  const L = { t: HEAD + 16, r: legendW + densW, b: 26, l: 58 }, ih = PH - L.t - L.b;
+  const xb = PW - L.r;                                              // the baseline: last close
+  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now() - 2 * 365.25 * 864e5;
+  const tLast = closes.length ? Date.parse(closes[closes.length - 1][0]) : Date.now();
+  const lastClose = closes.length ? closes[closes.length - 1][1] : m.current_price;
+  // price range: the history, the targets and the bulk of the horizon distribution
   const lo = Math.min(s.p5 * 0.92, m.bear_price * 0.92, ...closes.map((c) => c[1]));
   const hi = Math.max(s.p95 * 1.04, m.bull_price * 1.04, ...closes.map((c) => c[1]));
   const yMin = Math.max(0, lo), yMax = hi;
-  const sx = (t) => L.l + ((t - t0) / (tEnd - t0)) * iw, sy = (v) => L.t + ih - ((v - yMin) / (yMax - yMin)) * ih;
-  const xs = sx(tSpot), xe = sx(tEnd);
-  let g = "";
-  // frame, grid, axes
-  g += `<rect x="${L.l}" y="${L.t}" width="${iw}" height="${ih}" fill="#fbfcfe" stroke="${C.grid}"/>`;
-  niceTicks(yMin, yMax, 6).forEach((v) => { g += `<line x1="${L.l}" y1="${sy(v).toFixed(1)}" x2="${L.l + iw}" y2="${sy(v).toFixed(1)}" stroke="${C.grid}"/><text x="${L.l - 8}" y="${(sy(v) + 3.5).toFixed(1)}" fill="${C.muted}" font-size="11" text-anchor="end">${money0(v)}</text>`; });
-  for (let y = new Date(t0).getFullYear(); y <= new Date(tEnd).getFullYear(); y++) {
-    const t = Date.parse(`${y}-01-01`); if (t > t0 && t < tEnd) g += `<line x1="${sx(t).toFixed(1)}" y1="${L.t}" x2="${sx(t).toFixed(1)}" y2="${L.t + ih}" stroke="${C.grid}" stroke-dasharray="2 4"/><text x="${sx(t).toFixed(1)}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="11" text-anchor="middle">${y}</text>`;
+  const sx = (t) => L.l + ((t - t0) / Math.max(tLast - t0, 1)) * (xb - L.l), sy = (v) => L.t + ih - ((v - yMin) / (yMax - yMin)) * ih;
+  const labels = hd ? hd.horizons.map((h) => h.label) : [];
+  let g = panel(PW, PH, `${m.ticker} price history and the simulated distribution at ${labels.join(", ") || `${m.horizon_years} years`}`,
+    closes.length ? `weekly closes to ${closes[closes.length - 1][0]}; curves on one probability-per-dollar scale` : "no price history available; curves on one probability-per-dollar scale");
+  const clip = `ppclip-${String(m.ticker).replace(/[^A-Za-z0-9]/g, "")}`;
+  g += `<defs><clipPath id="${clip}"><rect x="${L.l}" y="${L.t}" width="${fx(xb + densW - L.l)}" height="${fx(ih)}"/></clipPath></defs>`;
+  g += box(L.l, L.t, xb - L.l, ih, "#fbfcfe", ` stroke="${C.grid}" shape-rendering="crispEdges"`);
+  denseTicks(yMin, yMax, 7).forEach((v) => {
+    g += hl(L.l, xb + densW, sy(v), C.grid) + tx(L.l - 7, sy(v) + 3.5, money0(v), { size: 10, fill: C.muted, anchor: "end" });
+  });
+  // history time axis: quarters, labelled by year
+  for (let y = new Date(t0).getFullYear(); y <= new Date(tLast).getFullYear(); y++) {
+    [0, 3, 6, 9].forEach((mo) => {
+      const t = Date.UTC(y, mo, 1); if (t <= t0 || t >= tLast) return;
+      const x = sx(t);
+      g += vl(x, L.t, L.t + ih, mo ? "#f0f2f6" : C.grid, mo ? "" : ' stroke-dasharray="2 4"');
+      if (!mo && x < xb - 70) g += tx(x, L.t + ih + 14, String(y), { size: 10, fill: C.muted, anchor: "middle" });
+    });
   }
-  // cones in log space: median drifts linearly, dispersion grows with sqrt(time)
-  const q = (v, u) => Math.exp(Math.log(spot) + u * Math.log(med / spot) + Math.sqrt(u) * Math.log(v / med));
-  const cone = (loQ, hiQ, color, op) => {
-    const up = [], dn = [];
-    for (let i = 0; i <= 40; i++) { const u = i / 40, t = tSpot + u * (tEnd - tSpot); up.push(`${sx(t).toFixed(1)},${sy(q(hiQ, u)).toFixed(1)}`); dn.unshift(`${sx(t).toFixed(1)},${sy(q(loQ, u)).toFixed(1)}`); }
-    return `<polygon points="${up.join(" ")} ${dn.join(" ")}" fill="${color}" opacity="${op}"/>`;
-  };
-  g += cone(s.p5, s.p95, C.blue, 0.10) + cone(s.p25, s.p75, C.blue, 0.16);
-  const medPts = []; for (let i = 0; i <= 40; i++) { const u = i / 40, t = tSpot + u * (tEnd - tSpot); medPts.push(`${sx(t).toFixed(1)},${sy(q(med, u)).toFixed(1)}`); }
-  g += `<polyline points="${medPts.join(" ")}" fill="none" stroke="${C.purple}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
-  // price history
-  if (closes.length) g += `<polyline points="${closes.map((c) => `${sx(Date.parse(c[0])).toFixed(1)},${sy(c[1]).toFixed(1)}`).join(" ")}" fill="none" stroke="${C.text}" stroke-width="1.5"/>`;
-  g += `<circle cx="${xs}" cy="${sy(spot).toFixed(1)}" r="3.5" fill="${C.text}"/>`;
-  g += `<line x1="${xs}" y1="${L.t}" x2="${xs}" y2="${L.t + ih}" stroke="${C.axis}" stroke-dasharray="3 3"/>`;
-  g += `<text x="${xs}" y="${L.t + ih + 16}" fill="${C.text}" font-size="11" font-weight="600" text-anchor="middle">today ${money0(spot)}</text>`;
-  g += `<text x="${xe}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="11" text-anchor="middle">+${m.horizon_years}y</text>`;
-  // terminal density as a smoothed profile at the horizon, coloured by scenario band
-  const edges = r.histogram.edges, raw = r.histogram.density, n = raw.length;
-  const dens = raw.map((_, i) => { let a = 0, k = 0; for (let j = -2; j <= 2; j++) { if (raw[i + j] !== undefined) { a += raw[i + j]; k++; } } return a / k; });
-  const dMax = Math.max(...dens) || 1, profW = L.r - 88, x0 = xe;
-  const bands = [["below bear", 0, m.bear_price, C.red, s.below_bear], ["bear to base", m.bear_price, m.base_price, C.amber, s.bear_to_base],
-    ["base to bull", m.base_price, m.bull_price, C.blue, s.base_to_bull], ["above bull", m.bull_price, Infinity, C.green, s.above_bull]];
-  bands.forEach(([, bLo, bHi, color]) => {
-    const pts = [];
-    for (let i = 0; i < n; i++) {
-      const c = (edges[i] + edges[i + 1]) / 2; if (c < bLo || c >= bHi || c < yMin || c > yMax) continue;
-      pts.push([x0 + (dens[i] / dMax) * profW, sy(c)]);
-    }
-    if (pts.length < 2) return;
-    const yTop = Math.max(sy(Math.min(bHi, yMax)), L.t), yBot = Math.min(sy(Math.max(bLo, yMin)), L.t + ih);
-    g += `<path d="M${x0},${yBot.toFixed(1)} L${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" L")} L${x0},${yTop.toFixed(1)} Z" fill="${color}" opacity="0.55"/>`;
+  // the curves, longest horizon first so the near ones sit on top
+  let dMax = 1;
+  if (hd) {
+    const grid = hd.grid;
+    dMax = Math.max(...hd.horizons.map((h) => Math.max(...h.density))) || 1;
+    let curves = "";
+    hd.horizons.map((h, i) => [h, RAMP[Math.min(i, RAMP.length - 1)]]).reverse().forEach(([h, color]) => {
+      const pts = [];
+      grid.forEach((v, j) => { if (v >= yMin - (yMax - yMin) * 0.02 && v <= yMax + (yMax - yMin) * 0.02) pts.push([xb + (h.density[j] / dMax) * densW, sy(v)]); });
+      if (pts.length < 2) return;
+      const d = `M${fx(xb)},${fx(pts[0][1])} L${pts.map(([x, y]) => `${fx(x)},${fx(y)}`).join(" L")} L${fx(xb)},${fx(pts[pts.length - 1][1])} Z`;
+      curves += `<path d="${d}" fill="${color}" fill-opacity="0.16" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
+    });
+    g += `<g clip-path="url(#${clip})">${curves}</g>`;
+  }
+  // targets across the history and the curves, labelled on the left
+  const targets = [["Bull", m.bull_price, C.green], ["Base", m.base_price, C.amber], ["Bear", m.bear_price, C.red]].filter(([, v]) => v >= yMin && v <= yMax);
+  targets.forEach(([, v, col]) => { g += `<line x1="${fx(L.l)}" y1="${fx(sy(v))}" x2="${fx(xb + densW)}" y2="${fx(sy(v))}" stroke="${col}" stroke-width="1.1" stroke-dasharray="6 4"/>`; });
+  // history and the last close, then the target labels on top of both
+  if (closes.length) g += `<polyline points="${closes.map((c) => `${fx(sx(Date.parse(c[0])))},${fx(sy(c[1]))}`).join(" ")}" fill="none" stroke="${C.text}" stroke-width="1.4" stroke-linejoin="round"/>`;
+  targets.forEach(([lbl, v, col]) => {
+    const t = `${lbl} ${money0(v)}`;
+    g += box(L.l + 3, sy(v) - 14, t.length * 6.1 + 8, 13, "#fbfcfe", ` stroke="${col}" stroke-width="0.6"`) + tx(L.l + 7, sy(v) - 4.5, t, { size: 10, fill: col, weight: 600 });
   });
-  g += `<line x1="${x0}" y1="${L.t}" x2="${x0}" y2="${L.t + ih}" stroke="${C.axis}"/>`;
-  // probability labels beside each band, placed at the band's centre within the visible range
-  bands.forEach(([label, bLo, bHi, color, p]) => {
-    const a = Math.max(bLo, yMin), b = Math.min(bHi === Infinity ? yMax : bHi, yMax); if (b <= a) return;
-    const y = sy((a + b) / 2);
-    g += `<text x="${x0 + profW + 10}" y="${(y + 4).toFixed(1)}" fill="${color}" font-size="12" font-weight="600">${pct(p, 0)}</text><text x="${x0 + profW + 44}" y="${(y + 4).toFixed(1)}" fill="${C.muted}" font-size="10.5">${label}</text>`;
+  g += vl(xb, L.t, L.t + ih, C.text, ' stroke-width="1"');
+  g += `<circle cx="${fx(xb)}" cy="${fx(sy(lastClose))}" r="3.6" fill="${C.text}"/>`;
+  g += tx(xb, L.t + ih + 14, `last close ${money(lastClose)}`, { size: 10, fill: C.text, anchor: "middle", weight: 600 });
+  if (Math.abs(lastClose - m.current_price) / m.current_price > 0.002) g += tx(xb + 6, L.t + ih - 6, `run spot ${money(m.current_price)}`, { size: 9, fill: C.muted });
+  // each horizon's median as a tick just left of the baseline
+  if (hd) hd.horizons.forEach((h, i) => {
+    if (h.median < yMin || h.median > yMax) return;
+    g += `<line x1="${fx(xb - 16)}" y1="${fx(sy(h.median))}" x2="${fx(xb - 2)}" y2="${fx(sy(h.median))}" stroke="${RAMP[Math.min(i, RAMP.length - 1)]}" stroke-width="2.2"/>`;
   });
-  // targets across the fan and profile, labelled on the frame's right edge
-  [["Bull", m.bull_price, C.green], ["Base", m.base_price, C.amber], ["Bear", m.bear_price, C.red]].forEach(([lbl, v, col]) => {
-    if (v < yMin || v > yMax) return;
-    g += `<line x1="${xs}" y1="${sy(v).toFixed(1)}" x2="${x0 + profW}" y2="${sy(v).toFixed(1)}" stroke="${col}" stroke-width="1.1" stroke-dasharray="6 4"/>`;
-    g += `<text x="${xs + 6}" y="${(sy(v) - 4).toFixed(1)}" fill="${col}" font-size="10.5" font-weight="600">${lbl} ${money0(v)}</text>`;
+  // legend in the gutter: horizon, median, P(at least base)
+  const gx = xb + densW + 18, gw = PW - gx - 10;
+  let ly = L.t + 6;
+  g += tx(gx, ly + 8, "HORIZON", { size: 9, fill: C.faint, ls: 0.4 }) + tx(gx + gw * 0.6, ly + 8, "MEDIAN", { size: 9, fill: C.faint, anchor: "end", ls: 0.4 })
+    + tx(gx + gw, ly + 8, "P(BASE)", { size: 9, fill: C.faint, anchor: "end", ls: 0.4 });
+  ly += 14; g += hl(gx, gx + gw, ly, C.axis);
+  if (hd) hd.horizons.forEach((h, i) => {
+    const color = RAMP[Math.min(i, RAMP.length - 1)], y = ly + 18 + i * 20;
+    g += box(gx, y - 9, 12, 11, color, ' fill-opacity="0.16"') + `<rect x="${fx(gx)}" y="${fx(y - 9)}" width="12" height="11" fill="none" stroke="${color}" stroke-width="1.5"/>`;
+    g += tx(gx + 19, y, h.label, { size: 11, fill: C.text, weight: 600 });
+    g += tx(gx + gw * 0.6, y, money0(h.median), { size: 11, fill: C.text, anchor: "end" });
+    g += tx(gx + gw, y, pct(h.p_at_least_base, 0), { size: 11, fill: C.text, anchor: "end" });
   });
-  g += `<text x="${x0 + 4}" y="${(sy(med) + 4).toFixed(1)}" fill="${C.purple}" font-size="10.5" font-weight="600">median ${money0(med)}</text>`;
-  g += `<text x="${L.l}" y="${L.t - 12}" fill="${C.text}" font-size="13" font-weight="600">${esc(m.ticker)} price, the simulated range to the horizon, and the distribution at ${m.horizon_years} years</text>`;
-  g += `<text x="${L.l + iw}" y="${L.t - 12}" fill="${C.muted}" font-size="10.5" text-anchor="end">bands: P5 to P95, P25 to P75; dashed: median path</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}" width="${PW}" height="${PH}" role="img" aria-label="Price history, simulated range to the horizon and the terminal distribution at the horizon by scenario band." font-family="IBM Plex Sans, ui-sans-serif, system-ui, sans-serif">${g}</svg>`;
+  const ny = ly + 18 + (hd ? hd.horizons.length : 0) * 20 + 6;
+  g += hl(gx, gx + gw, ny - 8, C.grid);
+  const notes = [`base target ${money0(m.base_price)}; ticks at the baseline are the medians`];
+  if (hd && hd.note) notes.unshift(hd.note);
+  else if (!hd) notes.unshift("no distribution to draw: the median price is zero");
+  notes.flatMap((n) => [...wrapText(n, `9.5px ${MONO}`, gw), ""]).forEach((line, j) => { if (line) g += tx(gx, ny + 6 + j * 13, line, { size: 9.5, fill: C.muted }); });
+  return g;
 }
 function svgStringToImage(svg) {
   return new Promise((resolve, reject) => {
@@ -574,13 +860,14 @@ function render(r, payload) {
   const m = r.meta;
   $("emptyState").hidden = true; $("output").hidden = false;
   $("resultTitle").textContent = `${m.company_name} (${m.ticker})`;
-  const on = Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, " "));
-  $("resultSub").textContent = `${m.n_simulations.toLocaleString()} paths, ${m.horizon_years}-year horizon, seed ${m.random_seed}, ${m.copula === "t" ? `t-copula (df ${m.copula_df})` : "Gaussian copula"}, spot ${money(m.current_price)}, ${m.elapsed_ms} ms${on.length ? `, mechanisms: ${on.join(", ")}` : ""}`;
+  const on = Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => MECH_LABEL[k] || k.replace(/_/g, " "));
+  $("resultSub").textContent = `${m.n_simulations.toLocaleString()} paths, ${m.horizon_years}-year horizon, seed ${m.random_seed}, ${m.copula === "t" ? `t-copula (df ${m.copula_df})` : "Gaussian copula"}, spot ${money(m.current_price)}, ${m.elapsed_ms} ms${on.length ? `, added drivers: ${on.join(", ")}` : ""}`;
   compareStrip(r); cards(r); reconciliation(r, payload); expectations(r, payload);
   $("cap1").textContent = `Terminal price distribution, ${m.horizon_years}-year, ${m.n_simulations.toLocaleString()} paths`;
-  $("chartHist").innerHTML = histChart(r); $("chartBars").innerHTML = barsChart(r); $("chartCdf").innerHTML = cdfChart(r); $("chartTornado").innerHTML = tornadoChart(r);
+  $("chartHist").innerHTML = histChart(r); $("chartBars").innerHTML = barsChart(r); $("chartCdf").innerHTML = cdfChart(r); $("chartTornado").innerHTML = swingChart(r, $("tornadoMetric").value);
   $("summaryTables").innerHTML = summaryTables(r); $("sensitivityTables").innerHTML = sensitivityTables(r);
   ["shareBtn", "pinBtn", "exportPng", "exportJson", "logRun", "assessBtn"].forEach((id) => { $(id).disabled = false; });
+  if (activeTab() === "assessor") renderAssessor().catch((e) => showError(e.message));
 }
 
 /* Export */
@@ -602,92 +889,199 @@ async function exportPng() {
   const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${m.ticker}_monte_carlo.png`; a.click();
 }
 
-/* Pitch assessor: one image for the deck or the Excel model, plus a tab-separated block to paste */
-function assessorRows(r, payload) {
-  const s = r.stats, m = r.meta, rc = r.reconciliation, pi = r.price_implied, dq = m.driver_quantiles;
-  const rows = [
-    ["Company", `${m.company_name} (${m.ticker})`], ["Run date", new Date().toISOString().slice(0, 10)],
-    ["Spot", money(m.current_price)], ["Horizon", `${m.horizon_years} years`], ["Paths", m.n_simulations.toLocaleString()],
-    ["Mechanisms", Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, " ")).join(", ") || "none"],
-    ["", ""],
-    ["Bear target", `${money(m.bear_price)} (${spct(m.bear_price / m.current_price - 1, 0)})`], ["Base target", `${money(m.base_price)} (${spct(m.base_price / m.current_price - 1, 0)})`], ["Bull target", `${money(m.bull_price)} (${spct(m.bull_price / m.current_price - 1, 0)})`],
-    ["", ""],
-    ["Median terminal", `${money(s.median_price)} (${spct(s.median_return)})`], ["Median return, annualised", spct(s.median_return_annualized)],
-    ["Mean terminal", money(s.mean_price)], ["P5 to P95", `${money0(s.p5)} to ${money0(s.p95)}`], ["P25 to P75", `${money0(s.p25)} to ${money0(s.p75)}`],
-    ["Mode-path price", money(rc.mode_path_price)],
-    ["", ""],
-    ["P(at least bear)", `${pct(s.p_at_least_bear)} ± ${(s.se.p_at_least_bear * 100).toFixed(2)}pp`],
-    ["P(at least base)", `${pct(s.p_at_least_base)} ± ${(s.se.p_at_least_base * 100).toFixed(2)}pp`],
-    ["P(at least bull)", `${pct(s.p_at_least_bull)} ± ${(s.se.p_at_least_bull * 100).toFixed(2)}pp`],
-    ["P(below bear)", pct(s.below_bear)],
-    ["", ""],
-    ["Revenue CAGR P10 / P50 / P90", `${pct(dq.rev_cagr.p10, 1)} / ${pct(dq.rev_cagr.p50, 1)} / ${pct(dq.rev_cagr.p90, 1)}`],
-    ["EBITDA margin P10 / P50 / P90", `${pct(dq.ebitda_margin.p10, 2)} / ${pct(dq.ebitda_margin.p50, 2)} / ${pct(dq.ebitda_margin.p90, 2)}`],
-    ["Exit multiple P10 / P50 / P90", `${mult(dq.ev_ebitda_multiple.p10)} / ${mult(dq.ev_ebitda_multiple.p50)} / ${mult(dq.ev_ebitda_multiple.p90)}`],
-    ["", ""],
-    ["Market-implied margin at spot", pi.implied_margin_at_mode_growth_and_multiple === null ? "no solution" : pct(pi.implied_margin_at_mode_growth_and_multiple, 2)],
-    ["Market-implied growth at spot", pi.implied_growth_at_mode_margin_and_multiple === null ? "no solution" : pct(pi.implied_growth_at_mode_margin_and_multiple, 1)],
-    ["Market-implied multiple at spot", pi.implied_multiple_at_mode_growth_and_margin === null ? "no solution" : mult(pi.implied_multiple_at_mode_growth_and_margin)],
-    ["Base needs multiple at P50 margin", mult(rc.cases.base.implied_multiple_at_mode_margin)],
-    ["Base needs margin at P50 multiple", pct(rc.cases.base.implied_margin_at_mode_multiple, 2)],
+/* Pitch assessor: one 4:3 image for the deck or the Excel model, plus a tab-separated block to paste.
+   Figures on the left; the probability histogram and the driver sensitivity on the right; the price
+   path with the terminal distribution along the bottom. Shown in its own tab and saved as a PNG. */
+const triple = (q, f) => `${f(q.p10)} / ${f(q.p50)} / ${f(q.p90)}`;
+const qOrValue = (q, f) => (q.value !== undefined ? `${f(q.value)} (point)` : triple(q, f));
+function assessorFigures(r) {
+  const s = r.stats, m = r.meta, rc = r.reconciliation, pi = r.price_implied, dq = m.driver_quantiles, xq = m.extra_quantiles || {};
+  const added = Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => MECH_LABEL[k] || k.replace(/_/g, " "));
+  const sd = (q) => `${spct(q.p50, 1)}, P10 to P90 ${spct(q.p10, 1)} to ${spct(q.p90, 1)}`;
+  const items = [
+    { h: "Run" },
+    { k: "Run date, horizon", v: `${new Date().toISOString().slice(0, 10)}, ${m.horizon_years} years` },
+    { k: "Spot, paths", v: `${money(m.current_price)}, ${m.n_simulations.toLocaleString()}` },
+    { k: "Added drivers", v: added.join(", ") || "none" },
+    { h: "Targets" },
+    { k: "Bear target", v: `${money(m.bear_price)} (${spct(m.bear_price / m.current_price - 1, 0)})`, c: C.red },
+    { k: "Base target", v: `${money(m.base_price)} (${spct(m.base_price / m.current_price - 1, 0)})`, c: C.amber },
+    { k: "Bull target", v: `${money(m.bull_price)} (${spct(m.bull_price / m.current_price - 1, 0)})`, c: C.green },
+    { h: "Distribution" },
+    { k: "Median terminal", v: `${money(s.median_price)} (${spct(s.median_return)}, ${spct(s.median_return_annualized)}/yr)` },
+    { k: "Mean terminal", v: money(s.mean_price) },
+    { k: "P5 / P25 / P75 / P95", v: `${money0(s.p5)} / ${money0(s.p25)} / ${money0(s.p75)} / ${money0(s.p95)}` },
+    { k: "Mode-path price", v: money(rc.mode_path_price) },
+    { h: "Probability" },
+    { k: "P(at least bear)", v: `${pct(s.p_at_least_bear)} ± ${(s.se.p_at_least_bear * 100).toFixed(2)}pp` },
+    { k: "P(at least base)", v: `${pct(s.p_at_least_base)} ± ${(s.se.p_at_least_base * 100).toFixed(2)}pp` },
+    { k: "P(at least bull)", v: `${pct(s.p_at_least_bull)} ± ${(s.se.p_at_least_bull * 100).toFixed(2)}pp` },
+    { k: "P(below bear)", v: pct(s.below_bear) },
+    { h: "Drivers, P10 / P50 / P90" },
+    { k: "Revenue CAGR", v: triple(dq.rev_cagr, (v) => pct(v, 1)) },
+    m.mechanisms?.cost_model ? null : { k: "EBITDA margin", v: triple(dq.ebitda_margin, (v) => pct(v, 2)) },
+    { k: m.mechanisms?.justified_multiple ? "Exit multiple, dispersion only" : "Exit multiple", v: triple(dq.ev_ebitda_multiple, (v) => mult(v)) },
+    { k: "Net debt change, % of EV", v: sd(dq.net_debt_change_pct) },
+    { k: "Share dilution", v: sd(dq.share_dilution_pct) },
   ];
-  if (r.fcf_bridge) rows.push(["", ""], ["FCF bridge median", `${money(r.fcf_bridge.median_price)} (${spct(r.fcf_bridge.gap_to_ebitda_bridge)} vs EBITDA bridge)`], ["FCF bridge P(at least base)", pct(r.fcf_bridge.p_at_least_base)]);
-  if (r.dcf_path) rows.push(["", ""], ["Three-statement path price", money(r.dcf_path.price)], ["Its percentile in the distribution", `${Math.round(r.dcf_path.percentile * 100)}th`], ["Paths at or above it", pct(r.dcf_path.p_at_least)]);
+  if (xq.backlog_conversion) items.push({ k: `Backlog conversion, on ${money0(xq.backlog_m.value)}M`, v: triple(xq.backlog_conversion, (v) => pct(v, 0)) });
+  if (xq.gross_margin) items.push({ k: "Gross margin", v: triple(xq.gross_margin, (v) => pct(v, 1)) },
+    { k: "Fixed cost, growth", v: `${money0(xq.fixed_cost_m.value)}M, ${xq.fixed_cost_growth ? `${spct(xq.fixed_cost_growth.p50, 1)}/yr` : "flat"}` });
+  if (xq.fcf_margin) items.push({ k: "FCF margin", v: triple(xq.fcf_margin, (v) => pct(v, 1)) }, { k: "EV/FCF exit multiple", v: triple(xq.ev_fcf_multiple, (v) => mult(v)) });
+  if (xq.roic) {
+    items.push({ k: "ROIC", v: qOrValue(xq.roic, (v) => pct(v, 1)) }, { k: "WACC", v: qOrValue(xq.wacc, (v) => pct(v, 1)) }, { k: "Growth fade", v: qOrValue(xq.fade, (v) => v.toFixed(2)) });
+    const e = m.eva;
+    if (e) items.push({ k: "EVA at P50", v: e.eva_m !== null ? `${smoney0(e.eva_m)}M (spread ${spct(e.spread, 1)})` : `spread ${spct(e.spread, 1)}`, c: e.spread < 0 ? C.red : undefined });
+  }
+  const na = (v, f) => (v === null || v === undefined ? "no solution" : f(v));
+  items.push(
+    { h: "Market-implied at spot" },
+    { k: "Margin, at P50 growth and multiple", v: na(pi.implied_margin_at_mode_growth_and_multiple, (v) => pct(v, 2)) },
+    { k: "Growth, at P50 margin and multiple", v: na(pi.implied_growth_at_mode_margin_and_multiple, (v) => pct(v, 1)) },
+    { k: "Multiple, at P50 growth and margin", v: na(pi.implied_multiple_at_mode_growth_and_margin, (v) => mult(v)) },
+    { k: "Base needs, multiple at P50 margin", v: na(rc.cases.base.implied_multiple_at_mode_margin, (v) => mult(v)) },
+    { k: "Base needs, margin at P50 multiple", v: na(rc.cases.base.implied_margin_at_mode_multiple, (v) => pct(v, 2)) },
+  );
+  if (r.fcf_bridge) items.push({ h: "FCF bridge" },
+    { k: "FCF bridge median", v: `${money(r.fcf_bridge.median_price)} (${spct(r.fcf_bridge.gap_to_ebitda_bridge)} vs EBITDA)`, c: C.purple },
+    { k: "FCF bridge P(at least base)", v: pct(r.fcf_bridge.p_at_least_base) });
+  if (r.dcf_path) items.push({ h: "Three-statement path" },
+    { k: "Path price, percentile", v: `${money(r.dcf_path.price)}, ${Math.round(r.dcf_path.percentile * 100)}th` },
+    { k: "Paths at or above it", v: pct(r.dcf_path.p_at_least) });
+  return items.filter(Boolean);
+}
+function assessorRows(r) {
+  const m = r.meta, rows = [["Company", `${m.company_name} (${m.ticker})`]];
+  assessorFigures(r).forEach((it) => { rows.push(it.h ? ["", ""] : [it.k, it.v]); });
+  const sw = r.swing || {};
+  [["ebitda", "EBITDA bridge"], ["fcf", "FCF bridge"]].forEach(([b, label]) => {
+    if (!sw[b]) return;
+    rows.push(["", ""], [`Sensitivity, ${label}`, `median ${money(sw[b].median)}, P(base) ${pct(sw[b].p_base)}`]);
+    sw[b].rows.forEach((row) => rows.push([`${row.name} P10 to P90 (${fmtDrv(row, row.lo)} to ${fmtDrv(row, row.hi)})`,
+      `median ${money0(row.median_lo)} to ${money0(row.median_hi)}; P(base) ${pct(row.p_base_lo)} to ${pct(row.p_base_hi)}`]));
+  });
   return rows;
 }
+function figuresPanel(r, w, h) {
+  const items = assessorFigures(r), nh = items.filter((i) => i.h).length, nr = items.length - nh;
+  const headH = 17, rowH = Math.min(16.5, (h - HEAD - 6 - nh * headH) / nr), fs = Math.min(11, rowH * 0.74);
+  let g = panel(w, h, "Key figures", ""), y = HEAD + 4, zebra = 0;
+  items.forEach((it) => {
+    if (it.h) { g += tx(9, y + 12.5, it.h.toUpperCase(), { size: 9, weight: 600, fill: C.muted, ls: 0.6 }) + hl(9, w - 9, y + headH - 1.5, C.grid); y += headH; zebra = 0; return; }
+    if (zebra++ % 2 === 1) g += box(1, y, w - 2, rowH, "#f8fafc");
+    g += tx(9, y + rowH * 0.7, it.k, { size: fs, fill: it.c || C.text2, font: SANS, weight: it.c ? 600 : 400 });
+    g += tx(w - 9, y + rowH * 0.7, it.v, { size: fs, weight: 500, anchor: "end" });
+    y += rowH;
+  });
+  return g;
+}
 function assessorVerdict(r) {
-  const s = r.stats, m = r.meta, rc = r.reconciliation;
-  const pb = s.p_at_least_base, gap = rc.base_gap_pct;
+  const s = r.stats, rc = r.reconciliation, sw = r.swing && r.swing.ebitda;
+  const pb = s.p_at_least_base;
   let v;
   if (pb >= 0.5) v = `The base target is at or below the simulated median: ${pct(pb)} of paths reach it.`;
   else if (pb >= 0.3) v = `The base target sits above the median; ${pct(pb)} of paths reach it. Defensible if the thesis moves a driver the model holds at its P50.`;
   else v = `The base target is in the top ${pct(pb, 0)} of outcomes. It needs ${mult(rc.cases.base.implied_multiple_at_mode_margin)} at the P50 margin or a ${pct(rc.cases.base.implied_margin_at_mode_multiple, 2)} margin at the P50 multiple.`;
   v += ` Downside: ${pct(s.below_bear)} of paths finish below the bear target.`;
+  if (sw && sw.rows.length) {
+    const top = sw.rows[0];
+    const who = top.key === "ev_ebitda" ? "The exit multiple" : top.name;
+    v += ` ${who} moves the median most: ${money0(top.median_lo)} at its P10 to ${money0(top.median_hi)} at its P90.`;
+  }
   if (r.fcf_bridge && Math.abs(r.fcf_bridge.gap_to_ebitda_bridge) > 0.15) v += ` The FCF bridge disagrees with the EBITDA bridge by ${spct(r.fcf_bridge.gap_to_ebitda_bridge)}; say which one the thesis rests on.`;
   return v;
 }
-async function exportAssessor() {
-  if (!lastResult) return;
-  const r = lastResult, m = r.meta, rows = assessorRows(r, lastPayload), verdict = assessorVerdict(r);
-  // 4:3 slide: 1600 x 1200 logical, rendered at 2x
-  const scale = 2, Wc = 1600, Hc = 1200, left = 48, colW = 600, lineH = 21;
-  const canvas = document.createElement("canvas"); canvas.width = Wc * scale; canvas.height = Hc * scale;
-  const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
-  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, Wc, Hc);
-  ctx.fillStyle = "#1b4b8a"; ctx.fillRect(0, 0, Wc, 6);
-  ctx.fillStyle = C.text; ctx.font = "600 26px IBM Plex Sans, system-ui, sans-serif";
-  ctx.fillText(`${m.company_name} (${m.ticker}): pitch assessment`, left, 52);
-  // verdict
-  ctx.fillStyle = "#e8eff8"; ctx.fillRect(left, 70, Wc - 2 * left, 54);
-  ctx.fillStyle = C.text; ctx.font = "500 14px IBM Plex Sans, system-ui, sans-serif";
-  const words = verdict.split(" "); let line = "", y = 92; const maxW = Wc - 2 * left - 24;
-  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW) { ctx.fillText(line, left + 12, y); line = w; y += 19; } else line = t; }
-  ctx.fillText(line, left + 12, y);
-  // figures, left column
-  let ty = 160;
-  rows.forEach(([k, v]) => {
-    if (k) {
-      ctx.fillStyle = C.muted; ctx.font = "12.5px IBM Plex Sans, system-ui, sans-serif"; ctx.fillText(k, left, ty);
-      ctx.fillStyle = C.text; ctx.font = "600 12.5px IBM Plex Mono, ui-monospace, monospace"; ctx.textAlign = "right"; ctx.fillText(v, left + colW, ty); ctx.textAlign = "left";
-      ctx.fillStyle = C.grid; ctx.fillRect(left, ty + 6, colW, 1);
-    }
-    ty += lineH;
-  });
-  // right column: the path chart over the probability bars
-  const cx = left + colW + 40, cw = Wc - cx - left;
-  const pathSvg = pathChart(r, lastPath), pathH = cw * 560 / 1120;
-  const [pathImg, barsImg] = await Promise.all([svgStringToImage(pathSvg), svgToImage($("chartBars").querySelector("svg"))]);
-  ctx.drawImage(pathImg, cx, 150, cw, pathH);
-  const barsW = cw * 0.72, barsH = barsW * H / W;
-  ctx.drawImage(barsImg, cx + (cw - barsW) / 2, 150 + pathH + 20, barsW, barsH);
-  ctx.fillStyle = C.faint; ctx.font = "11px IBM Plex Mono, ui-monospace, monospace";
-  ctx.fillText(`Model output, not investment advice. ${new Date().toISOString().slice(0, 10)}.`, left, Hc - 18);
-  const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${m.ticker}_pitch_assessment.png`; a.click();
-  const tsv = rows.filter(([k]) => k).map(([k, v]) => `${k}\t${v}`).join("\n") + `\nVerdict\t${verdict}`;
-  try { await navigator.clipboard.writeText(tsv); $("assessBtn").textContent = "Image saved, table copied"; }
-  catch (_) { $("assessBtn").textContent = "Image saved"; }
-  setTimeout(() => { $("assessBtn").textContent = "Pitch assessor"; }, 2200);
+let measureCtx = null;
+function wrapText(text, font, maxW) {
+  measureCtx = measureCtx || document.createElement("canvas").getContext("2d");
+  measureCtx.font = font;
+  const lines = []; let line = "";
+  text.split(" ").forEach((w) => { const t = line ? `${line} ${w}` : w; if (measureCtx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; });
+  if (line) lines.push(line);
+  return lines;
 }
+const AW = 1600, AH = 1200;
+function assessorSvg(r, path, fontCss = "") {
+  const m = r.meta, left = 48, inner = AW - 2 * left;
+  const verdict = wrapText(assessorVerdict(r), "500 14px IBM Plex Sans, Helvetica Neue, Arial, sans-serif", inner - 28);
+  const vH = 16 + verdict.length * 19;
+  const top = 72 + vH + 14, bottomEdge = AH - 34, gap = 14;
+  // the middle band grows with the figures table, the path chart keeps at least 380
+  const items = assessorFigures(r), nh = items.filter((i) => i.h).length, nr = items.length - nh;
+  const mid = Math.min(Math.max(HEAD + 6 + nh * 17 + nr * 15, 520), bottomEdge - top - gap - 380);
+  const pathH = bottomEdge - top - mid - gap;
+  const figW = 452, rx = left + figW + gap, rw = AW - left - rx;
+  const swRows = Object.values(r.swing || {}).reduce((a, b) => a + b.rows.length, 0) + (Object.keys(r.swing || {}).length > 1 ? 2 : 0);
+  const tornH = Math.min(Math.max(HEAD + 40 + swRows * 18, 220), mid - 230 - gap);
+  const histH = mid - tornH - gap;
+  const at = (x, y, body) => `<g transform="translate(${x},${y})">${body}</g>`;
+  let g = box(0, 0, AW, AH, "#ffffff") + box(0, 0, AW, 6, "#1b4b8a");
+  g += tx(left, 50, `${m.company_name} (${m.ticker}): pitch assessment`, { size: 26, weight: 600, font: SANS });
+  g += box(left, 70, inner, vH, "#e8eff8") + box(left, 70, 3, vH, "#1b4b8a");
+  verdict.forEach((line, i) => { g += tx(left + 16, 70 + 22 + i * 19, line, { size: 14, weight: 500, font: SANS }); });
+  g += at(left, top, figuresPanel(r, figW, mid));
+  g += at(rx, top, histPanel(r, rw, histH));
+  g += at(rx, top + histH + gap, tornadoPanel(r, rw, tornH));
+  g += at(left, top + mid + gap, pathPanel(r, path, inner, pathH));
+  g += tx(left, AH - 14, `Model output, not investment advice. ${new Date().toISOString().slice(0, 10)}. Every figure is filed with the SEC, a closing price, arithmetic over those, or simulation output.`, { size: 10.5, fill: C.faint });
+  const style = fontCss ? `<defs><style>${fontCss}</style></defs>` : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${AW} ${AH}" width="${AW}" height="${AH}" role="img" aria-label="${esc(`${m.company_name} pitch assessment`)}">${style}${g}</svg>`;
+}
+
+/* The PNG carries the page's own fonts: an SVG drawn as an image cannot reach web fonts, so the
+   latin IBM Plex files are inlined as data URIs once per session. */
+let fontCssPromise = null;
+function embeddedFontCss() {
+  if (!fontCssPromise) {
+    fontCssPromise = (async () => {
+      try {
+        const link = document.querySelector('link[href*="fonts.googleapis.com/css2"]');
+        if (!link) return "";
+        const css = await (await fetch(link.href)).text();
+        const blocks = (css.match(/@font-face\s*{[^}]*}/g) || []).filter((b) => /unicode-range:[^;]*U\+0000-00FF/i.test(b));
+        const out = await Promise.all(blocks.map(async (b) => {
+          const url = (b.match(/url\(([^)]+)\)/) || [])[1];
+          if (!url) return "";
+          const bytes = new Uint8Array(await (await fetch(url.replace(/['"]/g, ""))).arrayBuffer());
+          let bin = ""; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+          return b.replace(/url\([^)]+\)/, `url(data:font/woff2;base64,${btoa(bin)})`);
+        }));
+        return out.join("\n");
+      } catch (_) { return ""; }
+    })();
+  }
+  return fontCssPromise;
+}
+let assessorZoom = false;
+async function renderAssessor() {
+  if (!lastResult) return;
+  const r = lastResult, path = await fetchPath(r.meta.ticker);
+  if (r !== lastResult) return;            // a newer run arrived while the closes were loading
+  $("assessFrame").innerHTML = assessorSvg(r, path);
+  $("assessFrame").classList.toggle("actual", assessorZoom);
+}
+async function saveAssessorPng() {
+  if (!lastResult) return;
+  const r = lastResult, path = await fetchPath(r.meta.ticker), css = await embeddedFontCss();
+  const img = await svgStringToImage(assessorSvg(r, path, css));
+  const scale = 2, canvas = document.createElement("canvas"); canvas.width = AW * scale; canvas.height = AH * scale;
+  const ctx = canvas.getContext("2d"); ctx.scale(scale, scale); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, AW, AH); ctx.drawImage(img, 0, 0, AW, AH);
+  const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${r.meta.ticker}_pitch_assessment.png`; a.click();
+}
+async function copyAssessorTable() {
+  if (!lastResult) return;
+  const tsv = assessorRows(lastResult).map(([k, v]) => (k ? `${k}\t${v}` : "")).join("\n") + `\n\nVerdict\t${assessorVerdict(lastResult)}`;
+  const btn = $("assessCopy");
+  try { await navigator.clipboard.writeText(tsv); btn.textContent = "Table copied"; } catch (_) { btn.textContent = "Clipboard blocked"; }
+  setTimeout(() => { btn.textContent = "Copy table"; }, 2000);
+}
+function selectTab(name) {
+  document.querySelectorAll(".tabs .tab").forEach((t) => { const on = t.dataset.tab === name; t.classList.toggle("active", on); t.setAttribute("aria-selected", String(on)); });
+  $("analysisView").hidden = name !== "analysis";
+  $("assessorView").hidden = name !== "assessor";
+  if (name === "assessor") renderAssessor().catch((e) => showError(e.message));
+}
+const activeTab = () => (document.querySelector(".tabs .tab.active") || {}).dataset?.tab || "analysis";
 
 /* Wiring */
 function showError(msg) { const el = $("formError"); el.textContent = msg; el.hidden = false; }
@@ -710,9 +1104,14 @@ form.current_price.addEventListener("input", recomputeEV);
 ["p10", "p50", "p90"].forEach((p) => form[`ev_ebitda_multiple_${p}`].addEventListener("input", () => { multipleEdited = true; }));
 TRI.forEach((d) => form[`${d}_p50`].addEventListener("input", () => refreshChipState(d)));
 NORM.forEach((d) => form[`${d}_mean`].addEventListener("input", () => refreshChipState(d)));
-MECHS.forEach((m) => { const d = mechEl(m); form[`use_${m}`].addEventListener("change", (e) => { d.open = e.target.checked; }); });
+MECHS.forEach((m) => {
+  const d = mechEl(m);
+  d.querySelector("[data-remove]").addEventListener("click", () => showMech(m, false));
+  document.querySelector(`#addDriver [data-add="${m}"]`).addEventListener("click", () => { showMech(m, true); d.querySelector("input")?.focus(); });
+  d.addEventListener("input", (e) => { e.target.closest("label")?.classList.remove("needs-input"); if (m === "justified_multiple") updateEva(); });
+});
 $("corrReset").addEventListener("click", () => { buildCorrGrid(DEFAULT_CORR); $("corrStatus").textContent = "Reset."; $("corrStatus").className = "hint"; });
-$("loadPreset").addEventListener("click", () => { fillForm(PRESET); clearProvenance(); applyMechanisms(null); $("lookupMsg").hidden = true; $("formError").hidden = true; });
+$("loadPreset").addEventListener("click", () => { clearProvenance(); applyExtraDrivers(null); fillForm(PRESET); $("lookupMsg").hidden = true; $("formError").hidden = true; });
 $("shareBtn").addEventListener("click", async () => {
   if (lastPayload) writeUrl(lastPayload);
   try { await navigator.clipboard.writeText(location.href); $("shareBtn").textContent = "Link copied"; } catch (_) { $("shareBtn").textContent = "Copy from address bar"; }
@@ -724,7 +1123,15 @@ $("pinBtn").addEventListener("click", () => {
   if (lastResult) compareStrip(lastResult);
 });
 $("exportPng").addEventListener("click", () => exportPng().catch((e) => showError(e.message)));
-$("assessBtn").addEventListener("click", async () => { lastPath = await fetchPath(lastResult.meta.ticker); exportAssessor().catch((e) => showError(e.message)); });
+$("assessBtn").addEventListener("click", () => { selectTab("assessor"); $("results").scrollIntoView({ block: "start" }); });
+document.querySelectorAll(".tabs .tab").forEach((t) => t.addEventListener("click", () => selectTab(t.dataset.tab)));
+$("assessPng").addEventListener("click", () => saveAssessorPng().catch((e) => showError(e.message)));
+$("assessCopy").addEventListener("click", () => copyAssessorTable());
+$("assessZoom").addEventListener("click", () => {
+  assessorZoom = !assessorZoom; $("assessFrame").classList.toggle("actual", assessorZoom);
+  $("assessZoom").textContent = assessorZoom ? "Fit to width" : "Actual size";
+});
+$("tornadoMetric").addEventListener("change", () => { if (lastResult) $("chartTornado").innerHTML = swingChart(lastResult, $("tornadoMetric").value); });
 $("exportJson").addEventListener("click", () => {
   if (!lastResult) return;
   const blob = new Blob([JSON.stringify({ inputs: lastPayload, result: lastResult }, null, 2)], { type: "application/json" });
@@ -745,7 +1152,7 @@ $("logRun").addEventListener("click", async () => {
 });
 
 /* Boot */
-buildCorrGrid(DEFAULT_CORR); applyMechanisms(null);
+buildCorrGrid(DEFAULT_CORR); applyExtraDrivers(null);
 const fromUrl = readUrl();
 if (fromUrl) { fillForm(fromUrl); run(); }
 else { form.n_simulations.value = PRESET.n_simulations; form.horizon_years.value = PRESET.horizon_years; form.random_seed.value = PRESET.random_seed; form.copula.value = "t"; form.ticker.focus(); }

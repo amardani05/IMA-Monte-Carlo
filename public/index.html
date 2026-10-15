@@ -130,85 +130,94 @@
           </div>
           <div class="refs" data-refs="share_dilution_pct"></div>
         </fieldset>
-      </section>
 
-      <section class="group" id="mechanisms">
-        <h2>Thesis mechanism <span class="hint">pick the KPI that carries the pitch</span></h2>
-        <p class="hint block">
-          Each block replaces one of the five numbers with the mechanism that produces it.
-          Auto-fill proposes values from filings; blocks the filings cannot support are greyed out.
-          Switch on one at a time unless you mean to stack them.
-        </p>
+        <h3 class="added-head" id="addedHead" hidden>Added drivers <span class="hint">beyond the base five; each replaces a piece of the bridge</span></h3>
 
-        <details class="mech" data-mech="cost_model">
-          <summary><input type="checkbox" name="use_cost_model"> Cost structure <span class="hint">COGS inflection, operating leverage</span></summary>
-          <div class="mech-body">
-            <div class="row three">
-              <label>Gross margin P10<input name="cm_gm_p10" type="number" step="any"></label>
-              <label class="mode">P50<input name="cm_gm_p50" type="number" step="any"></label>
-              <label>P90<input name="cm_gm_p90" type="number" step="any"></label>
-            </div>
-            <div class="row three">
-              <label>Fixed cost ($M)<input name="cm_fixed" type="number" step="any"></label>
-              <label>Fixed cost growth mean<input name="cm_fcg_mean" type="number" step="any"></label>
-              <label>Std<input name="cm_fcg_std" type="number" step="any"></label>
-            </div>
-            <p class="calib-note mech-note" data-note="cost_model"></p>
+        <fieldset class="dist extra" data-mech="backlog" hidden>
+          <legend>Backlog conversion <em>metalog; year-one revenue = backlog x conversion + the rest at the CAGR</em></legend>
+          <button type="button" class="x" data-remove="backlog" title="Remove this driver" aria-label="Remove backlog">Remove</button>
+          <div class="row two">
+            <label data-field="bl_m">Backlog ($M)<input name="bl_m" type="number" step="any"></label>
+            <p class="hint cell">Remaining performance obligation when tagged; otherwise the 10-K backlog note.</p>
           </div>
-        </details>
-
-        <details class="mech" data-mech="backlog">
-          <summary><input type="checkbox" name="use_backlog"> Backlog <span class="hint">year-one revenue from backlog x conversion</span></summary>
-          <div class="mech-body">
-            <div class="row two">
-              <label>Backlog ($M)<input name="bl_m" type="number" step="any"></label>
-              <label>&nbsp;<span class="hint">remaining performance obligation when tagged</span></label>
-            </div>
-            <div class="row three">
-              <label>Conversion P10<input name="bl_p10" type="number" step="any"></label>
-              <label class="mode">P50<input name="bl_p50" type="number" step="any"></label>
-              <label>P90<input name="bl_p90" type="number" step="any"></label>
-            </div>
-            <p class="calib-note mech-note" data-note="backlog"></p>
+          <div class="row three">
+            <label>P10<input name="bl_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="bl_p50" type="number" step="any"></label>
+            <label>P90<input name="bl_p90" type="number" step="any"></label>
           </div>
-        </details>
+          <p class="calib-note mech-note" data-note="backlog"></p>
+        </fieldset>
 
-        <details class="mech" data-mech="fcf_bridge">
-          <summary><input type="checkbox" name="use_fcf_bridge"> FCF bridge <span class="hint">a second price, FCF margin x EV/FCF</span></summary>
-          <div class="mech-body">
-            <div class="row three">
-              <label>FCF margin P10<input name="fb_fm_p10" type="number" step="any"></label>
-              <label class="mode">P50<input name="fb_fm_p50" type="number" step="any"></label>
-              <label>P90<input name="fb_fm_p90" type="number" step="any"></label>
-            </div>
-            <div class="row three">
-              <label>EV/FCF P10<input name="fb_mult_p10" type="number" step="any"></label>
-              <label class="mode">P50<input name="fb_mult_p50" type="number" step="any"></label>
-              <label>P90<input name="fb_mult_p90" type="number" step="any"></label>
-            </div>
-            <p class="calib-note mech-note" data-note="fcf_bridge"></p>
+        <fieldset class="dist extra" data-mech="fcf_bridge" hidden>
+          <legend>Free cash flow <em>a second price: revenue x FCF margin x EV/FCF</em></legend>
+          <button type="button" class="x" data-remove="fcf_bridge" title="Remove this driver" aria-label="Remove FCF">Remove</button>
+          <div class="row three">
+            <label>FCF margin P10<input name="fb_fm_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="fb_fm_p50" type="number" step="any"></label>
+            <label>P90<input name="fb_fm_p90" type="number" step="any"></label>
           </div>
-        </details>
+          <div class="row three">
+            <label>EV/FCF P10<input name="fb_mult_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="fb_mult_p50" type="number" step="any"></label>
+            <label>P90<input name="fb_mult_p90" type="number" step="any"></label>
+          </div>
+          <p class="calib-note mech-note" data-note="fcf_bridge"></p>
+        </fieldset>
 
-        <details class="mech" data-mech="justified_multiple">
-          <summary><input type="checkbox" name="use_justified_multiple"> Justified multiple <span class="hint">ROIC, EVA: the multiple follows growth and returns</span></summary>
-          <div class="mech-body">
-            <div class="row three">
-              <label>ROIC<input name="jm_roic" type="number" step="any"></label>
-              <label>WACC<input name="jm_wacc" type="number" step="any"></label>
-              <label>Tax rate<input name="jm_tax" type="number" step="any"></label>
-            </div>
-            <div class="row three">
-              <label>D&amp;A / EBITDA<input name="jm_da" type="number" step="any"></label>
-              <label>Long-run growth<input name="jm_lrg" type="number" step="any"></label>
-              <label>Growth fade<input name="jm_fade" type="number" step="any"></label>
-            </div>
-            <div class="row two">
-              <label>Premium reversion <span class="hint">share of today's premium gone by the horizon</span><input name="jm_prem" type="number" step="any"></label>
-            </div>
-            <p class="calib-note mech-note" data-note="justified_multiple"></p>
+        <fieldset class="dist extra" data-mech="justified_multiple" hidden>
+          <legend>ROIC and EVA <em>returns, cost of capital and fade set the exit multiple</em></legend>
+          <button type="button" class="x" data-remove="justified_multiple" title="Remove this driver" aria-label="Remove ROIC and EVA">Remove</button>
+          <div class="row three">
+            <label data-field="jm_roic">ROIC P10<input name="jm_roic_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="jm_roic_p50" type="number" step="any"></label>
+            <label>P90<input name="jm_roic_p90" type="number" step="any"></label>
           </div>
-        </details>
+          <div class="row three">
+            <label>WACC P10<input name="jm_wacc_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="jm_wacc_p50" type="number" step="any"></label>
+            <label>P90<input name="jm_wacc_p90" type="number" step="any"></label>
+          </div>
+          <div class="row three">
+            <label>Growth fade P10<input name="jm_fade_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="jm_fade_p50" type="number" step="any"></label>
+            <label>P90<input name="jm_fade_p90" type="number" step="any"></label>
+          </div>
+          <div class="row four">
+            <label>Tax rate<input name="jm_tax" type="number" step="any"></label>
+            <label>D&amp;A / EBITDA<input name="jm_da" type="number" step="any"></label>
+            <label>Long-run g<input name="jm_lrg" type="number" step="any"></label>
+            <label title="Share of today's premium to the justified multiple gone by the horizon">Prem. reversion<input name="jm_prem" type="number" step="any"></label>
+          </div>
+          <p class="eva" id="evaLine"></p>
+          <p class="calib-note mech-note" data-note="justified_multiple"></p>
+          <p class="calib-note mech-note weak" id="jmWidthNote" hidden></p>
+          <p class="hint block">A P50 alone is a point input; P10 and P90 make it a drawn driver with its own row in the sensitivity.</p>
+        </fieldset>
+
+        <fieldset class="dist extra" data-mech="cost_model" hidden>
+          <legend>Cost structure <em>gross margin less fixed cost sets the EBITDA margin</em></legend>
+          <button type="button" class="x" data-remove="cost_model" title="Remove this driver" aria-label="Remove cost structure">Remove</button>
+          <div class="row three">
+            <label>Gross margin P10<input name="cm_gm_p10" type="number" step="any"></label>
+            <label class="mode">P50<input name="cm_gm_p50" type="number" step="any"></label>
+            <label>P90<input name="cm_gm_p90" type="number" step="any"></label>
+          </div>
+          <div class="row three">
+            <label>Fixed cost ($M)<input name="cm_fixed" type="number" step="any"></label>
+            <label>Growth mean<input name="cm_fcg_mean" type="number" step="any"></label>
+            <label>Growth std<input name="cm_fcg_std" type="number" step="any"></label>
+          </div>
+          <p class="calib-note mech-note" data-note="cost_model"></p>
+        </fieldset>
+
+        <div class="add-driver" id="addDriver">
+          <span class="cap">Add a driver</span>
+          <button type="button" class="chip add" data-add="backlog">+ Backlog</button>
+          <button type="button" class="chip add" data-add="fcf_bridge">+ FCF</button>
+          <button type="button" class="chip add" data-add="justified_multiple">+ ROIC and EVA</button>
+          <button type="button" class="chip add" data-add="cost_model">+ Cost structure</button>
+        </div>
+        <p class="hint block" id="stackHint" hidden>Added drivers stack, and each one widens the range. Lead with the one that carries the thesis.</p>
       </section>
 
       <section class="group">
@@ -274,7 +283,25 @@
           <h2 id="resultTitle"></h2>
           <p class="sub" id="resultSub"></p>
         </div>
+        <div class="tabs" role="tablist" aria-label="Result views">
+          <button type="button" role="tab" class="tab active" data-tab="analysis" aria-selected="true">Analysis</button>
+          <button type="button" role="tab" class="tab" data-tab="assessor" aria-selected="false">Pitch assessor</button>
+        </div>
       </div>
+
+      <div id="assessorView" hidden>
+        <div class="assess-bar">
+          <p class="hint">One 4:3 image for the deck or the Excel model, drawn from this run. The table copies as tab-separated rows.</p>
+          <div class="assess-actions">
+            <button type="button" class="btn ghost small" id="assessZoom">Actual size</button>
+            <button type="button" class="btn ghost small" id="assessCopy">Copy table</button>
+            <button type="button" class="btn ghost small strong" id="assessPng">Save PNG</button>
+          </div>
+        </div>
+        <div class="assess-frame" id="assessFrame"></div>
+      </div>
+
+      <div id="analysisView">
 
       <div class="compare" id="compareStrip" hidden></div>
 
@@ -302,7 +329,7 @@
         <figure class="panel"><figcaption id="cap1"></figcaption><div id="chartHist"></div></figure>
         <figure class="panel"><figcaption>Scenario probability breakdown</figcaption><div id="chartBars"></div></figure>
         <figure class="panel"><figcaption>Cumulative probability, price at or below X</figcaption><div id="chartCdf"></div></figure>
-        <figure class="panel"><figcaption>Driver sensitivity, P10 vs P90 median</figcaption><div id="chartTornado"></div></figure>
+        <figure class="panel"><figcaption class="cap-row"><span>Driver sensitivity, each driver at its P10 then its P90</span><select id="tornadoMetric" aria-label="Sensitivity measure"><option value="median">Median price</option><option value="p_base">P(at least base)</option></select></figcaption><div id="chartTornado"></div></figure>
       </div>
 
       <section class="panel">
@@ -311,15 +338,16 @@
       </section>
 
       <section class="panel">
-        <div class="panel-head"><h3>Driver sensitivity by quintile</h3></div>
+        <div class="panel-head"><h3>Driver sensitivity by quintile</h3><p class="panel-sub">Conditional: paths sorted by each driver's draw, so correlated drivers move together here.</p></div>
         <div id="sensitivityTables"></div>
       </section>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="foot">
-  <span>Engine: Gaussian copula over five correlated drivers. Fundamentals: SEC EDGAR XBRL. No model or inference service in the path.</span>
+  <span>Engine: copula over five correlated drivers, plus any you add. Fundamentals: SEC EDGAR XBRL. No model or inference service in the path.</span>
   <span class="muted">Model output, not investment advice.</span>
 </footer>
 

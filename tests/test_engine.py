@@ -356,6 +356,217 @@ class Phase4Service(unittest.TestCase):
             run_simulation(self._payload(cost_model={"gross_margin": {"type": "metalog", "p10": 0.3, "p50": 0.2, "p90": 0.4}, "fixed_cost_m": 10}))
 
 
+class SwingTornado(unittest.TestCase):
+    """One-at-a-time sensitivity on common random numbers, and the drivers added beside the base five."""
+
+    EPS = 1e-9
+
+    def _deg(self, **over):
+        e = self.EPS
+        base = dict(
+            ticker="T", company_name="T", current_price=100.0, bear_price=1.0, base_price=2.0, bull_price=3.0,
+            current_revenue=1000.0, current_ebitda_margin=0.10, current_ev=5000.0, current_net_debt=500.0,
+            shares_outstanding=100.0,
+            rev_cagr=(0.10 - e, 0.10, 0.10 + e), ebitda_margin=(0.20 - e, 0.20, 0.20 + e),
+            ev_ebitda_multiple=(10.0 - e, 10.0, 10.0 + e), net_debt_change_pct=(0.0, 1e-9),
+            share_dilution_pct=(0.0, 1e-9), correlation_matrix=np.eye(5), n_simulations=2000,
+            random_seed=3, horizon_years=2.0,
+        )
+        base.update(over)
+        return PitchAssumptions(**base)
+
+    def _myrg(self, **over):
+        kw = dict(MYRG, n_simulations=20_000)
+        kw.update(over)
+        return PitchAssumptions(**kw)
+
+    def test_swing_reprices_one_driver_by_hand(self):
+        e = MonteCarloEngine(self._deg()); e.run()
+        p = e.swing("rev_cagr", 0.05)["ebitda"]
+        self.assertAlmostEqual(float(np.median(p)), (1000 * 1.05 ** 2 * 0.2 * 10 - 500) / 100, places=6)
+        p = e.swing("ev_ebitda", 12.0)["ebitda"]
+        self.assertAlmostEqual(float(np.median(p)), (1000 * 1.1 ** 2 * 0.2 * 12 - 500) / 100, places=6)
+
+    def test_swing_leaves_the_run_untouched(self):
+        e = MonteCarloEngine(self._myrg()); e.run()
+        before = e.terminal_prices.copy()
+        e.swing_tornado()
+        fresh = MonteCarloEngine(self._myrg()); fresh.run()
+        self.assertTrue(np.array_equal(e.terminal_prices, before))
+        self.assertTrue(np.array_equal(e.terminal_prices, fresh.terminal_prices))
+
+    def test_swing_tornado_signs_and_order(self):
+        e = MonteCarloEngine(self._myrg()); e.run()
+        t = e.swing_tornado()
+        self.assertEqual(set(t), {"ebitda"})
+        b = t["ebitda"]
+        self.assertAlmostEqual(b["median"], float(np.median(e.terminal_prices)), places=9)
+        self.assertAlmostEqual(b["p_base"], float(np.mean(e.terminal_prices >= MYRG["base_price"])), places=9)
+        rows = {r["key"]: r for r in b["rows"]}
+        self.assertEqual(set(rows), {"rev_cagr", "ebitda_margin", "ev_ebitda", "net_debt_chg", "dilution"})
+        for k in ("rev_cagr", "ebitda_margin", "ev_ebitda"):
+            self.assertGreater(rows[k]["median_hi"], rows[k]["median_lo"])
+            self.assertGreaterEqual(rows[k]["p_base_hi"], rows[k]["p_base_lo"])
+        for k in ("net_debt_chg", "dilution"):          # more debt or more shares, less per share
+            self.assertLess(rows[k]["median_hi"], rows[k]["median_lo"])
+        swings = [abs(r["median_hi"] - r["median_lo"]) for r in b["rows"]]
+        self.assertEqual(swings, sorted(swings, reverse=True))
+        # P10 and P90 are the drawn driver's own
+        q = np.percentile(e._draws["ev_ebitda"], [10, 90])
+        self.assertAlmostEqual(rows["ev_ebitda"]["lo"], q[0]); self.assertAlmostEqual(rows["ev_ebitda"]["hi"], q[1])
+
+    def test_fcf_drivers_swing_the_fcf_price_only(self):
+        fb = {"fcf_margin": {"type": "metalog", "p10": 0.04, "p50": 0.06, "p90": 0.08},
+              "ev_fcf_multiple": {"type": "log_metalog", "p10": 14, "p50": 18, "p90": 24, "lower": 0}}
+        e = MonteCarloEngine(self._myrg(fcf_bridge=fb)); e.run()
+        t = e.swing_tornado()
+        ebitda_keys = {r["key"] for r in t["ebitda"]["rows"]}
+        fcf_keys = {r["key"] for r in t["fcf"]["rows"]}
+        self.assertNotIn("fcf_margin", ebitda_keys); self.assertNotIn("ev_fcf", ebitda_keys)
+        self.assertTrue({"fcf_margin", "ev_fcf", "rev_cagr", "net_debt_chg", "dilution"} <= fcf_keys)
+        self.assertNotIn("ebitda_margin", fcf_keys)
+        # the FCF margin leaves the EBITDA bridge exactly where it was
+        held = e.swing("fcf_margin", 0.10)
+        self.assertTrue(np.array_equal(held["ebitda"], e.terminal_prices))
+        self.assertGreater(float(np.median(held["fcf"])), float(np.median(e.terminal_prices_fcf)))
+
+    def test_backlog_conversion_is_a_swing_driver(self):
+        bl = {"backlog_m": 2800.0, "conversion": {"type": "metalog", "p10": 0.55, "p50": 0.70, "p90": 0.85}}
+        e = MonteCarloEngine(self._myrg(backlog=bl)); e.run()
+        row = next(r for r in e.swing_tornado()["ebitda"]["rows"] if r["key"] == "backlog_conv")
+        self.assertAlmostEqual(row["lo"], 0.55, places=2); self.assertAlmostEqual(row["hi"], 0.85, places=2)
+        self.assertNotAlmostEqual(row["median_lo"], row["median_hi"], places=3)
+
+    JM = {"tax_rate": 0.25, "da_share": 0.15, "long_run_growth": 0.03, "current_growth": 0.10,
+          "current_multiple": 10.0, "premium_reversion": 1.0}
+
+    def test_drawn_roic_widens_and_moves_the_justified_multiple(self):
+        point = dict(self.JM, roic=0.15, wacc=0.09, fade=0.5)
+        drawn = dict(point, roic={"type": "metalog", "p10": 0.10, "p50": 0.15, "p90": 0.20})
+        ep = MonteCarloEngine(self._deg(justified_multiple=point)); ep.run()
+        ed = MonteCarloEngine(self._deg(justified_multiple=drawn)); ed.run()
+        mp, md = ep.driver_samples["EV/EBITDA Multiple"], ed.driver_samples["EV/EBITDA Multiple"]
+        self.assertLess(float(np.std(mp)), 1e-6)
+        self.assertGreater(float(np.std(md)), 0.1)
+        self.assertIn("ROIC", ed.driver_samples); self.assertNotIn("ROIC", ep.driver_samples)
+        row = next(r for r in ed.swing_tornado()["ebitda"]["rows"] if r["key"] == "roic")
+        self.assertGreater(row["median_hi"], row["median_lo"])      # better returns, less reinvestment, higher multiple
+        # holding ROIC at its P50 reproduces the point-input run
+        self.assertAlmostEqual(float(np.median(ed.swing("roic", 0.15)["ebitda"])),
+                               float(np.median(ep.terminal_prices)), places=6)
+
+    def test_drawn_wacc_and_fade_have_the_right_sign(self):
+        jm = dict(self.JM, roic=0.15, wacc={"type": "metalog", "p10": 0.08, "p50": 0.09, "p90": 0.10},
+                  fade={"type": "metalog", "p10": 0.25, "p50": 0.5, "p90": 0.75})
+        e = MonteCarloEngine(self._deg(justified_multiple=jm)); e.run()
+        rows = {r["key"]: r for r in e.swing_tornado()["ebitda"]["rows"]}
+        self.assertLess(rows["wacc"]["median_hi"], rows["wacc"]["median_lo"])    # dearer capital, lower multiple
+        self.assertLess(rows["fade"]["median_hi"], rows["fade"]["median_lo"])    # 10% growth fading faster to 3%
+        self.assertTrue(np.all((e.driver_samples["Growth Fade"] >= 0) & (e.driver_samples["Growth Fade"] <= 1)))
+
+    def test_drawn_returns_do_not_shift_earlier_draws(self):
+        bl = {"backlog_m": 600.0, "conversion": {"type": "metalog", "p10": 0.55, "p50": 0.70, "p90": 0.85}}
+        point = dict(self.JM, roic=0.15, wacc=0.09)
+        drawn = dict(point, roic={"type": "metalog", "p10": 0.10, "p50": 0.15, "p90": 0.20})
+        a = MonteCarloEngine(self._myrg(backlog=bl, justified_multiple=point)); a.run()
+        b = MonteCarloEngine(self._myrg(backlog=bl, justified_multiple=drawn)); b.run()
+        self.assertTrue(np.array_equal(a.driver_samples["Backlog Conversion"], b.driver_samples["Backlog Conversion"]))
+        self.assertTrue(np.array_equal(a.driver_samples["Revenue CAGR"], b.driver_samples["Revenue CAGR"]))
+
+
+class ExtraDriverService(unittest.TestCase):
+    def _payload(self, **over):
+        p = {k: (list(v) if isinstance(v, tuple) else v) for k, v in MYRG.items()}
+        p["n_simulations"] = 20_000
+        p.update(over)
+        return p
+
+    JM = {"roic": {"type": "metalog", "p10": 0.17, "p50": 0.23, "p90": 0.29},
+          "wacc": {"type": "metalog", "p10": 0.091, "p50": 0.101, "p90": 0.111},
+          "fade": {"type": "metalog", "p10": 0.25, "p50": 0.5, "p90": 0.75},
+          "tax_rate": 0.266, "da_share": 0.285, "long_run_growth": 0.03, "current_growth": 0.069,
+          "current_multiple": 17.0, "premium_reversion": 0.25, "invested_capital_m": 533.49}
+
+    def test_distributional_returns_run_and_report_eva(self):
+        r = run_simulation(self._payload(justified_multiple=self.JM))
+        eva = r["meta"]["eva"]
+        self.assertAlmostEqual(eva["spread"], 0.23 - 0.101, places=9)
+        self.assertAlmostEqual(eva["eva_m"], (0.23 - 0.101) * 533.49, places=6)
+        self.assertAlmostEqual(r["meta"]["extra_quantiles"]["roic"]["p10"], 0.17, places=9)
+        keys = {row["key"] for row in r["swing"]["ebitda"]["rows"]}
+        self.assertTrue({"roic", "wacc", "fade"} <= keys)
+        # a point input is still accepted, and reported as a value
+        point = dict(self.JM, roic=0.23, wacc=0.101, fade=0.5)
+        r2 = run_simulation(self._payload(justified_multiple=point))
+        self.assertEqual(r2["meta"]["extra_quantiles"]["roic"], {"value": 0.23})
+        self.assertFalse({"roic", "wacc", "fade"} & {row["key"] for row in r2["swing"]["ebitda"]["rows"]})
+
+    def test_returns_validation(self):
+        bad = [
+            dict(self.JM, roic=None),
+            dict(self.JM, roic={"type": "metalog", "p10": -0.05, "p50": -0.01, "p90": 0.02}),
+            dict(self.JM, wacc={"type": "metalog", "p10": 0.01, "p50": 0.02, "p90": 0.03}),
+            dict(self.JM, fade=1.5),
+            dict(self.JM, roic={"type": "metalog", "p10": 0.3, "p50": 0.2, "p90": 0.4}),
+        ]
+        for jm in bad:
+            with self.assertRaises(ValidationError, msg=str(jm)):
+                run_simulation(self._payload(justified_multiple=jm))
+
+    def test_swing_and_fcf_histogram_on_the_wire(self):
+        fb = {"fcf_margin": {"type": "metalog", "p10": 0.04, "p50": 0.06, "p90": 0.08},
+              "ev_fcf_multiple": {"type": "log_metalog", "p10": 14, "p50": 18, "p90": 24, "lower": 0}}
+        r = run_simulation(self._payload(fcf_bridge=fb))
+        self.assertIn("fcf", r["swing"])
+        self.assertAlmostEqual(r["swing"]["fcf"]["median"], r["fcf_bridge"]["median_price"], places=9)
+        h = r["histogram"]
+        self.assertEqual(len(h["density_fcf"]), len(h["density"]))
+        width = h["edges"][1] - h["edges"][0]
+        self.assertLessEqual(sum(h["density_fcf"]) * width, 1.0 + 1e-6)
+        plain = run_simulation(self._payload())
+        self.assertNotIn("density_fcf", plain["histogram"]); self.assertNotIn("fcf", plain["swing"])
+        self.assertIsNone(plain["meta"]["eva"]); self.assertEqual(plain["meta"]["extra_quantiles"], {})
+
+    def test_proposals_offer_every_group(self):
+        from montecarlo.service import propose_extra_drivers
+        # TDS as filed: negative ROIC, no cost split, a small RPO
+        tds = {"available": {"cost_model": False, "backlog": True, "fcf_bridge": True, "justified_multiple": True},
+               "notes": {"justified_multiple": "ROIC as filed is -2.0%"},
+               "backlog": {"backlog_m": 74.5, "conversion": {"type": "metalog", "p10": 0.55, "p50": 0.7, "p90": 0.85}},
+               "fcf_bridge": {"fcf_margin": {"type": "metalog", "p10": 0.16, "p50": 0.186, "p90": 0.40},
+                              "ev_fcf_multiple": {"type": "log_metalog", "p10": 13.0, "p50": 18.6, "p90": 26.0, "lower": 0.0}},
+               "justified_multiple": {"roic": None, "wacc": 0.0792, "tax_rate": 0.05, "da_share": 0.8, "long_run_growth": 0.03,
+                                      "fade": 0.5, "current_growth": -0.005, "current_multiple": 17.98, "premium_reversion": 0.25},
+               "returns": {"roic": -0.0201, "invested_capital_m": 4600.2, "nopat_m": -92.5, "eva_m": -457.0}}
+        x = propose_extra_drivers(tds)
+        self.assertEqual(set(x), {"backlog", "fcf_bridge", "justified_multiple", "cost_model"})
+        jm = x["justified_multiple"]
+        self.assertIsNone(jm["roic"])                         # left for the analyst, not hidden
+        self.assertAlmostEqual(jm["filed_roic"], -0.0201)
+        self.assertEqual((jm["wacc"]["p10"], jm["wacc"]["p50"], jm["wacc"]["p90"]), (0.0692, 0.0792, 0.0892))
+        self.assertEqual((jm["fade"]["p10"], jm["fade"]["p50"], jm["fade"]["p90"]), (0.25, 0.5, 0.75))
+        self.assertFalse(x["cost_model"]["filed"]); self.assertIsNone(x["cost_model"]["gross_margin"])
+        self.assertTrue(x["backlog"]["filed"]); self.assertEqual(x["backlog"]["backlog_m"], 74.5)
+        # nothing filed at all: still offered, with the stated conversion assumption
+        empty = propose_extra_drivers(None)
+        self.assertFalse(empty["backlog"]["filed"]); self.assertIsNone(empty["backlog"]["backlog_m"])
+        self.assertEqual(empty["backlog"]["conversion"]["p50"], 0.70)
+
+    def test_proposed_returns_run_through_the_engine(self):
+        from montecarlo.service import propose_extra_drivers
+        m = {"available": {"justified_multiple": True},
+             "justified_multiple": {"roic": 0.2297, "wacc": 0.101, "tax_rate": 0.266, "da_share": 0.285, "long_run_growth": 0.03,
+                                    "fade": 0.5, "current_growth": 0.069, "current_multiple": 17.0, "premium_reversion": 0.25},
+             "returns": {"roic": 0.2297, "invested_capital_m": 533.49}}
+        p = propose_extra_drivers(m)["justified_multiple"]
+        self.assertAlmostEqual(p["roic"]["p10"], 0.2297 * 0.75, places=4)
+        block = {k: p[k] for k in ("roic", "wacc", "fade", "tax_rate", "da_share", "long_run_growth",
+                                   "current_growth", "current_multiple", "premium_reversion", "invested_capital_m")}
+        r = run_simulation(self._payload(justified_multiple=block))
+        self.assertGreater(r["stats"]["median_price"], 0)
+        self.assertAlmostEqual(r["meta"]["eva"]["eva_m"], (0.2297 - 0.101) * 533.49, places=3)
+
+
 class HorizonTermStructure(unittest.TestCase):
     """
     The distribution must open out from spot as the horizon grows. A status-quo
