@@ -206,6 +206,31 @@ On the same 2012-onward default-name set, v2 against the own-history baseline:
 588 paired snapshots, CRPS/spot a tie (delta -0.001, se 0.011), 90% coverage
 52% to 71%, median CRPS/spot 0.43.
 
+## The universe is now the S&P 600
+
+Until 15 October the "universe" was a hand-curated list of 102 tickers in
+`tools/build_peers.py`, chosen so MYRG, TDS and QuinStreet had peer groups,
+plus the harness names. It served both as the pool the SIC peer panels are
+drawn from and as the backtest set, and it was an arbitrary sample. It is now
+the S&P SmallCap 600, the index these names sit in: `montecarlo/data/sp600.txt`
+holds the constituents (603, from the public list, with GICS sector), every
+member resolves to a CIK and SIC code from EDGAR, bundled prices cover all of
+them (weekly closes plus every quarter-end close and the last sixty days, about
+9 MB), and the backtest runs over the whole index at a two-year horizon from
+2012. Exact-SIC peer groups become possible for most members instead of the
+two-digit fallback; the hand-picked comparables for the three names in use
+stay in force. The curated names outside the index (Quanta, Dycom, Apple and
+the rest) remain in `peers.json` as comparables but are no longer the universe.
+
+## Pitch assessor and the path chart
+
+The results page now opens with the price history, the forecast fan (P5 to P95
+and P25 to P75 from spot to the horizon) and the terminal distribution drawn
+vertically at the horizon, the way a volume profile sits beside a price chart,
+with the targets and median across it. The pitch assessor image carries that
+chart, the scenario probability bars and the histogram beside the figures, with
+no calibration or copula lines and no run subtitle.
+
 ## Data corrections the harness surfaced
 
 - Minority interest and preferred stock now come off enterprise value. TDS

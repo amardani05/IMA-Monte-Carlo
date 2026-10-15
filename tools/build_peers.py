@@ -38,14 +38,27 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "montecarlo", "data", "peers
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--add", nargs="*", default=[])
+ap.add_argument("--from-file", default=None, help="tickers, one per line (TICKER|name|sector lines accepted)")
+ap.add_argument("--replace", action="store_true", help="drop names not in the file or the curated list")
 args = ap.parse_args()
+FILE_NAMES, FILE_META = [], {}
+if args.from_file:
+    for line in open(args.from_file):
+        line = line.strip()
+        if not line or line.startswith("COUNT") or line.startswith("#"):
+            continue
+        parts = line.split("|")
+        t = parts[0].strip().upper().replace(".", "-")
+        FILE_NAMES.append(t)
+        if len(parts) >= 3:
+            FILE_META[t] = {"index_name": parts[1].strip(), "gics_sector": parts[2].strip()}
 
 existing = {}
 if os.path.exists(OUT):
     existing = json.load(open(OUT))
 
-names = sorted(set(UNIVERSE) | set(t.upper() for t in args.add) | set(existing))
-out = dict(existing)
+names = sorted(set(UNIVERSE) | set(t.upper() for t in args.add) | set(FILE_NAMES) | (set() if args.replace else set(existing)))
+out = {t: v for t, v in existing.items() if t in names} if args.replace else dict(existing)
 for t in names:
     if t in out and out[t].get("sic"):
         continue
@@ -53,11 +66,14 @@ for t in names:
         cik, title = md.resolve_cik(t)
         meta = md.company_meta(cik)
         out[t] = {"cik": cik, "name": meta.get("name") or title, "sic": meta.get("sic"),
-                  "sic_description": meta.get("sic_description"), "exchanges": meta.get("exchanges")}
+                  "sic_description": meta.get("sic_description"), "exchanges": meta.get("exchanges"),
+                  **FILE_META.get(t, {}), "in_sp600": t in FILE_NAMES}
         print(f"  {t:<6} SIC {meta.get('sic')}  {meta.get('sic_description')}")
     except md.DataError as exc:
         print(f"  {t:<6} skipped: {exc}")
-    time.sleep(0.15)
+    time.sleep(0.12)
+    if len(out) % 50 == 0:
+        print(f"  {len(out)} resolved", flush=True)
 
 with open(OUT, "w") as fh:
     json.dump(out, fh, indent=1, sort_keys=True)

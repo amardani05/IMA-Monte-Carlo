@@ -28,6 +28,21 @@ ap.add_argument("tickers", nargs="*")
 ap.add_argument("--years", type=int, default=12)
 args = ap.parse_args()
 
+def thin(series):
+    """
+    Keep every fifth trading day, the last trading day of each calendar
+    quarter (year-end multiples need the real close), and the last 60 days in
+    full. Six hundred names at twelve years come to about 9 MB this way.
+    """
+    out, n = [], len(series)
+    for i, (d, c) in enumerate(series):
+        nxt = series[i + 1][0] if i + 1 < n else None
+        quarter_end = nxt is None or nxt[:7] != d[:7] and int(d[5:7]) % 3 == 0
+        if i % 5 == 0 or quarter_end or i >= n - 60:
+            out.append([d, round(c, 4)])
+    return out
+
+
 names = [t.upper() for t in args.tickers] or sorted(set(panel.peers_map()) | set(backtest.DEFAULT_NAMES) | {"SPY"})
 os.makedirs(OUT, exist_ok=True)
 ok = 0
@@ -40,9 +55,11 @@ for t in names:
     if not series:
         print(f"  {t:<6} skipped: empty")
         continue
-    doc = {"as_of": date.today().isoformat(), "symbol": t, "closes": [[d, round(c, 4)] for d, c in sorted(series)]}
+    doc = {"as_of": date.today().isoformat(), "symbol": t, "closes": thin(sorted(series))}
     with open(os.path.join(OUT, f"{t}.json"), "w") as fh:
         json.dump(doc, fh, separators=(",", ":"))
     ok += 1
-    time.sleep(0.2)
+    time.sleep(0.05)
+    if ok % 50 == 0:
+        print(f"  {ok} done", flush=True)
 print(f"wrote {ok} series to {os.path.normpath(OUT)}")

@@ -406,6 +406,69 @@ function tornadoChart(r) {
   return frame(g, `Driver sensitivity. Widest swing: ${top.name}, ${money0(top.lo)} to ${money0(top.hi)}.`);
 }
 
+/* Price path with the forecast fan and the terminal distribution drawn vertically */
+let lastPath = null;
+async function fetchPath(ticker) {
+  try {
+    const res = await fetch(`/api/prices/${encodeURIComponent(ticker)}?years=3`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) { return null; }
+}
+function pathChart(r, path) {
+  const m = r.meta, s = r.stats, closes = (path && path.closes) || [];
+  const PW = 1120, PH = 420, L = { t: 18, r: 150, b: 36, l: 56 }, iw = PW - L.l - L.r, ih = PH - L.t - L.b;
+  const t0 = closes.length ? Date.parse(closes[0][0]) : Date.now(), tSpot = Date.now();
+  const tEnd = tSpot + m.horizon_years * 365.25 * 864e5;
+  const hist = r.histogram, edges = hist.edges, dens = hist.density;
+  const prices = closes.map((c) => c[1]).concat([m.current_price, s.p5, s.p95, m.bear_price, m.bull_price, m.base_price]);
+  let yMin = Math.min(...prices), yMax = Math.max(...prices); const padY = (yMax - yMin) * 0.06; yMin = Math.max(0, yMin - padY); yMax += padY;
+  const sx = (t) => L.l + ((t - t0) / (tEnd - t0)) * iw, sy = (v) => L.t + ih - ((v - yMin) / (yMax - yMin)) * ih;
+  let g = "";
+  // grid and axes
+  niceTicks(yMin, yMax, 6).forEach((v) => { g += `<line x1="${L.l}" y1="${sy(v).toFixed(1)}" x2="${L.l + iw}" y2="${sy(v).toFixed(1)}" stroke="${C.grid}"/><text x="${L.l - 8}" y="${(sy(v) + 3.5).toFixed(1)}" fill="${C.muted}" font-size="10.5" text-anchor="end">${money0(v)}</text>`; });
+  const yearStart = new Date(t0).getFullYear(), yearEnd = new Date(tEnd).getFullYear();
+  for (let y = yearStart; y <= yearEnd; y++) { const t = Date.parse(`${y}-01-01`); if (t > t0 && t < tEnd) g += `<line x1="${sx(t).toFixed(1)}" y1="${L.t}" x2="${sx(t).toFixed(1)}" y2="${L.t + ih}" stroke="${C.grid}"/><text x="${sx(t).toFixed(1)}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="10.5" text-anchor="middle">${y}</text>`; }
+  // forecast fan: P5-P95 light, P25-P75 darker, from spot to the horizon
+  const xs = sx(tSpot), xe = sx(tEnd), ys = sy(m.current_price);
+  g += `<polygon points="${xs},${ys} ${xe},${sy(s.p95)} ${xe},${sy(s.p5)}" fill="${C.blue}" opacity="0.10"/>`;
+  g += `<polygon points="${xs},${ys} ${xe},${sy(s.p75)} ${xe},${sy(s.p25)}" fill="${C.blue}" opacity="0.16"/>`;
+  g += `<line x1="${xs}" y1="${ys}" x2="${xe}" y2="${sy(s.median_price)}" stroke="${C.purple}" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  // price history
+  if (closes.length) {
+    const pts = closes.map((c) => `${sx(Date.parse(c[0])).toFixed(1)},${sy(c[1]).toFixed(1)}`).join(" ");
+    g += `<polyline points="${pts}" fill="none" stroke="${C.text}" stroke-width="1.4"/>`;
+  }
+  g += `<line x1="${xs}" y1="${L.t}" x2="${xs}" y2="${L.t + ih}" stroke="${C.axis}" stroke-dasharray="2 3"/>`;
+  g += `<text x="${xs}" y="${L.t + ih + 16}" fill="${C.muted}" font-size="10.5" text-anchor="middle">today</text>`;
+  // terminal distribution, drawn vertically at the horizon like a volume profile
+  const dMax = Math.max(...dens) || 1, profW = L.r - 24, x0 = L.l + iw;
+  g += `<line x1="${x0}" y1="${L.t}" x2="${x0}" y2="${L.t + ih}" stroke="${C.axis}"/>`;
+  for (let i = 0; i < dens.length; i++) {
+    if (dens[i] <= 0) continue;
+    const yTop = sy(edges[i + 1]), yBot = sy(edges[i]);
+    if (yBot < L.t || yTop > L.t + ih) continue;
+    const w = (dens[i] / dMax) * profW;
+    g += `<rect x="${x0}" y="${Math.max(yTop, L.t).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(Math.min(yBot, L.t + ih) - Math.max(yTop, L.t), 0.6).toFixed(1)}" fill="${C.blue}" opacity="0.72"/>`;
+  }
+  // targets and median across the profile
+  [["Bear", m.bear_price, C.red], ["Base", m.base_price, C.amber], ["Bull", m.bull_price, C.green], ["Median", s.median_price, C.purple]].forEach(([lbl, v, col]) => {
+    if (v < yMin || v > yMax) return;
+    g += `<line x1="${xs}" y1="${sy(v).toFixed(1)}" x2="${x0 + profW}" y2="${sy(v).toFixed(1)}" stroke="${col}" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+    g += `<text x="${x0 + profW + 4}" y="${(sy(v) + 3.5).toFixed(1)}" fill="${col}" font-size="10" font-weight="600">${lbl} ${money0(v)}</text>`;
+  });
+  g += `<text x="${x0 + 4}" y="${L.t - 4}" fill="${C.muted}" font-size="10">terminal distribution</text>`;
+  g += `<text x="${L.l}" y="${L.t - 4}" fill="${C.muted}" font-size="10">close, then P5 to P95 and P25 to P75 fan to the horizon</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}" width="${PW}" height="${PH}" role="img" aria-label="Price history with the forecast fan and the terminal price distribution drawn vertically at the horizon. Median ${money(s.median_price)}." font-family="IBM Plex Sans, ui-sans-serif, system-ui, sans-serif">${g}</svg>`;
+}
+async function renderPath(r) {
+  const panel = $("pathPanel");
+  lastPath = await fetchPath(r.meta.ticker);
+  $("chartPath").innerHTML = pathChart(r, lastPath);
+  $("capPath").textContent = lastPath && lastPath.closes.length ? `Price path (closes to ${lastPath.as_of}) and the terminal distribution at ${r.meta.horizon_years} years` : `Forecast fan and terminal distribution at ${r.meta.horizon_years} years (no price history available)`;
+  panel.hidden = false;
+}
+
 /* Tables and panels */
 const seCell = (p, se) => `<td class="num">${pct(p)}<span class="se">&plusmn;${(se * 100).toFixed(2)}</span></td>`;
 function summaryTables(r) {
@@ -494,6 +557,7 @@ function render(r, payload) {
   $("cap1").textContent = `Terminal price distribution, ${m.horizon_years}-year, ${m.n_simulations.toLocaleString()} paths`;
   $("chartHist").innerHTML = histChart(r); $("chartBars").innerHTML = barsChart(r); $("chartCdf").innerHTML = cdfChart(r); $("chartTornado").innerHTML = tornadoChart(r);
   $("summaryTables").innerHTML = summaryTables(r); $("sensitivityTables").innerHTML = sensitivityTables(r);
+  renderPath(r);
   ["shareBtn", "pinBtn", "exportPng", "exportJson", "logRun", "assessBtn"].forEach((id) => { $(id).disabled = false; });
 }
 
@@ -522,8 +586,6 @@ function assessorRows(r, payload) {
   const rows = [
     ["Company", `${m.company_name} (${m.ticker})`], ["Run date", new Date().toISOString().slice(0, 10)],
     ["Spot", money(m.current_price)], ["Horizon", `${m.horizon_years} years`], ["Paths", m.n_simulations.toLocaleString()],
-    ["Calibration", lastPrefill?.calibration === "v2" ? `v2, peer panel (${lastPrefill.panel?.basis || "SIC"})` : "own history"],
-    ["Copula", m.copula === "t" ? `Student-t, df ${m.copula_df}` : "Gaussian"],
     ["Mechanisms", Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, " ")).join(", ") || "none"],
     ["", ""],
     ["Bear target", `${money(m.bear_price)} (${spct(m.bear_price / m.current_price - 1, 0)})`], ["Base target", `${money(m.base_price)} (${spct(m.base_price / m.current_price - 1, 0)})`], ["Bull target", `${money(m.bull_price)} (${spct(m.bull_price / m.current_price - 1, 0)})`],
@@ -565,25 +627,24 @@ function assessorVerdict(r) {
 async function exportAssessor() {
   if (!lastResult) return;
   const r = lastResult, m = r.meta, rows = assessorRows(r, lastPayload), verdict = assessorVerdict(r);
-  const scale = 2, Wc = 1240, left = 40, colW = 560, lineH = 22;
+  const scale = 2, Wc = 1240, left = 40, colW = 520, lineH = 22;
   const tableH = rows.length * lineH;
-  const Hc = 150 + Math.max(tableH, 2 * 300 + 24) + 40 + 90;
+  const cw = Wc - (left + colW + 40) - left, ch = cw * H / W, pathH = cw * 420 / 1120;
+  const Hc = 130 + Math.max(tableH, pathH + 24 + 2 * ch + 24) + 50;
   const canvas = document.createElement("canvas"); canvas.width = Wc * scale; canvas.height = Hc * scale;
   const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, Wc, Hc);
   ctx.fillStyle = "#1b4b8a"; ctx.fillRect(0, 0, Wc, 6);
   ctx.fillStyle = C.text; ctx.font = "600 24px IBM Plex Sans, system-ui, sans-serif";
-  ctx.fillText(`${m.company_name} (${m.ticker}): pitch assessment`, left, 48);
-  ctx.fillStyle = C.muted; ctx.font = "13px IBM Plex Mono, ui-monospace, monospace";
-  ctx.fillText(`${m.n_simulations.toLocaleString()} paths, ${m.horizon_years}-year horizon, spot ${money(m.current_price)}, ${new Date().toISOString().slice(0, 10)}. Model output, not investment advice.`, left, 72);
+  ctx.fillText(`${m.company_name} (${m.ticker}): pitch assessment`, left, 50);
   // verdict box
-  ctx.fillStyle = "#e8eff8"; ctx.fillRect(left, 88, Wc - 2 * left, 46);
+  ctx.fillStyle = "#e8eff8"; ctx.fillRect(left, 66, Wc - 2 * left, 46);
   ctx.fillStyle = C.text; ctx.font = "500 13.5px IBM Plex Sans, system-ui, sans-serif";
-  const words = verdict.split(" "); let line = "", y = 108; const maxW = Wc - 2 * left - 24;
+  const words = verdict.split(" "); let line = "", y = 86; const maxW = Wc - 2 * left - 24;
   for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW) { ctx.fillText(line, left + 12, y); line = w; y += 18; } else line = t; }
   ctx.fillText(line, left + 12, y);
   // table
-  let ty = 160;
+  let ty = 140;
   rows.forEach(([k, v]) => {
     if (k) {
       ctx.fillStyle = C.muted; ctx.font = "12.5px IBM Plex Sans, system-ui, sans-serif"; ctx.fillText(k, left, ty);
@@ -592,10 +653,14 @@ async function exportAssessor() {
     }
     ty += lineH;
   });
-  // charts on the right
-  const imgs = await Promise.all(["chartHist", "chartCdf"].map((id) => svgToImage($(id).querySelector("svg"))));
-  const cx = left + colW + 40, cw = Wc - cx - left, ch = cw * H / W;
-  imgs.forEach((img, i) => ctx.drawImage(img, cx, 150 + i * (ch + 24), cw, ch));
+  // charts on the right: the price path with the terminal distribution, the probability bars, the histogram
+  const cx = left + colW + 40;
+  const ids = ["chartPath", "chartBars", "chartHist"].filter((id) => $(id).querySelector("svg"));
+  const imgs = await Promise.all(ids.map((id) => svgToImage($(id).querySelector("svg"))));
+  let cy = 130;
+  imgs.forEach((img, i) => { const h = ids[i] === "chartPath" ? pathH : ch; ctx.drawImage(img, cx, cy, cw, h); cy += h + 24; });
+  ctx.fillStyle = C.faint; ctx.font = "11px IBM Plex Mono, ui-monospace, monospace";
+  ctx.fillText("Model output, not investment advice.", left, Hc - 16);
   const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${m.ticker}_pitch_assessment.png`; a.click();
   // and the same figures as a tab-separated block for Excel
   const tsv = rows.filter(([k]) => k).map(([k, v]) => `${k}\t${v}`).join("\n") + `\nVerdict\t${verdict}`;

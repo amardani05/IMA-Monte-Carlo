@@ -67,6 +67,22 @@ def company(ticker: str):
     return response
 
 
+@app.get("/api/prices/<ticker>")
+def price_path(ticker: str):
+    """Closes for the path chart: bundled series first, Yahoo second. Years capped at 10."""
+    from montecarlo import prices
+    years = min(max(request.args.get("years", default=3, type=int), 1), 10)
+    try:
+        series = prices.price_history(ticker, years)
+    except prices.PriceError as exc:
+        return jsonify(error=str(exc)), 404
+    start = (datetime.date.today() - datetime.timedelta(days=int(365.25 * years))).isoformat()
+    pts = [[d, c] for d, c in series if d >= start]
+    resp = jsonify(ticker=ticker.upper(), closes=pts, as_of=pts[-1][0] if pts else None)
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
 @app.post("/api/simulate")
 def simulate():
     payload = request.get_json(silent=True)
