@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "about": "Pitches from the FA26 equity research reports. Prices, dates, targets, case multiples and report financials are as written in each report; drivers come from SEC filings through auto-fill.",
+  "examples": [
+    {
+      "id": "myrg-fa26",
+      "label": "MYRG: FA26 hold (22 Sep 2026)",
+      "ticker": "MYRG",
+      "company_name": "MYR Group",
+      "rating": "Hold",
+      "pitch_date": "2026-09-22",
+      "current_price": 279.28,
+      "targets": {
+        "bear": 163.44,
+        "base": 304.76,
+        "bull": 389.48
+      },
+      "horizon_years": 2.25,
+      "horizon_basis": "Targets are year-end FY2028 (the report's PT path runs FY2026, FY2027, FY2028).",
+      "case_multiples": {
+        "bear": 12.0,
+        "base": 17.0,
+        "bull": 18.5,
+        "basis": "EV/NTM EBITDA"
+      },
+      "report_financials": {
+        "FY2026E": {
+          "revenue_m": 4514,
+          "ebitda_m": 276
+        },
+        "FY2028E": {
+          "revenue_m": 5915,
+          "ebitda_m": 350
+        }
+      },
+      "target_year": "FY2028E",
+      "mechanisms": {
+        "backlog": {
+          "backlog_m": 3160.0,
+          "conversion": {
+            "type": "metalog",
+            "p10": 0.55,
+            "p50": 0.72,
+            "p90": 0.85
+          }
+        }
+      },
+      "source": "FA26 MYRG equity research report, 22 Sep 2026: pitch details and Model Integration.",
+      "notes": [
+        "Record backlog of $3.16B with roughly 72% expected to convert within a year (report, Risks to Thesis); the conversion P50 is set to 0.72, P10 and P90 are the app's defaults."
+      ],
+      "dcf_path": {
+        "rev_cagr": 0.2381,
+        "ebitda_margin": 0.0592,
+        "ev_ebitda_multiple": 17.0,
+        "basis": "FY2028E revenue $5,915M and EBITDA $350M from the report, at the base multiple; growth compounds from filed FY revenue $3,657.9M over 2.25 years, the engine's basis."
+      },
+      "dcf_path_check": {
+        "price_at_pitch_date": 408.05
+      }
+    },
+    {
+      "id": "calm-fa26",
+      "label": "CALM: FA26 buy (24 Sep 2026)",
+      "ticker": "CALM",
+      "company_name": "Cal-Maine Foods",
+      "rating": "Buy",
+      "pitch_date": "2026-09-24",
+      "current_price": 73.13,
+      "targets": {
+        "bear": 49.69,
+        "base": 91.9,
+        "bull": 110.22
+      },
+      "horizon_years": 1.75,
+      "horizon_basis": "Targets are on FY2028E EBITDA; Cal-Maine's FY2028 ends around June 2028.",
+      "case_multiples": {
+        "bear": 5.5,
+        "base": 5.5,
+        "bull": 5.5,
+        "basis": "EV/EBITDA on FY2028E, held constant in all cases"
+      },
+      "report_financials": {
+        "FY2027E": {
+          "revenue_m": 2982,
+          "ebitda_m": 461
+        },
+        "FY2028E": {
+          "revenue_m": 3259,
+          "ebitda_m": 567
+        }
+      },
+      "target_year": "FY2028E",
+      "source": "FA26 CALM equity research report, 24 Sep 2026: pitch details, Valuation and Scenario Analysis.",
+      "notes": [
+        "The report holds the multiple at 5.5x in every case, so its bear-to-bull spread is all egg prices, feed and volume. The simulation's multiple still varies over CALM's filed history."
+      ],
+      "dcf_path": {
+        "rev_cagr": 0.0665,
+        "ebitda_margin": 0.174,
+        "ev_ebitda_multiple": 5.5,
+        "basis": "FY2028E revenue $3,259M and EBITDA $567M from the report, at the base multiple; growth compounds from filed FY revenue $2,911.6M over 1.75 years, the engine's basis."
+      },
+      "dcf_path_check": {
+        "price_at_pitch_date": 106.01
+      }
+    },
+    {
+      "id": "ral-fa26",
+      "label": "RAL: FA26 buy (17 Sep 2026)",
+      "ticker": "RAL",
+      "company_name": "Ralliant",
+      "rating": "Buy",
+      "pitch_date": "2026-09-17",
+      "current_price": 67.25,
+      "targets": {
+        "bear": 54.19,
+        "base": 97.04,
+        "bull": 114.22
+      },
+      "horizon_years": 2.25,
+      "horizon_basis": "Not stated. At 19.0x the base target implies about $615M of EBITDA, above the report's FY2027E $575M, so the targets sit on FY2028; year-end FY2028 is 2.25 years out.",
+      "case_multiples": {
+        "bear": 14.0,
+        "base": 19.0,
+        "bull": 21.0,
+        "basis": "EV/EBITDA"
+      },
+      "report_financials": {
+        "FY2026E": {
+          "revenue_m": 2298,
+          "ebitda_m": 469
+        },
+        "FY2027E": {
+          "revenue_m": 2568,
+          "ebitda_m": 575
+        }
+      },
+      "target_year": null,
+      "source": "FA26 RAL equity research report, 17 Sep 2026: Valuation section.",
+      "notes": [
+        "The report's pitch details box gives different targets ($89 base, $104 upside, $50 downside) from its Valuation section ($97.04, $114.22, $54.19); the Valuation figures are used because they match the stated +44%, +70% and -19% at $67.25 and carry the case multiples.",
+        "No base-case path: the report gives no FY2028 revenue or EBITDA."
+      ]
+    }
+  ]
+}
