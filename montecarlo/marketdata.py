@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import math
 
 import numpy as np
 import os
@@ -1236,6 +1237,7 @@ V2_DEFAULTS = {
     "width_scale": 1.0,     # no horizon inflation of the cross-sectional width
     "growth_centre": "own", # growth P50 is the company's own realised median
     "target": "own",        # margin reverts toward the company's own long-run median
+    "mult_momentum": 0.0,   # Phase 5 prototype: shift log P50 of the multiple by beta x last year's change in the peer median
 }
 
 
@@ -1370,6 +1372,15 @@ def calibrate_drivers_v2(profile: dict, panel: Optional[dict], horizon_years: fl
     ref_mu = pn.get("multiple")
     lam_mu = float(P["lam_mult"])  # multiples revert more slowly than margins; backtest-tuned
     own_mu = _q_of(list((profile.get("multiple_history") or {}).values()))
+    momentum_note = ""
+    mby = pn.get("multiple_by_year") or {}
+    if cur and cur > 0 and float(P.get("mult_momentum", 0)) and len(mby) >= 2:
+        ys = sorted(mby, key=int)
+        last, prev = mby[ys[-1]], mby[ys[-2]]
+        if last > 0 and prev > 0:
+            shift = float(P["mult_momentum"]) * math.log(last / prev)
+            cur = cur * math.exp(shift)
+            momentum_note = f" Peer multiples moved {last/prev-1:+.0%} over the last year; the centre carries {float(P['mult_momentum']):.1f}x of that."
     if cur and cur > 0:
         if ref_mu or own_mu:
             n_mu = own_mu["n"] if own_mu else 0
@@ -1393,7 +1404,7 @@ def calibrate_drivers_v2(profile: dict, panel: Optional[dict], horizon_years: fl
             mnote = f"anchored on today's {cur:.1f}x, no panel; plus or minus 20 to 25%"
         p10, p50, p90 = _ensure_order(p10, p50, p90, 0.25)
         specs["ev_ebitda_multiple"] = {"type": "log_metalog", "p10": round(p10, 4), "p50": round(p50, 4), "p90": round(p90, 4), "lower": 0.0}
-        notes["ev_ebitda_multiple"] = f"Exit multiple: {mnote}.{anchor_note} Your comps view goes in P50."
+        notes["ev_ebitda_multiple"] = f"Exit multiple: {mnote}.{anchor_note}{momentum_note} Your comps view goes in P50."
         refs["ev_ebitda_multiple"] = {"current": round(cur, 2), "path_end": round(p50, 2), "panel": ref_mu, "lambda": lam_mu}
     else:
         specs["ev_ebitda_multiple"] = {"type": "log_metalog", "p10": 8.0, "p50": 11.0, "p90": 15.0, "lower": 0.0}
@@ -1628,9 +1639,14 @@ def mechanisms(profile: dict, fields: dict, drivers: dict, horizon_years: float)
 
     # FCF bridge
     fcf = profile.get("fcf_history_m") or {}
+    vals = None
     if len(fcf) >= 3 and fields.get("current_revenue"):
-        fm = {int(y): v / profile["revenue_history_m"][y] for y, v in fcf.items() if y in profile["revenue_history_m"]}
-        vals = list(fm.values())
+        fm = {int(y): v / profile["revenue_history_m"][y] for y, v in fcf.items()
+              if profile["revenue_history_m"].get(y, 0) > 0}
+        vals = [fm[y] for y in sorted(fm)]
+        if len(vals) < 3:
+            vals = None
+    if len(fcf) >= 3 and fields.get("current_revenue") and vals:
         q = _q_of(vals) or {"p10": vals[-1] - 0.02, "p50": vals[-1], "p90": vals[-1] + 0.02}
         latest_fm = vals[-1]
         lo_w, hi_w = max(q["p50"] - q["p10"], 0.005), max(q["p90"] - q["p50"], 0.005)
@@ -1661,26 +1677,50 @@ def mechanisms(profile: dict, fields: dict, drivers: dict, horizon_years: float)
     # justified multiple
     latest = profile["latest_fy"]
     rc = returns_on_capital(facts, rev_hist, ebitda_hist, da, latest, profile.get("market_cap_m"), profile.get("net_debt_m")) if facts else {}
-    if rc.get("roic") and rc["roic"] > 0 and profile.get("current_ev_ebitda"):
+    if rc and profile.get("current_ev_ebitda"):
         g_mode = (drivers.get("driver_specs", {}).get("rev_cagr", {}) or {}).get("p50")
         if g_mode is None:
             g_mode = drivers["rev_cagr"][1]
+        roic = rc.get("roic")
+        positive = roic is not None and roic > 0
+        eva = None
+        if rc.get("invested_capital_m"):
+            eva = rc["nopat_m"] - rc["wacc"] * rc["invested_capital_m"]
         out["justified_multiple"] = {
-            "roic": round(rc["roic"], 4), "wacc": round(rc["wacc"], 4), "tax_rate": round(rc["tax_rate"], 3),
+            "roic": round(roic, 4) if positive else None,
+            "wacc": round(rc["wacc"], 4), "tax_rate": round(rc["tax_rate"], 3),
             "da_share": round(rc["da_share"], 3), "long_run_growth": 0.03, "fade": 0.5,
             "current_growth": round(float(g_mode), 4), "current_multiple": round(profile["current_ev_ebitda"], 3),
             "premium_reversion": 0.5,
         }
         out["available"]["justified_multiple"] = True
-        out["notes"]["justified_multiple"] = (
-            f"ROIC {rc['roic']*100:.1f}% (NOPAT ${rc['nopat_m']:,.0f}M over invested capital ${rc['invested_capital_m']:,.0f}M, FY{latest}), "
-            f"tax {rc['tax_rate']*100:.0f}% ({rc['tax_rate_source']}), WACC {rc['wacc']*100:.1f}% "
-            f"(cost of equity {rc['cost_of_equity']*100:.1f}% from a 5-year weekly beta against SPY, risk-free 4.2%, ERP 4.5%; debt at 6%). "
-            "The exit multiple becomes a function of drawn growth and these returns; today's premium to the justified multiple halves over the horizon. "
-            "A ROIC or EVA thesis changes the multiple through this block."
+        base_note = (
+            f"Tax {rc['tax_rate']*100:.0f}% ({rc['tax_rate_source']}), WACC {rc['wacc']*100:.1f}% "
+            f"(cost of equity {rc['cost_of_equity']*100:.1f}% from a 5-year weekly beta against SPY, risk-free 4.2%, ERP 4.5%; debt at 6%), "
+            f"D&A {rc['da_share']*100:.0f}% of EBITDA. "
         )
-        out["returns"] = rc
+        if positive:
+            out["notes"]["justified_multiple"] = (
+                f"ROIC {roic*100:.1f}% (NOPAT ${rc['nopat_m']:,.0f}M over invested capital ${rc['invested_capital_m']:,.0f}M, FY{latest}). "
+                + (f"EVA ${eva:,.0f}M (NOPAT less WACC x invested capital). " if eva is not None else "")
+                + base_note
+                + "The exit multiple becomes a function of drawn growth and these returns; today's premium to the justified multiple halves over the horizon."
+            )
+        else:
+            out["notes"]["justified_multiple"] = (
+                f"ROIC as filed is {(roic or 0)*100:.1f}% for FY{latest}: NOPAT ${rc['nopat_m']:,.0f}M on invested capital "
+                f"${(rc.get('invested_capital_m') or 0):,.0f}M, because operating income was negative after D&A. "
+                + (f"EVA ${eva:,.0f}M. " if eva is not None else "")
+                + base_note
+                + "A justified multiple needs a positive return on capital, so the ROIC field is left for you: enter the return you "
+                "underwrite on normalised operating income, or value this name on the FCF bridge instead."
+            )
+        out["returns"] = {**rc, "eva_m": eva}
     else:
         out["available"]["justified_multiple"] = False
-        out["notes"]["justified_multiple"] = "Equity or operating income is not tagged in a form that yields a return on capital."
+        out["notes"]["justified_multiple"] = (
+            "No current multiple, so no justified multiple yet; enter a price first."
+            if not profile.get("current_ev_ebitda") else
+            "Equity, operating income or tax is not tagged in a form that yields a return on capital."
+        )
     return out

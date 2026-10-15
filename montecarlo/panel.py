@@ -127,6 +127,7 @@ def build_panel(ticker: str, sic: Optional[int], horizon_years: float = 2.0,
     span = max(1, int(round(horizon_years)))
     margins, cagrs, mults = [], [], []
     margin_series, growth_series, mult_series = [], [], []
+    by_year_mult: dict = {}
     used = []
     for p in peers:
         try:
@@ -156,6 +157,8 @@ def build_panel(ticker: str, sic: Optional[int], horizon_years: float = 2.0,
             if mh_p:
                 mults.extend(mh_p.values())
                 mult_series.append({y: math.log(v) for y, v in mh_p.items() if v > 0})
+                for y, v in mh_p.items():
+                    by_year_mult.setdefault(y, []).append(v)
     center = float(np.median(margins)) if margins else None
     rev = _reversion_rate(margin_series, center) if center is not None else None
 
@@ -181,6 +184,7 @@ def build_panel(ticker: str, sic: Optional[int], horizon_years: float = 2.0,
         "ticker": ticker.upper(), "sic": sic, "basis": basis, "peers_used": used,
         "as_of": as_of, "horizon_years": horizon_years,
         "margin": _q(margins), "cagr": _q(cagrs), "multiple": _q(mults),
+        "multiple_by_year": {str(y): float(np.median(v)) for y, v in sorted(by_year_mult.items()) if len(v) >= 3},
         "margin_reversion": rev or {"lambda": FAMA_FRENCH_LAMBDA, "n_pairs": 0, "fallback": "Fama-French 2000"},
         "corr_changes": corr,
     }

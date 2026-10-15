@@ -30,6 +30,31 @@ def _v2(params):
     return lambda t, p, h, a, hy=10: phase2_prefill(t, p, h, a, hy, params=params)
 
 
+def _with_mechanism(kind, params=None):
+    """v2 prefill with one Phase 3 block lifted into the payload when filings support it."""
+    def f(t, p, h, a, hy=10):
+        pre = phase2_prefill(t, p, h, a, hy, params=params)
+        m = pre.get("mechanisms") or {}
+        block = m.get(kind)
+        if m.get("available", {}).get(kind) and block and not (kind == "justified_multiple" and block.get("roic") is None):
+            pre[kind] = block
+        return pre
+    return f
+
+
+def _fcf_scored(payload):
+    """Score the FCF bridge's price where the payload carries one, else the EBITDA bridge."""
+    from .engine import MonteCarloEngine, PitchAssumptions
+    kw = {k: v for k, v in payload.items() if k in PitchAssumptions.__dataclass_fields__}
+    for k in ("rev_cagr", "ebitda_margin", "ev_ebitda_multiple", "net_debt_change_pct", "share_dilution_pct"):
+        kw[k] = tuple(kw[k])
+    if kw.get("correlation_matrix") is not None:
+        kw["correlation_matrix"] = np.asarray(kw["correlation_matrix"], dtype=float)
+    kw.update(n_simulations=20_000, random_seed=42)
+    e = MonteCarloEngine(PitchAssumptions(**kw)); e.run()
+    return e.terminal_prices_fcf if e.terminal_prices_fcf is not None else e.terminal_prices
+
+
 REGISTRY = {
     # name: (model_fn, prefill_fn or None)
     "default": (backtest.default_model, None),
@@ -47,6 +72,14 @@ REGISTRY = {
     "v2_owntarget": (backtest.default_model, _v2({"target": "own"})),
     "v2_owntarget_tight": (backtest.default_model, _v2({"target": "own", "k_shrink": 3.0, "lam_mult": 0.0, "width_scale": 1.0})),
     "v2_owntarget_tight_owng": (backtest.default_model, _v2({"target": "own", "k_shrink": 3.0, "lam_mult": 0.0, "width_scale": 1.0, "growth_centre": "own"})),
+    # Phase 3 on the harness: each mechanism switched on where filings support it
+    "phase3_jm": (backtest.default_model, _with_mechanism("justified_multiple")),
+    "phase3_cost": (backtest.default_model, _with_mechanism("cost_model")),
+    "phase3_backlog": (backtest.default_model, _with_mechanism("backlog")),
+    "phase3_fcf": (_fcf_scored, _with_mechanism("fcf_bridge")),
+    # Phase 5 prototype: sector multiple momentum carried into the multiple centre
+    "p5_mom05": (backtest.default_model, _v2({"mult_momentum": 0.5})),
+    "p5_mom10": (backtest.default_model, _v2({"mult_momentum": 1.0})),
 }
 
 

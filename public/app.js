@@ -158,7 +158,7 @@ function setMech(m, block, on) {
       form.fb_fm_p10.value = block.fcf_margin.p10; form.fb_fm_p50.value = block.fcf_margin.p50; form.fb_fm_p90.value = block.fcf_margin.p90;
       form.fb_mult_p10.value = block.ev_fcf_multiple.p10; form.fb_mult_p50.value = block.ev_fcf_multiple.p50; form.fb_mult_p90.value = block.ev_fcf_multiple.p90;
     } else if (m === "justified_multiple") {
-      form.jm_roic.value = block.roic; form.jm_wacc.value = block.wacc; form.jm_tax.value = block.tax_rate; form.jm_da.value = block.da_share;
+      form.jm_roic.value = block.roic ?? ""; form.jm_wacc.value = block.wacc; form.jm_tax.value = block.tax_rate; form.jm_da.value = block.da_share;
       form.jm_lrg.value = block.long_run_growth ?? 0.03; form.jm_fade.value = block.fade ?? 0.5; form.jm_prem.value = block.premium_reversion ?? 0.5;
       d.dataset.currentGrowth = block.current_growth ?? ""; d.dataset.currentMultiple = block.current_multiple ?? "";
     }
@@ -268,7 +268,13 @@ function fillFromPrefill(data) {
   form.ticker.value = f.ticker; form.company_name.value = f.company_name;
   ["current_revenue", "current_ebitda_margin", "current_ev", "current_net_debt", "shares_outstanding", "horizon_years"]
     .forEach((k) => { if (f[k] !== null && f[k] !== undefined) form[k].value = f[k]; });
-  if (f.current_price !== null && f.current_price !== undefined) form.current_price.value = f.current_price;
+  if (f.current_price !== null && f.current_price !== undefined) {
+    form.current_price.value = round(f.current_price, 2);
+    const pl = document.querySelector('label[data-field="current_price"]');
+    pl.prepend(badge("quote", data.provenance.current_price || "quote", ""));
+  } else {
+    form.current_price.value = "";
+  }
   if (data.driver_specs) applySpecs(data.driver_specs);
   else { TRI.forEach((k) => setQ(k, ...triToQ(f[k]))); NORM.forEach((k) => { form[`${k}_mean`].value = f[k][0]; form[`${k}_std`].value = f[k][1]; }); }
   form.copula.value = data.copula || "gaussian"; form.copula_df.value = data.copula_df || 5;
@@ -320,9 +326,9 @@ async function autofill() {
   const btn = $("autofillBtn"); btn.disabled = true; btn.textContent = "Loading";
   showLookup("busy", `Reading ${esc(ticker)} filings from SEC EDGAR and the peer panel.`);
   try {
+    // The quote wins. A price left in the field from the previous name used to be sent
+    // along and echoed back as this name's price, which is how TDS showed MYRG's $287.
     const params = new URLSearchParams({ horizon: form.horizon_years.value || "2" });
-    const typed = parseFloat(form.current_price.value);
-    if (Number.isFinite(typed) && typed > 0) params.set("price", String(typed));
     const res = await fetch(`/api/company/${encodeURIComponent(ticker)}?${params}`);
     const data = await res.json().catch(() => ({ error: `Server returned ${res.status}` }));
     if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
@@ -488,7 +494,7 @@ function render(r, payload) {
   $("cap1").textContent = `Terminal price distribution, ${m.horizon_years}-year, ${m.n_simulations.toLocaleString()} paths`;
   $("chartHist").innerHTML = histChart(r); $("chartBars").innerHTML = barsChart(r); $("chartCdf").innerHTML = cdfChart(r); $("chartTornado").innerHTML = tornadoChart(r);
   $("summaryTables").innerHTML = summaryTables(r); $("sensitivityTables").innerHTML = sensitivityTables(r);
-  ["shareBtn", "pinBtn", "exportPng", "exportJson", "logRun"].forEach((id) => { $(id).disabled = false; });
+  ["shareBtn", "pinBtn", "exportPng", "exportJson", "logRun", "assessBtn"].forEach((id) => { $(id).disabled = false; });
 }
 
 /* Export */
@@ -508,6 +514,94 @@ async function exportPng() {
   const imgs = await Promise.all(["chartHist", "chartBars", "chartCdf", "chartTornado"].map((id) => svgToImage($(id).querySelector("svg"))));
   imgs.forEach((img, i) => { const col = i % 2, row = Math.floor(i / 2), x = gap + col * (W + gap), y = titleH + gap + row * (H + gap); ctx.fillStyle = "#ffffff"; ctx.fillRect(x, y, W, H); ctx.drawImage(img, x, y, W, H); });
   const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${m.ticker}_monte_carlo.png`; a.click();
+}
+
+/* Pitch assessor: one image for the deck or the Excel model, plus a tab-separated block to paste */
+function assessorRows(r, payload) {
+  const s = r.stats, m = r.meta, rc = r.reconciliation, pi = r.price_implied, dq = m.driver_quantiles;
+  const rows = [
+    ["Company", `${m.company_name} (${m.ticker})`], ["Run date", new Date().toISOString().slice(0, 10)],
+    ["Spot", money(m.current_price)], ["Horizon", `${m.horizon_years} years`], ["Paths", m.n_simulations.toLocaleString()],
+    ["Calibration", lastPrefill?.calibration === "v2" ? `v2, peer panel (${lastPrefill.panel?.basis || "SIC"})` : "own history"],
+    ["Copula", m.copula === "t" ? `Student-t, df ${m.copula_df}` : "Gaussian"],
+    ["Mechanisms", Object.entries(m.mechanisms || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, " ")).join(", ") || "none"],
+    ["", ""],
+    ["Bear target", `${money(m.bear_price)} (${spct(m.bear_price / m.current_price - 1, 0)})`], ["Base target", `${money(m.base_price)} (${spct(m.base_price / m.current_price - 1, 0)})`], ["Bull target", `${money(m.bull_price)} (${spct(m.bull_price / m.current_price - 1, 0)})`],
+    ["", ""],
+    ["Median terminal", `${money(s.median_price)} (${spct(s.median_return)})`], ["Median return, annualised", spct(s.median_return_annualized)],
+    ["Mean terminal", money(s.mean_price)], ["P5 to P95", `${money0(s.p5)} to ${money0(s.p95)}`], ["P25 to P75", `${money0(s.p25)} to ${money0(s.p75)}`],
+    ["Mode-path price", money(rc.mode_path_price)],
+    ["", ""],
+    ["P(at least bear)", `${pct(s.p_at_least_bear)} ± ${(s.se.p_at_least_bear * 100).toFixed(2)}pp`],
+    ["P(at least base)", `${pct(s.p_at_least_base)} ± ${(s.se.p_at_least_base * 100).toFixed(2)}pp`],
+    ["P(at least bull)", `${pct(s.p_at_least_bull)} ± ${(s.se.p_at_least_bull * 100).toFixed(2)}pp`],
+    ["P(below bear)", pct(s.below_bear)],
+    ["", ""],
+    ["Revenue CAGR P10 / P50 / P90", `${pct(dq.rev_cagr.p10, 1)} / ${pct(dq.rev_cagr.p50, 1)} / ${pct(dq.rev_cagr.p90, 1)}`],
+    ["EBITDA margin P10 / P50 / P90", `${pct(dq.ebitda_margin.p10, 2)} / ${pct(dq.ebitda_margin.p50, 2)} / ${pct(dq.ebitda_margin.p90, 2)}`],
+    ["Exit multiple P10 / P50 / P90", `${mult(dq.ev_ebitda_multiple.p10)} / ${mult(dq.ev_ebitda_multiple.p50)} / ${mult(dq.ev_ebitda_multiple.p90)}`],
+    ["", ""],
+    ["Market-implied margin at spot", pi.implied_margin_at_mode_growth_and_multiple === null ? "no solution" : pct(pi.implied_margin_at_mode_growth_and_multiple, 2)],
+    ["Market-implied growth at spot", pi.implied_growth_at_mode_margin_and_multiple === null ? "no solution" : pct(pi.implied_growth_at_mode_margin_and_multiple, 1)],
+    ["Market-implied multiple at spot", pi.implied_multiple_at_mode_growth_and_margin === null ? "no solution" : mult(pi.implied_multiple_at_mode_growth_and_margin)],
+    ["Base needs multiple at P50 margin", mult(rc.cases.base.implied_multiple_at_mode_margin)],
+    ["Base needs margin at P50 multiple", pct(rc.cases.base.implied_margin_at_mode_multiple, 2)],
+  ];
+  if (r.fcf_bridge) rows.push(["", ""], ["FCF bridge median", `${money(r.fcf_bridge.median_price)} (${spct(r.fcf_bridge.gap_to_ebitda_bridge)} vs EBITDA bridge)`], ["FCF bridge P(at least base)", pct(r.fcf_bridge.p_at_least_base)]);
+  if (r.dcf_path) rows.push(["", ""], ["Three-statement path price", money(r.dcf_path.price)], ["Its percentile in the distribution", `${Math.round(r.dcf_path.percentile * 100)}th`], ["Paths at or above it", pct(r.dcf_path.p_at_least)]);
+  return rows;
+}
+function assessorVerdict(r) {
+  const s = r.stats, m = r.meta, rc = r.reconciliation;
+  const pb = s.p_at_least_base, gap = rc.base_gap_pct;
+  let v;
+  if (pb >= 0.5) v = `The base target is at or below the simulated median: ${pct(pb)} of paths reach it.`;
+  else if (pb >= 0.3) v = `The base target sits above the median; ${pct(pb)} of paths reach it. Defensible if the thesis moves a driver the model holds at its P50.`;
+  else v = `The base target is in the top ${pct(pb, 0)} of outcomes. It needs ${mult(rc.cases.base.implied_multiple_at_mode_margin)} at the P50 margin or a ${pct(rc.cases.base.implied_margin_at_mode_multiple, 2)} margin at the P50 multiple.`;
+  v += ` Downside: ${pct(s.below_bear)} of paths finish below the bear target.`;
+  if (r.fcf_bridge && Math.abs(r.fcf_bridge.gap_to_ebitda_bridge) > 0.15) v += ` The FCF bridge disagrees with the EBITDA bridge by ${spct(r.fcf_bridge.gap_to_ebitda_bridge)}; say which one the thesis rests on.`;
+  return v;
+}
+async function exportAssessor() {
+  if (!lastResult) return;
+  const r = lastResult, m = r.meta, rows = assessorRows(r, lastPayload), verdict = assessorVerdict(r);
+  const scale = 2, Wc = 1240, left = 40, colW = 560, lineH = 22;
+  const tableH = rows.length * lineH;
+  const Hc = 150 + Math.max(tableH, 2 * 300 + 24) + 40 + 90;
+  const canvas = document.createElement("canvas"); canvas.width = Wc * scale; canvas.height = Hc * scale;
+  const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, Wc, Hc);
+  ctx.fillStyle = "#1b4b8a"; ctx.fillRect(0, 0, Wc, 6);
+  ctx.fillStyle = C.text; ctx.font = "600 24px IBM Plex Sans, system-ui, sans-serif";
+  ctx.fillText(`${m.company_name} (${m.ticker}): pitch assessment`, left, 48);
+  ctx.fillStyle = C.muted; ctx.font = "13px IBM Plex Mono, ui-monospace, monospace";
+  ctx.fillText(`${m.n_simulations.toLocaleString()} paths, ${m.horizon_years}-year horizon, spot ${money(m.current_price)}, ${new Date().toISOString().slice(0, 10)}. Model output, not investment advice.`, left, 72);
+  // verdict box
+  ctx.fillStyle = "#e8eff8"; ctx.fillRect(left, 88, Wc - 2 * left, 46);
+  ctx.fillStyle = C.text; ctx.font = "500 13.5px IBM Plex Sans, system-ui, sans-serif";
+  const words = verdict.split(" "); let line = "", y = 108; const maxW = Wc - 2 * left - 24;
+  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW) { ctx.fillText(line, left + 12, y); line = w; y += 18; } else line = t; }
+  ctx.fillText(line, left + 12, y);
+  // table
+  let ty = 160;
+  rows.forEach(([k, v]) => {
+    if (k) {
+      ctx.fillStyle = C.muted; ctx.font = "12.5px IBM Plex Sans, system-ui, sans-serif"; ctx.fillText(k, left, ty);
+      ctx.fillStyle = C.text; ctx.font = "600 12.5px IBM Plex Mono, ui-monospace, monospace"; ctx.textAlign = "right"; ctx.fillText(v, left + colW, ty); ctx.textAlign = "left";
+      ctx.fillStyle = C.grid; ctx.fillRect(left, ty + 6, colW, 1);
+    }
+    ty += lineH;
+  });
+  // charts on the right
+  const imgs = await Promise.all(["chartHist", "chartCdf"].map((id) => svgToImage($(id).querySelector("svg"))));
+  const cx = left + colW + 40, cw = Wc - cx - left, ch = cw * H / W;
+  imgs.forEach((img, i) => ctx.drawImage(img, cx, 150 + i * (ch + 24), cw, ch));
+  const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${m.ticker}_pitch_assessment.png`; a.click();
+  // and the same figures as a tab-separated block for Excel
+  const tsv = rows.filter(([k]) => k).map(([k, v]) => `${k}\t${v}`).join("\n") + `\nVerdict\t${verdict}`;
+  try { await navigator.clipboard.writeText(tsv); $("assessBtn").textContent = "Image saved, table copied"; }
+  catch (_) { $("assessBtn").textContent = "Image saved"; }
+  setTimeout(() => { $("assessBtn").textContent = "Pitch assessor"; }, 2200);
 }
 
 /* Wiring */
@@ -545,6 +639,7 @@ $("pinBtn").addEventListener("click", () => {
   if (lastResult) compareStrip(lastResult);
 });
 $("exportPng").addEventListener("click", () => exportPng().catch((e) => showError(e.message)));
+$("assessBtn").addEventListener("click", () => exportAssessor().catch((e) => showError(e.message)));
 $("exportJson").addEventListener("click", () => {
   if (!lastResult) return;
   const blob = new Blob([JSON.stringify({ inputs: lastPayload, result: lastResult }, null, 2)], { type: "application/json" });

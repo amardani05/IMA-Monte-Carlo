@@ -105,7 +105,8 @@ def snapshot(ticker: str, as_of: str, series: list, horizon: float,
         f["current_net_debt"] = 0.0
         f["current_ev"] = spot * f["shares_outstanding"]
     f.update(bear_price=spot * 0.8, base_price=spot * 1.15, bull_price=spot * 1.4)
-    for k in ("driver_specs", "copula", "copula_df", "correlation_matrix"):
+    for k in ("driver_specs", "copula", "copula_df", "correlation_matrix",
+              "cost_model", "backlog", "fcf_bridge", "justified_multiple"):
         if k in pre:
             f[k] = pre[k]
     f.pop("horizon_years", None)
